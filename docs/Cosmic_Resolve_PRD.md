@@ -61,8 +61,8 @@ Intake and triage → **investigate → decide → human checkpoint → execute*
 Real integrations, voice, payments, multi-language (stretch only), fraud ML, customer-facing chat UI.
 
 ### Stretch goals (only after the Day 3 "done when" is met)
-1. **Brazil ticket in Portuguese**, using a Brazil policy config. This shows the market adaptation challenge from P01/P04 with no new agent.
-2. **Root-cause digest:** a weekly summary of tagged causes (e.g., "listing claims 40h battery, 12 cases say 25h"). This answers Finley's "what do consumers want?" and ties to the *false advertising* theme.
+1. ~~Brazil ticket in Portuguese~~ (deprioritized), using a Brazil policy config. This shows the market adaptation challenge from P01/P04 with no new agent.
+2. **Root-cause digest (chosen stretch; go/no-go on Day 3):** a weekly summary of tagged causes (e.g., "listing claims 40h battery, 12 cases say 25h"). This answers Finley's "what do consumers want?" and ties to the *false advertising* theme.
 
 ---
 
@@ -73,6 +73,7 @@ Real integrations, voice, payments, multi-language (stretch only), fraud ML, cus
 | Ingest case, pull order/customer/shipment | **Rule-based** | Deterministic read tools |
 | Eligibility window, $ thresholds, prior-claim count | **Rule-based** | Computed in code, never left to the LLM |
 | Interpret the complaint, weigh the evidence, pick the remedy | **Agentic** | Core reasoning |
+| Propose goodwill credit amount | **Agentic, within rule-based caps** | Agent proposes the amount; per-tier caps enforced in code; the human still approves |
 | Draft the customer message | **Agentic** | Tone matched to sentiment and loyalty tier |
 | Tag root cause (product, carrier, listing, policy) | **Agentic** | Feeds insights |
 | Approve, edit or reject any write action | **Human** | Every write passes the checkpoint |
@@ -133,7 +134,7 @@ One page with three panes:
 - **Center:** proposal card with decision, amount, cited clause, evidence, draft message, and Approve / Edit / Reject buttons.
 - **Right:** live trace showing tool calls, results and reasoning summary.
 
-Plus an **Eval** tab showing the scorecard. Use Streamlit if the builders want speed, or a simple React/Next.js page if someone is fluent.
+Plus an **Eval** tab showing the scorecard. **Decision: React** (Vite + a component library such as MUI or shadcn) calling a small backend API. Keep it to one page plus the Eval tab.
 
 ### 6.5 Logging and evals
 - Trace store: a JSONL file or SQLite. One row per step.
@@ -144,6 +145,27 @@ Plus an **Eval** tab showing the scorecard. Use Streamlit if the builders want s
   - false-refund rate
   - average tool calls per case
 - Show the scorecard on screen. It is the strongest answer to "what happens when it's wrong?"
+
+
+### 6.6 Tech stack and model access
+| Layer | Choice |
+|---|---|
+| Model | **Claude Sonnet**, accessed through **Amazon Bedrock**. Pin the exact Sonnet model or inference-profile ID that is enabled in your AWS account and region; don't rely on defaults. |
+| Agent runtime | Python + FastAPI backend using the Anthropic Python SDK's Bedrock client, which authenticates with AWS credentials instead of an Anthropic API key. A Node/TypeScript backend with the Bedrock SDK also works if your builders prefer it. |
+| Tools | Python functions behind one `tools/` module (an MCP server is optional; only do it if it costs less than half a day) |
+| Data | JSON or SQLite in `/data` |
+| Logs | SQLite or JSONL trace table |
+| Front end | React (Vite) |
+| Build tool | Claude Code configured for Bedrock (`CLAUDE_CODE_USE_BEDROCK=1`, plus `AWS_REGION` and pinned model IDs), with a shared `CLAUDE.md` in the repo |
+
+**Access checklist (Day 1, blocker):**
+- An AWS account or role with Bedrock enabled and Sonnet access granted in your region.
+- IAM permission for `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
+- Each builder confirms one successful test call from Python and from Claude Code (`/status` shows Bedrock as the provider).
+
+**Fallback:** wrap all model calls in a single `llm_client.py` so that swapping providers or model IDs is a config change, not a rewrite.
+
+Reference: https://code.claude.com/docs/en/amazon-bedrock
 
 ---
 
@@ -256,7 +278,7 @@ Everyone must be able to say the architecture in one sentence: *"One agent inves
 |---|---|---|---|
 | **Mon 11/2** | Scope & skeleton | Confirm the decision; fill the canvas; Data lead generates data and the policy book; Architect finalizes tool signatures and schema; builders scaffold the repo, CLAUDE.md and stub tools | Coach signs off on the canvas |
 | **Tue 11/3** | One loop, end to end | Agent runs case 1 through all tools to a proposal; trace logging; eval harness runs the first 10 cases | Loop runs 3× in a row |
-| **Wed 11/4** | Trust & polish | Checkpoint UI; escalation logic; demo cases 2 and 3 pass; full 30-case eval; value math drafted; slides drafted | Someone who didn't build it can run the demo |
+| **Wed 11/4** | Trust & polish | Checkpoint UI; escalation logic; demo cases 2 and 3 pass; full 30-case eval; value math drafted; slides drafted; **digest go/no-go** | Someone who didn't build it can run the demo |
 | **Thu 11/5** | Freeze & rehearse | **Code freeze at noon**; record the backup demo on the presenting laptop; two full rehearsals with a mock Q&A (coach plays Riley) | Pitch fits in 14 min |
 | **Fri 11/6** | Showcase | Live demo, backup ready; attend the whole showcase (11:00am–3:35pm ET) | — |
 
@@ -273,9 +295,15 @@ Everyone must be able to say the architecture in one sentence: *"One agent inves
 
 ---
 
-## 16. Open questions for the team and coach
-1. Do we keep the $200 escalation threshold (it mirrors the kickoff example) or tier it by loyalty level?
-2. Should goodwill credits be agent-proposed or human-only?
-3. Streamlit or React for the UI? Decide by noon Monday.
-4. Do we attempt the Brazil/Portuguese stretch, or the root-cause digest? Choose one at most.
-5. Confirm which Claude model and tooling the workshop environment provides, and get API access sorted today.
+## 16. Decisions log
+| # | Question | Decision (11/2) |
+|---|---|---|
+| 1 | $200 escalation threshold | **Keep** a flat $200 for all tiers |
+| 2 | Goodwill credits | **Agent proposes**, within per-tier caps enforced in code; the human approves at the checkpoint |
+| 3 | UI framework | **React** |
+| 4 | Stretch goal | **Root-cause digest**, with go/no-go confirmed on Day 3 (Wed) |
+| 5 | Model and access | **Claude Sonnet via Amazon Bedrock** (see 6.6). Access setup is a Day 1 blocker. |
+
+### Still open
+- Who owns AWS access, and which account and region are we using? Ask the coach or program team today.
+- What are the goodwill caps per loyalty tier? The Data lead proposes them in the policy book.
