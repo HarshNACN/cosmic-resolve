@@ -1,0 +1,29 @@
+[
+  {
+    "order_id": "O-1001",
+    "customer_id": "C-001",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-25T09:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1002",
+    "customer_id": "C-002",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-19T13:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1003",
+    "customer_id": "C-003",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-18T18:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  }
+]

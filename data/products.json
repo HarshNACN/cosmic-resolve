@@ -1,0 +1,26 @@
+[
+  {
+    "sku": "SKU-HEAD-649",
+    "title": "Noise Cancelling Headphones Pro",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 649.0,
+    "listing_claims": ["40 hours battery life", "Premium carry case included", "Built to survive travel"]
+  },
+  {
+    "sku": "SKU-PLUG-45",
+    "title": "Smart Plug Mini",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 45.0,
+    "listing_claims": ["Works with all smart homes", "Simple setup in under 3 minutes"]
+  },
+  {
+    "sku": "SKU-WATCH-299",
+    "title": "Fitness Watch Elite",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 299.0,
+    "listing_claims": ["7-day battery life", "Water resistant up to 50m"]
+  }
+]

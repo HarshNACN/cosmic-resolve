@@ -1,0 +1,23 @@
+[
+  {
+    "case_id": "C-1001",
+    "expected_decision": "REPLACE",
+    "amount": 649.0,
+    "expected_policy_clause_ids": ["US-GAD-DOA-02"],
+    "notes": "Customer has a damaged arrival with photo evidence."
+  },
+  {
+    "case_id": "C-1002",
+    "expected_decision": "STORE_CREDIT",
+    "amount": 45.0,
+    "expected_policy_clause_ids": ["US-GAD-LD-01"],
+    "notes": "Lost in transit with a low-value item and a goodwill credit."
+  },
+  {
+    "case_id": "C-1003",
+    "expected_decision": "REFUND",
+    "amount": 299.0,
+    "expected_policy_clause_ids": ["US-GAD-RET-03"],
+    "notes": "Standard return request."
+  }
+]

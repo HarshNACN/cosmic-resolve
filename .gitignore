@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.tox/
+.nox/
+
+# Build and editable-install metadata
+build/
+dist/
+*.egg-info/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# AWS and credentials
+.aws/
+credentials
+*.pem
+*.key
+
+# Application output
+logs/
+traces/
+*.jsonl
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE and operating system
+.vscode/
+.idea/
+.history/
+.copilot/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,26 @@
+[
+  {
+    "customer_id": "C-001",
+    "name": "Maya Rowe",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3160.42,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-002",
+    "name": "Jon Park",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 820.15,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-003",
+    "name": "Anita Lee",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 440.90,
+    "prior_claims_12m": 4,
+    "region": "US"
+  }
+]

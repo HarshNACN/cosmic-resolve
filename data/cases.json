@@ -1,0 +1,41 @@
+[
+  {
+    "case_id": "C-1001",
+    "order_id": "O-1001",
+    "customer_id": "C-001",
+    "tracking_id": "T-1001",
+    "case_type": "DAMAGED_ON_ARRIVAL",
+    "market": "US",
+    "category": "GADGETS",
+    "complaint_text": "The headphones arrived with a cracked housing and the box was dented.",
+    "channel": "EMAIL",
+    "created_at": "2026-11-02T09:00:00Z",
+    "status": "OPEN"
+  },
+  {
+    "case_id": "C-1002",
+    "order_id": "O-1002",
+    "customer_id": "C-002",
+    "tracking_id": "T-1002",
+    "case_type": "LATE_DELIVERY",
+    "market": "US",
+    "category": "GADGETS",
+    "complaint_text": "The package was lost in transit and never arrived on time.",
+    "channel": "CHAT",
+    "created_at": "2026-11-02T10:15:00Z",
+    "status": "OPEN"
+  },
+  {
+    "case_id": "C-1003",
+    "order_id": "O-1003",
+    "customer_id": "C-003",
+    "tracking_id": "T-1003",
+    "case_type": "RETURN_REQUEST",
+    "market": "US",
+    "category": "GADGETS",
+    "complaint_text": "I want a refund because the product was not what I expected.",
+    "channel": "PHONE",
+    "created_at": "2026-11-02T11:30:00Z",
+    "status": "OPEN"
+  }
+]

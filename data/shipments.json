@@ -1,0 +1,32 @@
+[
+  {
+    "tracking_id": "T-1001",
+    "order_id": "O-1001",
+    "carrier": "UPS",
+    "status": "DELIVERED",
+    "events": ["Label created", "Out for delivery", "Delivered to recipient"],
+    "delivered": true,
+    "signature_required": false,
+    "customer_photo_provided": true
+  },
+  {
+    "tracking_id": "T-1002",
+    "order_id": "O-1002",
+    "carrier": "USPS",
+    "status": "LOST_IN_TRANSIT",
+    "events": ["Label created", "Package accepted", "Package disappeared in transit"],
+    "delivered": false,
+    "signature_required": false,
+    "customer_photo_provided": false
+  },
+  {
+    "tracking_id": "T-1003",
+    "order_id": "O-1003",
+    "carrier": "FedEx",
+    "status": "DELIVERED",
+    "events": ["Package delivered", "Customer signed for package"],
+    "delivered": true,
+    "signature_required": true,
+    "customer_photo_provided": false
+  }
+]

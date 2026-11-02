@@ -1,0 +1,23 @@
+[
+  {
+    "clause_id": "US-GAD-DOA-02",
+    "market": "US",
+    "category": "GADGETS",
+    "case_type": "DAMAGED_ON_ARRIVAL",
+    "text": "Damaged arrival claims are covered when the customer provides a photo and the product is within 30 days of delivery; replacement or refund is permitted based on stock and policy exceptions."
+  },
+  {
+    "clause_id": "US-GAD-LD-01",
+    "market": "US",
+    "category": "GADGETS",
+    "case_type": "LATE_DELIVERY",
+    "text": "Lost or late delivery cases may receive a replacement or goodwill credit within 10 days of the expected delivery date if the carrier confirms disruption."
+  },
+  {
+    "clause_id": "US-GAD-RET-03",
+    "market": "US",
+    "category": "GADGETS",
+    "case_type": "RETURN_REQUEST",
+    "text": "Returns without a delivery defect or significant policy exception are limited to the return window and may require a standard refund or store credit."
+  }
+]
