@@ -30,25 +30,20 @@ cosmic-resolve/
 
 ## Project Status
 
-This is a Day 1 scaffolding repository aligned with T05 requirements.
+Working offline loop plus a live Bedrock provider (Claude Sonnet 5.5). Every write is mock-only and approval-gated.
 
-**Currently available (scaffolding/starter code):**
-- Clean directory structure for backend and frontend separation
-- Synthetic data fixtures (JSON: customers, orders, products, shipments, policies, etc.)
-- Starter models and validation logic
-- Starter trace logging
-- Pytest-based test suite (not currently runnable without dependency install)
+**Implemented:**
+- Deterministic read tools and approval-gated write tools over JSON fixtures (`backend/cosmic_resolve/tools.py`)
+- Proposal validator: clause citation, $200 escalation threshold, goodwill caps (`validators.py`)
+- End-to-end loop: propose, validate, human checkpoint, gated writes, trace (`workflow.py`)
+- Two providers: offline rule-based, and Bedrock (`model_provider.py`, `bedrock_provider.py`)
+- JSONL trace logging (`tracing.py`)
+- Pytest suite (49 tests, no network needed)
 
-**Planned - not yet implemented:**
-- FastAPI endpoints in backend/
-- React + Vite frontend in frontend/
-- Evaluation framework
-- AI agent implementation
-- AWS Bedrock integration
-- Live policy decision engine
-
-**Note:** No dependencies installed. No live API calls. No UI. Frontend is an empty placeholder.
+**Not yet implemented:** real evaluation harness (T20), full 30-case eval set (T19), FastAPI endpoints and trace API, React frontend, expanded fixtures (T08).
 
 ## Getting Started
 
-Refer to `CLAUDE.md` for detailed project guidelines and architecture decisions.
+- To test the system, follow **[docs/TESTING.md](docs/TESTING.md)**.
+- Tool contracts: [docs/tools.md](docs/tools.md). Project guidelines: `CLAUDE.md`.
+- AWS/Bedrock setup values: `.env.example`.
