@@ -78,6 +78,8 @@ def get_policy(market: str, category: str, case_type: str) -> list[PolicyClause]
     for record in _load_json_list("policies.json"):
         if record.get("market") == market and record.get("category") == category and record.get("case_type") == case_type:
             clauses.append(PolicyClause.model_validate(record))
+    if not clauses:
+        raise DomainLookupError(f"No policy clauses for market={market}, category={category}, case_type={case_type}")
     return clauses
 
 

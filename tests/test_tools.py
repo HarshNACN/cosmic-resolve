@@ -24,6 +24,11 @@ def test_customer_and_policy_lookups() -> None:
     ]
 
 
+def test_get_policy_raises_on_no_match() -> None:
+    with pytest.raises(DomainLookupError):
+        get_policy("BR", "GADGETS", "DAMAGED_ON_ARRIVAL")
+
+
 def test_write_action_requires_approval() -> None:
     approval = ApprovalDecision(approved=False, approved_by="Jordan", approval_token="token-1")
     with pytest.raises(MockWriteError):
