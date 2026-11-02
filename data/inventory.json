@@ -1,5 +1,202 @@
 [
-  {"sku": "SKU-HEAD-649", "region": "US", "available_quantity": 14},
-  {"sku": "SKU-PLUG-45", "region": "US", "available_quantity": 87},
-  {"sku": "SKU-WATCH-299", "region": "US", "available_quantity": 9}
+  {
+    "sku": "SKU-HEAD-649",
+    "region": "US",
+    "available_quantity": 14
+  },
+  {
+    "sku": "SKU-PLUG-45",
+    "region": "US",
+    "available_quantity": 87
+  },
+  {
+    "sku": "SKU-WATCH-299",
+    "region": "US",
+    "available_quantity": 9
+  },
+  {
+    "sku": "SKU-EARB-129",
+    "region": "US",
+    "available_quantity": 132
+  },
+  {
+    "sku": "SKU-SPKR-89",
+    "region": "US",
+    "available_quantity": 10
+  },
+  {
+    "sku": "SKU-SPKR-249",
+    "region": "US",
+    "available_quantity": 63
+  },
+  {
+    "sku": "SKU-BULB-19",
+    "region": "US",
+    "available_quantity": 104
+  },
+  {
+    "sku": "SKU-PLUG-29",
+    "region": "US",
+    "available_quantity": 6
+  },
+  {
+    "sku": "SKU-TRACK-79",
+    "region": "US",
+    "available_quantity": 143
+  },
+  {
+    "sku": "SKU-WATCH-449",
+    "region": "US",
+    "available_quantity": 23
+  },
+  {
+    "sku": "SKU-CAM-329",
+    "region": "US",
+    "available_quantity": 122
+  },
+  {
+    "sku": "SKU-CAM-189",
+    "region": "US",
+    "available_quantity": 101
+  },
+  {
+    "sku": "SKU-CAM-159",
+    "region": "US",
+    "available_quantity": 12
+  },
+  {
+    "sku": "SKU-CAM-79",
+    "region": "US",
+    "available_quantity": 119
+  },
+  {
+    "sku": "SKU-CAM-899",
+    "region": "US",
+    "available_quantity": 46
+  },
+  {
+    "sku": "SKU-DRON-1499",
+    "region": "US",
+    "available_quantity": 0
+  },
+  {
+    "sku": "SKU-DRON-349",
+    "region": "US",
+    "available_quantity": 125
+  },
+  {
+    "sku": "SKU-TAB-499",
+    "region": "US",
+    "available_quantity": 66
+  },
+  {
+    "sku": "SKU-READ-139",
+    "region": "US",
+    "available_quantity": 34
+  },
+  {
+    "sku": "SKU-PBNK-49",
+    "region": "US",
+    "available_quantity": 78
+  },
+  {
+    "sku": "SKU-PBNK-69",
+    "region": "US",
+    "available_quantity": 2
+  },
+  {
+    "sku": "SKU-CHRG-29",
+    "region": "US",
+    "available_quantity": 59
+  },
+  {
+    "sku": "SKU-CHRG-39",
+    "region": "US",
+    "available_quantity": 33
+  },
+  {
+    "sku": "SKU-CBL-19",
+    "region": "US",
+    "available_quantity": 86
+  },
+  {
+    "sku": "SKU-KEYB-99",
+    "region": "US",
+    "available_quantity": 145
+  },
+  {
+    "sku": "SKU-MOUS-39",
+    "region": "US",
+    "available_quantity": 133
+  },
+  {
+    "sku": "SKU-WEBC-119",
+    "region": "US",
+    "available_quantity": 132
+  },
+  {
+    "sku": "SKU-ROUT-179",
+    "region": "US",
+    "available_quantity": 139
+  },
+  {
+    "sku": "SKU-SSD-129",
+    "region": "US",
+    "available_quantity": 131
+  },
+  {
+    "sku": "SKU-MON-279",
+    "region": "US",
+    "available_quantity": 103
+  },
+  {
+    "sku": "SKU-VR-399",
+    "region": "US",
+    "available_quantity": 141
+  },
+  {
+    "sku": "SKU-CTRL-69",
+    "region": "US",
+    "available_quantity": 120
+  },
+  {
+    "sku": "SKU-VAC-449",
+    "region": "US",
+    "available_quantity": 85
+  },
+  {
+    "sku": "SKU-THERM-129",
+    "region": "US",
+    "available_quantity": 51
+  },
+  {
+    "sku": "SKU-LOCK-199",
+    "region": "US",
+    "available_quantity": 111
+  },
+  {
+    "sku": "SKU-PROJ-1199",
+    "region": "US",
+    "available_quantity": 0
+  },
+  {
+    "sku": "SKU-HUB-35",
+    "region": "US",
+    "available_quantity": 44
+  },
+  {
+    "sku": "SKU-STAND-24",
+    "region": "US",
+    "available_quantity": 61
+  },
+  {
+    "sku": "SKU-TRPD-59",
+    "region": "US",
+    "available_quantity": 14
+  },
+  {
+    "sku": "SKU-TAG-29",
+    "region": "US",
+    "available_quantity": 141
+  }
 ]
