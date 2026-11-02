@@ -22,5 +22,1181 @@
     "lifetime_value": 440.90,
     "prior_claims_12m": 4,
     "region": "US"
+  },
+  {
+    "customer_id": "C-004",
+    "name": "Tyler Patel",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1184.75,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-005",
+    "name": "Devon Howell",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1479.55,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-006",
+    "name": "Diana Price",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 966.72,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-007",
+    "name": "Ruben Hayes",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2865.78,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-008",
+    "name": "Mason Sato",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 627.71,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-009",
+    "name": "Simon Walker",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 328.42,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-010",
+    "name": "Mia Burke",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3302.56,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-011",
+    "name": "Aiden Keller",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 411.36,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-012",
+    "name": "Harper Morgan",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2804.26,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-013",
+    "name": "Aiden Morgan",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1112.16,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-014",
+    "name": "Victoria Hayes",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2696.89,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-015",
+    "name": "Imani Hughes",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 7434.22,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-016",
+    "name": "Brandon Rivera",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 253.16,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-017",
+    "name": "Victoria Diaz",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 294.38,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-018",
+    "name": "Emily Moreno",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2646.15,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-019",
+    "name": "Felix Kim",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 682.72,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-020",
+    "name": "Scarlett Price",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 580.67,
+    "prior_claims_12m": 6,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-021",
+    "name": "Caleb Hughes",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 943.50,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-022",
+    "name": "Abigail Morgan",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 973.42,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-023",
+    "name": "Shira Keller",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 526.05,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-024",
+    "name": "Rosa Wagner",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 628.50,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-025",
+    "name": "Sienna Brooks",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 352.26,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-026",
+    "name": "Yuki Nguyen",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3532.69,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-027",
+    "name": "Ryan Reyes",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 504.15,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-028",
+    "name": "Layla Duval",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 167.87,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-029",
+    "name": "Olivia Pierce",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 479.47,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-030",
+    "name": "Jamal Ford",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2171.83,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-031",
+    "name": "Connor Wagner",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 369.73,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-032",
+    "name": "Ella Coleman",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 6718.46,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-033",
+    "name": "Brooke Ortiz",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 491.05,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-034",
+    "name": "Jackson Morgan",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3090.73,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-035",
+    "name": "Ryan Foster",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 153.70,
+    "prior_claims_12m": 5,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-036",
+    "name": "Lily Brooks",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 317.70,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-037",
+    "name": "Diana Hayes",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 371.21,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-038",
+    "name": "Olivia Kelly",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3958.01,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-039",
+    "name": "Wyatt Lopez",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 204.19,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-040",
+    "name": "Shira Hayes",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 5561.53,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-041",
+    "name": "Emily Ford",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 6249.03,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-042",
+    "name": "Nathan Porter",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 530.90,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-043",
+    "name": "Brandon Foster",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1494.49,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-044",
+    "name": "Penelope Coleman",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 442.75,
+    "prior_claims_12m": 4,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-045",
+    "name": "Sienna Sato",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 1825.33,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-046",
+    "name": "Shira Myers",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 121.63,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-047",
+    "name": "Isaac Ortiz",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 965.77,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-048",
+    "name": "Zoey Reyes",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1057.37,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-049",
+    "name": "Sienna Haddad",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 903.93,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-050",
+    "name": "Zoey Mitchell",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 148.98,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-051",
+    "name": "Logan Griffin",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 690.83,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-052",
+    "name": "Scarlett Dunn",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1240.94,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-053",
+    "name": "Jackson Lindqvist",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 583.32,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-054",
+    "name": "Layla Wallace",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 682.57,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-055",
+    "name": "Owen Coleman",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 346.45,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-056",
+    "name": "Amelia Haddad",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1049.75,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-057",
+    "name": "Liam Lindqvist",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 1580.18,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-058",
+    "name": "Avery Sanders",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 370.37,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-059",
+    "name": "Imani Tanaka",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 678.65,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-060",
+    "name": "Emily Dunn",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 477.96,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-061",
+    "name": "Ella Pierce",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1084.42,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-062",
+    "name": "Avery Shaw",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1095.10,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-063",
+    "name": "Rosa Burke",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 385.93,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-064",
+    "name": "Riley Kim",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 132.04,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-065",
+    "name": "Noah Morgan",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 594.49,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-066",
+    "name": "Leo Dunn",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3427.62,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-067",
+    "name": "Jamal Mendez",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 490.03,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-068",
+    "name": "Owen Myers",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 686.32,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-069",
+    "name": "Devon Morgan",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 999.84,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-070",
+    "name": "Elizabeth Ford",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2216.51,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-071",
+    "name": "Adrian Russell",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 480.17,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-072",
+    "name": "Evelyn Walker",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 893.94,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-073",
+    "name": "Nathan Sato",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 888.12,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-074",
+    "name": "Simon Howell",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1477.95,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-075",
+    "name": "Layla Pierce",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 131.78,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-076",
+    "name": "Brandon Lopez",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 7017.04,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-077",
+    "name": "Caleb Garcia",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 212.12,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-078",
+    "name": "Sofia Mendez",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 382.65,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-079",
+    "name": "Evelyn Moreno",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1271.01,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-080",
+    "name": "Ella Diaz",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 490.42,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-081",
+    "name": "Priya Bennett",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 990.73,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-082",
+    "name": "Tessa Cruz",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3969.80,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-083",
+    "name": "Camila Hayes",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2592.32,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-084",
+    "name": "Ryan Howell",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 207.51,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-085",
+    "name": "Ruben Shaw",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 637.49,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-086",
+    "name": "Sophia Fischer",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 288.04,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-087",
+    "name": "Oscar Price",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 396.97,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-088",
+    "name": "Riley Shaw",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1404.16,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-089",
+    "name": "Logan Shaw",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 565.00,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-090",
+    "name": "Liam Rivera",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 1969.73,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-091",
+    "name": "Priya Burke",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 504.38,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-092",
+    "name": "Aaliyah Price",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3558.40,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-093",
+    "name": "Aiden Wallace",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 992.65,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-094",
+    "name": "Amelia Garcia",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 353.55,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-095",
+    "name": "Sienna Bennett",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 932.82,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-096",
+    "name": "Hannah Wagner",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 605.47,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-097",
+    "name": "Penelope Stone",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2833.42,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-098",
+    "name": "Tessa Keller",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 372.49,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-099",
+    "name": "Harper Burke",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 243.66,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-100",
+    "name": "Yuki Hamilton",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 595.35,
+    "prior_claims_12m": 6,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-101",
+    "name": "Kevin Chen",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 250.08,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-102",
+    "name": "Penelope Keller",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 146.15,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-103",
+    "name": "Camila Reyes",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 460.27,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-104",
+    "name": "Hannah Diaz",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 435.66,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-105",
+    "name": "Diana Duval",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 642.97,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-106",
+    "name": "Ian Mendez",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 2901.37,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-107",
+    "name": "Penelope Rivera",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 454.32,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-108",
+    "name": "Harper Cruz",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3062.48,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-109",
+    "name": "Malik Dunn",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 423.94,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-110",
+    "name": "Lucas Foster",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 186.65,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-111",
+    "name": "Lucas Fischer",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 251.19,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-112",
+    "name": "Emily Ramirez",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 688.19,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-113",
+    "name": "Lily Burke",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 339.11,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-114",
+    "name": "Trevor Burke",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1254.40,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-115",
+    "name": "Emily Nguyen",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 374.58,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-116",
+    "name": "Amelia Griffin",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 742.51,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-117",
+    "name": "Julian Brennan",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 661.03,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-118",
+    "name": "Adrian Burke",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 268.96,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-119",
+    "name": "Riley Brennan",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 407.99,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-120",
+    "name": "Ethan Wallace",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1104.31,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-121",
+    "name": "Aaliyah Walker",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 444.19,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-122",
+    "name": "Felix Tanaka",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1410.39,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-123",
+    "name": "Jackson Brennan",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 601.02,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-124",
+    "name": "Joanna Sato",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 776.05,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-125",
+    "name": "Isabella Duval",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 661.67,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-126",
+    "name": "Chloe Tanaka",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 3526.17,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-127",
+    "name": "Marcus Ramirez",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 440.37,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-128",
+    "name": "Hector Reyes",
+    "loyalty_tier": "PLATINUM",
+    "lifetime_value": 4605.13,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-129",
+    "name": "Avery Sato",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1132.81,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-130",
+    "name": "Wyatt Wallace",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 120.19,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-131",
+    "name": "Nathan Wagner",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 269.79,
+    "prior_claims_12m": 2,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-132",
+    "name": "Jason Garcia",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1245.52,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-133",
+    "name": "Oscar Moreno",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 744.03,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-134",
+    "name": "Brandon Wallace",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 189.08,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-135",
+    "name": "Garrett Cruz",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 614.08,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-136",
+    "name": "Jason Sato",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 312.59,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-137",
+    "name": "Amelia Brooks",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 253.62,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-138",
+    "name": "Caleb Patel",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 516.27,
+    "prior_claims_12m": 3,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-139",
+    "name": "Mia Patel",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 722.01,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-140",
+    "name": "Marcus Fischer",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 557.48,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-141",
+    "name": "Victoria Kim",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 424.55,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-142",
+    "name": "Andre Patel",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 266.70,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-143",
+    "name": "Scarlett Howell",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 277.13,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-144",
+    "name": "Scarlett Russell",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3281.47,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-145",
+    "name": "Aaliyah Duval",
+    "loyalty_tier": "GOLD",
+    "lifetime_value": 3412.71,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-146",
+    "name": "Monica Porter",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 307.60,
+    "prior_claims_12m": 0,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-147",
+    "name": "Ryan Wallace",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 590.07,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-148",
+    "name": "Tyler Cruz",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 1446.69,
+    "prior_claims_12m": 1,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-149",
+    "name": "Devon Ford",
+    "loyalty_tier": "SILVER",
+    "lifetime_value": 931.59,
+    "prior_claims_12m": 5,
+    "region": "US"
+  },
+  {
+    "customer_id": "C-150",
+    "name": "Ava Fischer",
+    "loyalty_tier": "BRONZE",
+    "lifetime_value": 394.34,
+    "prior_claims_12m": 1,
+    "region": "US"
   }
 ]
