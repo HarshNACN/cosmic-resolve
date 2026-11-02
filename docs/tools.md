@@ -1,6 +1,6 @@
 # Tool contracts
 
-Source of truth: `cosmic_resolve/tools.py` (functions) and `cosmic_resolve/models.py` (return shapes). This document describes the current code. The PRD (§6.2) defines the intended tool set.
+Source of truth: `backend/cosmic_resolve/tools.py` (functions) and `backend/cosmic_resolve/models.py` (return shapes). This document describes the current code. The PRD (§6.2) defines the intended tool set.
 
 Status: **draft for sign-off** (T06). Owners to confirm: Architect, Builders, Data lead.
 
@@ -11,7 +11,7 @@ Status: **draft for sign-off** (T06). Owners to confirm: Architect, Builders, Da
   - Return values are pydantic models with `extra="forbid"`.
 - **Write tools (6)** are gated. Each takes a trailing `approval: ApprovalDecision | None` argument.
   - If approval is missing, not an `ApprovalDecision`, not approved, or has no token, the call raises `MockWriteError` and nothing is recorded.
-  - On success, the call appends a `mock_action` trace event (`cosmic_resolve/tracing.py`) and returns a plain `dict`.
+  - On success, the call appends a `mock_action` trace event (`backend/cosmic_resolve/tracing.py`) and returns a plain `dict`.
 - No tool calls the LLM. Tools are mock-only: no live AWS, no real OMS or carrier calls.
 
 ## Read tools
@@ -69,6 +69,6 @@ These are questions, not changes. Nothing in code has been altered.
 
 1. **Shipment events** are plain strings (`list[str]`). PRD §6.2 says "carrier events". **Open: team undecided** on whether structured events (timestamp, status, location) are needed.
 2. **Goodwill caps** are not in any tool or model. PRD §16 leaves per-tier caps open, so the Data lead's policy book needs to decide them.
-3. **`get_policy` raises `DomainLookupError` on no match.** Decided: raise, not return `[]`. The agent should catch this and emit `ESCALATE` with the reason "no applicable policy clause" (PRD §6.1 fallback). **Note:** the code still returns `[]`; the change to `tools.py` is not yet made.
+3. **`get_policy` raises `DomainLookupError` on no match.** Decided: raise, not return `[]`. The agent should catch this and emit `ESCALATE` with the reason "no applicable policy clause" (PRD §6.1 fallback). Implemented in `backend/cosmic_resolve/tools.py` with a test in `tests/test_tools.py`.
 4. **`escalate` and `tag_root_cause` are approval-gated.** This matches PRD §5 ("every write passes the checkpoint") but means the agent can't tag root causes without a human approval. Confirm that's intended.
 5. **Names:** the PRD and tracker reference `llm_client.py` (T15), while the repo has `model_provider.py`. Not a tool issue, but it affects where tools are called from.
