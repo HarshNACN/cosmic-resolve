@@ -2,7 +2,7 @@
 name = "cosmic-resolve"
 version = "0.1.0"
 description = "Starter architecture for the Cosmic Resolve hackathon prototype."
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.10.0",
@@ -15,8 +15,8 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests"]
+pythonpath = [".", ".."]
+testpaths = ["../tests"]
 
 [tool.setuptools]
 packages = ["cosmic_resolve"]
