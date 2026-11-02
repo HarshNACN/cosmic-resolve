@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .config import ESCALATION_THRESHOLD_USD
 from .models import Decision, PolicyClause, ResolutionProposal, RootCause, SupportCase
 
 
@@ -23,10 +24,10 @@ class ResolutionAgent:
         if case.case_type == "RETURN_REQUEST" and amount <= 50:
             decision = Decision.REFUND
 
-        if amount > 200:
-            escalation_reasons = ["Value > $200 threshold"]
-        else:
-            escalation_reasons = []
+        escalation_reasons: list[str] = []
+        if amount > ESCALATION_THRESHOLD_USD:
+            decision = Decision.ESCALATE
+            escalation_reasons = [f"Value > ${ESCALATION_THRESHOLD_USD:.0f} threshold"]
 
         proposal = ResolutionProposal(
             case_id=case.case_id,
