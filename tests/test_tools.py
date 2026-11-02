@@ -16,7 +16,12 @@ def test_customer_and_policy_lookups() -> None:
     assert customer.loyalty_tier == "GOLD"
 
     policies = get_policy("US", "GADGETS", "DAMAGED_ON_ARRIVAL")
-    assert [policy.clause_id for policy in policies] == ["US-GAD-DOA-02"]
+    assert [policy.clause_id for policy in policies] == [
+        "US-GAD-DOA-01",
+        "US-GAD-DOA-02",
+        "US-GAD-DOA-03",
+        "US-GAD-DOA-04",
+    ]
 
 
 def test_get_policy_raises_on_no_match() -> None:
