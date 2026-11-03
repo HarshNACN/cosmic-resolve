@@ -148,7 +148,7 @@ describe("recommendation", () => {
 
     const policy = screen.getByRole("region", { name: "Policy basis" });
     expect(within(policy).getByText("US-GAD-LD-01")).toBeInTheDocument();
-    expect(within(policy).getByText("Policy clause details are not included in the current API response.")).toBeInTheDocument();
+    expect(within(policy).getByText("Policy text is unavailable from this service. The clause IDs above identify it.")).toBeInTheDocument();
   });
 
   it("marks escalations as needing human review and offers no approval controls", async () => {
@@ -161,7 +161,7 @@ describe("recommendation", () => {
     expect(await screen.findByRole("heading", { name: "Needs human review" })).toBeInTheDocument();
     expect(screen.getByText("Value > $200 threshold")).toBeInTheDocument();
     expect(screen.getByText("$649.00")).toBeInTheDocument();
-    expect(screen.getByText("Approval controls are not enabled in this environment.")).toBeInTheDocument();
+    expect(screen.getByText("Decision controls are not enabled in this environment.")).toBeInTheDocument();
     for (const name of [/approve/i, /reject/i, /refund/i, /execute/i, /send/i]) {
       expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
     }

@@ -62,7 +62,7 @@ export default function CaseDetails({ caseId, state, onRetry }) {
           <Row label="Opened">{formatTimestamp(record.created_at)}</Row>
           <Row label="Status">{humanize(record.status)}</Row>
         </dl>
-        <h3>Customer complaint</h3>
+        <h3>Customer statement</h3>
         <p className="quoted">{show(record.complaint_text)}</p>
         <Disclosure title="Raw case data">
           <pre className="code-block">{asText(record)}</pre>
@@ -71,7 +71,7 @@ export default function CaseDetails({ caseId, state, onRetry }) {
 
       <section className="panel" aria-labelledby="evidence-heading">
         <h2 id="evidence-heading">Evidence</h2>
-        <p className="muted">Records linked to this case. Only their IDs are available from the current API.</p>
+        <p className="muted">Linked records. This service provides their IDs only.</p>
         <dl className="details">
           <Row label="Customer">
             {show(record.customer_id)}

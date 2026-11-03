@@ -8,7 +8,7 @@ const MAX_REVIEWER = 80;
 const MAX_NOTE = 500;
 const MAX_MESSAGE = 2000;
 
-const READ_ONLY_TEXT = "Approval controls are not enabled in this environment.";
+const READ_ONLY_TEXT = "Decision controls are not enabled in this environment.";
 
 function Facts({ run }) {
   const proposal = run.proposal;
