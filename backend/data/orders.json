@@ -1,0 +1,3602 @@
+[
+  {
+    "order_id": "O-1001",
+    "customer_id": "C-001",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-25T09:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1002",
+    "customer_id": "C-002",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-19T13:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1003",
+    "customer_id": "C-003",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-18T18:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1031",
+    "customer_id": "C-042",
+    "sku": "SKU-SPKR-249",
+    "price": 249.0,
+    "order_date": "2026-10-10T10:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1018",
+    "customer_id": "C-014",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-01T16:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1023",
+    "customer_id": "C-046",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-08T15:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1047",
+    "customer_id": "C-129",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-21T10:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1026",
+    "customer_id": "C-087",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-30T15:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1049",
+    "customer_id": "C-136",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-16T09:01:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1056",
+    "customer_id": "C-056",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-20T16:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1077",
+    "customer_id": "C-102",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-08T13:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1116",
+    "customer_id": "C-034",
+    "sku": "SKU-SPKR-249",
+    "price": 249.0,
+    "order_date": "2026-11-01T21:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1020",
+    "customer_id": "C-068",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-19T08:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1030",
+    "customer_id": "C-054",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-22T14:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1121",
+    "customer_id": "C-005",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-31T18:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1131",
+    "customer_id": "C-043",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-11-01T19:51:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1137",
+    "customer_id": "C-130",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-09T09:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1138",
+    "customer_id": "C-135",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-10-07T09:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1019",
+    "customer_id": "C-046",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-09T18:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1022",
+    "customer_id": "C-056",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-09-27T10:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1140",
+    "customer_id": "C-014",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-28T13:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1021",
+    "customer_id": "C-083",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-08-30T17:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1172",
+    "customer_id": "C-149",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-11-01T13:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1028",
+    "customer_id": "C-018",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-31T21:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1236",
+    "customer_id": "C-032",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-07T19:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1243",
+    "customer_id": "C-101",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-20T18:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1323",
+    "customer_id": "C-095",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-24T16:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1372",
+    "customer_id": "C-127",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-22T09:17:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1024",
+    "customer_id": "C-035",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-18T08:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1383",
+    "customer_id": "C-062",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-23T10:17:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1004",
+    "customer_id": "C-105",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-22T15:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1032",
+    "customer_id": "C-001",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-13T14:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1033",
+    "customer_id": "C-045",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-29T20:23:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1034",
+    "customer_id": "C-125",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-03T11:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1035",
+    "customer_id": "C-051",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-26T21:49:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1036",
+    "customer_id": "C-024",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-25T17:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1037",
+    "customer_id": "C-112",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-25T10:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1038",
+    "customer_id": "C-132",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-05T19:57:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1039",
+    "customer_id": "C-075",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-08T16:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1040",
+    "customer_id": "C-123",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-11-01T16:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1041",
+    "customer_id": "C-064",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-05T21:28:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1042",
+    "customer_id": "C-109",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-20T21:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1043",
+    "customer_id": "C-031",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-04T08:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1044",
+    "customer_id": "C-145",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-30T20:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1045",
+    "customer_id": "C-037",
+    "sku": "SKU-PLUG-29",
+    "price": 29.0,
+    "order_date": "2026-10-20T13:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1046",
+    "customer_id": "C-019",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-22T09:05:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1025",
+    "customer_id": "C-114",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-28T21:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1048",
+    "customer_id": "C-115",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-02T13:39:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1005",
+    "customer_id": "C-112",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-21T21:57:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1050",
+    "customer_id": "C-058",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-24T15:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1051",
+    "customer_id": "C-127",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-06T13:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1052",
+    "customer_id": "C-125",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-29T17:14:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1053",
+    "customer_id": "C-138",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-28T08:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1054",
+    "customer_id": "C-069",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-23T15:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1055",
+    "customer_id": "C-144",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-06T19:44:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1006",
+    "customer_id": "C-085",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-05T08:44:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1057",
+    "customer_id": "C-143",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-27T20:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1058",
+    "customer_id": "C-077",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-17T16:35:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1059",
+    "customer_id": "C-111",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-24T08:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1060",
+    "customer_id": "C-101",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-10T11:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1061",
+    "customer_id": "C-136",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-29T19:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1062",
+    "customer_id": "C-046",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-10-22T11:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1063",
+    "customer_id": "C-043",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-25T12:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1064",
+    "customer_id": "C-126",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-03T18:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1065",
+    "customer_id": "C-100",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-01T20:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1066",
+    "customer_id": "C-124",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-09T17:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1067",
+    "customer_id": "C-095",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-02T19:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1068",
+    "customer_id": "C-150",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-17T14:05:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1069",
+    "customer_id": "C-118",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-30T11:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1070",
+    "customer_id": "C-141",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-09T14:58:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1071",
+    "customer_id": "C-140",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-05T13:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1072",
+    "customer_id": "C-083",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-03T19:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1073",
+    "customer_id": "C-019",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-04T18:51:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1074",
+    "customer_id": "C-145",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-31T12:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1075",
+    "customer_id": "C-083",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-08T10:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1076",
+    "customer_id": "C-137",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-24T13:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1013",
+    "customer_id": "C-049",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-03T10:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1078",
+    "customer_id": "C-129",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-15T21:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1079",
+    "customer_id": "C-129",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-02T20:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1080",
+    "customer_id": "C-063",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-11T18:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1081",
+    "customer_id": "C-006",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-23T17:39:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1082",
+    "customer_id": "C-088",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-20T08:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1083",
+    "customer_id": "C-093",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-29T21:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1084",
+    "customer_id": "C-045",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-15T19:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1085",
+    "customer_id": "C-116",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-24T12:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1086",
+    "customer_id": "C-027",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-30T16:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1087",
+    "customer_id": "C-061",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-23T13:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1088",
+    "customer_id": "C-146",
+    "sku": "SKU-SPKR-249",
+    "price": 249.0,
+    "order_date": "2026-10-27T16:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1089",
+    "customer_id": "C-126",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-25T21:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1090",
+    "customer_id": "C-120",
+    "sku": "SKU-SPKR-249",
+    "price": 249.0,
+    "order_date": "2026-10-11T19:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1091",
+    "customer_id": "C-035",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-14T11:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1092",
+    "customer_id": "C-142",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-04T19:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1093",
+    "customer_id": "C-115",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-26T12:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1094",
+    "customer_id": "C-056",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-28T09:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1095",
+    "customer_id": "C-042",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-10T18:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1096",
+    "customer_id": "C-025",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-11T19:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1097",
+    "customer_id": "C-104",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-10-10T19:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1098",
+    "customer_id": "C-076",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-02T18:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1099",
+    "customer_id": "C-105",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-16T08:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1100",
+    "customer_id": "C-078",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-22T18:08:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1101",
+    "customer_id": "C-086",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-15T14:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1102",
+    "customer_id": "C-001",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-30T11:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1103",
+    "customer_id": "C-133",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-13T17:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1104",
+    "customer_id": "C-090",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-04T09:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1105",
+    "customer_id": "C-047",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-19T20:39:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1106",
+    "customer_id": "C-021",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-01T20:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1107",
+    "customer_id": "C-025",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-05T14:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1108",
+    "customer_id": "C-135",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-13T17:44:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1109",
+    "customer_id": "C-078",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-10-08T14:05:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1110",
+    "customer_id": "C-131",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-13T13:40:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1111",
+    "customer_id": "C-065",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-19T08:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1112",
+    "customer_id": "C-019",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-29T17:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1113",
+    "customer_id": "C-075",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-15T14:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1114",
+    "customer_id": "C-020",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-19T18:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1115",
+    "customer_id": "C-095",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-06T12:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1010",
+    "customer_id": "C-095",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-02T17:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1117",
+    "customer_id": "C-067",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-18T17:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1118",
+    "customer_id": "C-071",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-19T10:58:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1119",
+    "customer_id": "C-063",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-19T10:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1120",
+    "customer_id": "C-073",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-12T21:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1007",
+    "customer_id": "C-033",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-09-25T11:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1122",
+    "customer_id": "C-036",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-24T08:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1123",
+    "customer_id": "C-004",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-08T19:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1124",
+    "customer_id": "C-128",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-29T13:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1125",
+    "customer_id": "C-127",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-30T08:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1126",
+    "customer_id": "C-028",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-17T17:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1127",
+    "customer_id": "C-133",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-01T21:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1128",
+    "customer_id": "C-009",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-27T16:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1129",
+    "customer_id": "C-098",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-11T11:39:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1130",
+    "customer_id": "C-037",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-30T10:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1016",
+    "customer_id": "C-045",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-22T18:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1132",
+    "customer_id": "C-150",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-28T16:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1133",
+    "customer_id": "C-147",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-10T12:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1134",
+    "customer_id": "C-117",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-14T10:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1135",
+    "customer_id": "C-116",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-19T10:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1136",
+    "customer_id": "C-031",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-16T18:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1008",
+    "customer_id": "C-064",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-16T11:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1011",
+    "customer_id": "C-080",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-26T16:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1139",
+    "customer_id": "C-013",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-10T19:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1012",
+    "customer_id": "C-087",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-25T18:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1141",
+    "customer_id": "C-144",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-10T12:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1142",
+    "customer_id": "C-111",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-03T18:17:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1143",
+    "customer_id": "C-085",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-13T10:44:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1144",
+    "customer_id": "C-046",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-14T17:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1145",
+    "customer_id": "C-031",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-06T12:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1146",
+    "customer_id": "C-129",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-11-01T18:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1147",
+    "customer_id": "C-125",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-15T17:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1148",
+    "customer_id": "C-112",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-23T11:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1149",
+    "customer_id": "C-056",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-22T19:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1150",
+    "customer_id": "C-017",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-12T09:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1151",
+    "customer_id": "C-005",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-01T11:04:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1152",
+    "customer_id": "C-025",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-27T12:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1153",
+    "customer_id": "C-026",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-07T19:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1154",
+    "customer_id": "C-095",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-08T21:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1155",
+    "customer_id": "C-050",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-06T19:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1156",
+    "customer_id": "C-066",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-10-25T10:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1157",
+    "customer_id": "C-105",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-06T19:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1158",
+    "customer_id": "C-005",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-26T18:35:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1159",
+    "customer_id": "C-069",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-10T16:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1160",
+    "customer_id": "C-055",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-31T11:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1161",
+    "customer_id": "C-055",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-18T19:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1162",
+    "customer_id": "C-149",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-18T13:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1163",
+    "customer_id": "C-083",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-11-01T08:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1164",
+    "customer_id": "C-069",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-30T18:58:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1165",
+    "customer_id": "C-077",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-15T19:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1166",
+    "customer_id": "C-016",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-28T17:23:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1167",
+    "customer_id": "C-052",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-29T14:49:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1168",
+    "customer_id": "C-057",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-26T09:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1169",
+    "customer_id": "C-068",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-18T17:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1170",
+    "customer_id": "C-090",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-18T08:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1171",
+    "customer_id": "C-024",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-26T20:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1014",
+    "customer_id": "C-077",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-16T09:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1173",
+    "customer_id": "C-135",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-11-01T11:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1174",
+    "customer_id": "C-092",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-04T09:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1175",
+    "customer_id": "C-020",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-12T16:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1176",
+    "customer_id": "C-126",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-30T16:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1177",
+    "customer_id": "C-149",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-10T10:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1178",
+    "customer_id": "C-077",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-06T20:40:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1179",
+    "customer_id": "C-094",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-31T08:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1180",
+    "customer_id": "C-033",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-10-23T19:31:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1181",
+    "customer_id": "C-144",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-28T16:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1182",
+    "customer_id": "C-031",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-24T16:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1183",
+    "customer_id": "C-027",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-08T18:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1184",
+    "customer_id": "C-070",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-31T10:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1185",
+    "customer_id": "C-055",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-11-01T08:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1186",
+    "customer_id": "C-065",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-03T18:34:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1187",
+    "customer_id": "C-149",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-14T14:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1188",
+    "customer_id": "C-008",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-23T17:49:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1189",
+    "customer_id": "C-084",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-09T09:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1190",
+    "customer_id": "C-028",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-05T18:05:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1191",
+    "customer_id": "C-148",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-30T08:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1192",
+    "customer_id": "C-007",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-18T10:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1193",
+    "customer_id": "C-143",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-09T09:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1194",
+    "customer_id": "C-097",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-09T12:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1195",
+    "customer_id": "C-003",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-02T17:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1196",
+    "customer_id": "C-014",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-23T08:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1197",
+    "customer_id": "C-019",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-16T08:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1198",
+    "customer_id": "C-120",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-20T15:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1199",
+    "customer_id": "C-103",
+    "sku": "SKU-PLUG-29",
+    "price": 29.0,
+    "order_date": "2026-10-18T21:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1200",
+    "customer_id": "C-117",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-10T13:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1201",
+    "customer_id": "C-120",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-12T11:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1202",
+    "customer_id": "C-143",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-05T08:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1203",
+    "customer_id": "C-034",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-26T08:51:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1204",
+    "customer_id": "C-024",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-27T09:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1205",
+    "customer_id": "C-141",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-10T21:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1206",
+    "customer_id": "C-105",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-21T18:51:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1207",
+    "customer_id": "C-001",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-24T10:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1208",
+    "customer_id": "C-045",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-23T12:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1209",
+    "customer_id": "C-129",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-16T19:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1210",
+    "customer_id": "C-036",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-13T17:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1211",
+    "customer_id": "C-012",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-15T13:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1212",
+    "customer_id": "C-057",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-12T10:17:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1213",
+    "customer_id": "C-021",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-05T08:04:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1214",
+    "customer_id": "C-084",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-18T21:57:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1215",
+    "customer_id": "C-109",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-21T12:08:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1216",
+    "customer_id": "C-048",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-31T13:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1217",
+    "customer_id": "C-082",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-08T21:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1218",
+    "customer_id": "C-073",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-20T08:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1219",
+    "customer_id": "C-114",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-27T10:34:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1220",
+    "customer_id": "C-030",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-13T17:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1221",
+    "customer_id": "C-025",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-25T17:39:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1222",
+    "customer_id": "C-044",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-11T08:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1223",
+    "customer_id": "C-127",
+    "sku": "SKU-PBNK-69",
+    "price": 69.0,
+    "order_date": "2026-10-26T16:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1224",
+    "customer_id": "C-132",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-10T10:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1225",
+    "customer_id": "C-030",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-07T08:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1226",
+    "customer_id": "C-037",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-18T14:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1227",
+    "customer_id": "C-132",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-16T16:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1228",
+    "customer_id": "C-087",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-15T14:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1229",
+    "customer_id": "C-023",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-22T14:57:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1230",
+    "customer_id": "C-058",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-25T10:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1231",
+    "customer_id": "C-137",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-06T14:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1232",
+    "customer_id": "C-092",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-26T17:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1233",
+    "customer_id": "C-067",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-20T12:49:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1234",
+    "customer_id": "C-090",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-24T09:58:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1235",
+    "customer_id": "C-136",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-11-01T13:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1029",
+    "customer_id": "C-100",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-27T14:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1237",
+    "customer_id": "C-136",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-07T08:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1238",
+    "customer_id": "C-052",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-23T16:08:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1239",
+    "customer_id": "C-017",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-17T11:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1240",
+    "customer_id": "C-102",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-07T15:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1241",
+    "customer_id": "C-001",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-23T14:23:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1242",
+    "customer_id": "C-104",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-07T18:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1017",
+    "customer_id": "C-025",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-19T09:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1244",
+    "customer_id": "C-050",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-07T20:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1245",
+    "customer_id": "C-049",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-07T20:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1246",
+    "customer_id": "C-150",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-15T13:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1247",
+    "customer_id": "C-142",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-31T20:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1248",
+    "customer_id": "C-025",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-06T09:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1249",
+    "customer_id": "C-082",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-03T15:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1250",
+    "customer_id": "C-055",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-24T19:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1251",
+    "customer_id": "C-130",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-10T08:01:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1252",
+    "customer_id": "C-001",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-11T13:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1253",
+    "customer_id": "C-139",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-12T18:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1254",
+    "customer_id": "C-098",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-14T09:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1255",
+    "customer_id": "C-116",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-25T12:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1256",
+    "customer_id": "C-098",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-31T12:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1257",
+    "customer_id": "C-030",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-22T21:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1258",
+    "customer_id": "C-135",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-18T10:14:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1259",
+    "customer_id": "C-061",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-02T21:14:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1260",
+    "customer_id": "C-039",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-21T18:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1261",
+    "customer_id": "C-124",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-11-01T14:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1262",
+    "customer_id": "C-095",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-09T14:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1263",
+    "customer_id": "C-082",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-10T15:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1264",
+    "customer_id": "C-104",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-13T09:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1265",
+    "customer_id": "C-087",
+    "sku": "SKU-PLUG-29",
+    "price": 29.0,
+    "order_date": "2026-10-11T14:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1266",
+    "customer_id": "C-033",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-05T10:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1267",
+    "customer_id": "C-136",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-22T18:29:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1268",
+    "customer_id": "C-004",
+    "sku": "SKU-CAM-159",
+    "price": 159.0,
+    "order_date": "2026-10-20T19:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1269",
+    "customer_id": "C-050",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-10-27T11:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1270",
+    "customer_id": "C-124",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-01T14:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1271",
+    "customer_id": "C-004",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-11T17:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1272",
+    "customer_id": "C-100",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-29T16:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1273",
+    "customer_id": "C-113",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-02T08:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1274",
+    "customer_id": "C-026",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-13T12:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1275",
+    "customer_id": "C-119",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-17T15:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1276",
+    "customer_id": "C-022",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-27T16:18:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1277",
+    "customer_id": "C-060",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-05T17:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1278",
+    "customer_id": "C-037",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-13T16:01:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1279",
+    "customer_id": "C-103",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-11-01T14:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1280",
+    "customer_id": "C-097",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-16T13:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1281",
+    "customer_id": "C-080",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-09T09:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1282",
+    "customer_id": "C-046",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-20T20:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1283",
+    "customer_id": "C-149",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-19T13:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1284",
+    "customer_id": "C-053",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-11-01T13:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1285",
+    "customer_id": "C-043",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-19T19:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1286",
+    "customer_id": "C-128",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-09T09:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1287",
+    "customer_id": "C-116",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-09T12:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1288",
+    "customer_id": "C-126",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-24T09:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1289",
+    "customer_id": "C-100",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-04T09:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1290",
+    "customer_id": "C-047",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-19T11:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1291",
+    "customer_id": "C-104",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-13T12:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1292",
+    "customer_id": "C-023",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-27T16:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1293",
+    "customer_id": "C-040",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-11T17:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1294",
+    "customer_id": "C-113",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-25T15:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1295",
+    "customer_id": "C-002",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-19T15:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1296",
+    "customer_id": "C-008",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-28T13:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1297",
+    "customer_id": "C-038",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-13T09:23:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1298",
+    "customer_id": "C-097",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-21T08:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1299",
+    "customer_id": "C-036",
+    "sku": "SKU-CHRG-39",
+    "price": 39.0,
+    "order_date": "2026-10-17T21:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1300",
+    "customer_id": "C-116",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-01T17:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1301",
+    "customer_id": "C-002",
+    "sku": "SKU-TAG-29",
+    "price": 29.0,
+    "order_date": "2026-10-07T20:22:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1302",
+    "customer_id": "C-031",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-13T16:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1303",
+    "customer_id": "C-018",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-04T19:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1304",
+    "customer_id": "C-034",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-22T15:31:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1305",
+    "customer_id": "C-002",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-28T15:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1306",
+    "customer_id": "C-013",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-08T15:34:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1307",
+    "customer_id": "C-113",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-12T17:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1308",
+    "customer_id": "C-113",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-07T14:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1309",
+    "customer_id": "C-069",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-25T12:34:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1310",
+    "customer_id": "C-084",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-05T12:34:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1311",
+    "customer_id": "C-145",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-30T17:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1312",
+    "customer_id": "C-107",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-10T10:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1313",
+    "customer_id": "C-031",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-30T10:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1314",
+    "customer_id": "C-057",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-11-01T10:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1315",
+    "customer_id": "C-103",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-31T09:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1316",
+    "customer_id": "C-103",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-26T09:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1317",
+    "customer_id": "C-091",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-09T14:04:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1318",
+    "customer_id": "C-042",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-15T19:51:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1319",
+    "customer_id": "C-061",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-06T14:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1320",
+    "customer_id": "C-108",
+    "sku": "SKU-LOCK-199",
+    "price": 199.0,
+    "order_date": "2026-10-07T18:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1321",
+    "customer_id": "C-058",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-14T21:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1322",
+    "customer_id": "C-014",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-28T15:04:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1009",
+    "customer_id": "C-070",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-27T12:33:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1324",
+    "customer_id": "C-026",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-27T19:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1325",
+    "customer_id": "C-002",
+    "sku": "SKU-MOUS-39",
+    "price": 39.0,
+    "order_date": "2026-10-23T08:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1326",
+    "customer_id": "C-059",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-25T12:02:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1327",
+    "customer_id": "C-106",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-07T18:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1328",
+    "customer_id": "C-115",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-26T15:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1329",
+    "customer_id": "C-091",
+    "sku": "SKU-DRON-1499",
+    "price": 1499.0,
+    "order_date": "2026-10-11T16:17:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1330",
+    "customer_id": "C-012",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-19T21:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1331",
+    "customer_id": "C-009",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-07T14:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1332",
+    "customer_id": "C-042",
+    "sku": "SKU-WATCH-299",
+    "price": 299.0,
+    "order_date": "2026-10-15T17:59:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1333",
+    "customer_id": "C-054",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-10-23T18:31:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1334",
+    "customer_id": "C-042",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-23T09:28:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1335",
+    "customer_id": "C-044",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-06T13:24:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1336",
+    "customer_id": "C-106",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-20T12:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1337",
+    "customer_id": "C-077",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-11T08:40:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1338",
+    "customer_id": "C-089",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-02T08:06:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1339",
+    "customer_id": "C-135",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-22T09:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1340",
+    "customer_id": "C-120",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-26T21:01:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1341",
+    "customer_id": "C-094",
+    "sku": "SKU-MON-279",
+    "price": 279.0,
+    "order_date": "2026-10-31T21:57:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1342",
+    "customer_id": "C-030",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-11T17:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1343",
+    "customer_id": "C-136",
+    "sku": "SKU-TRACK-79",
+    "price": 79.0,
+    "order_date": "2026-10-23T11:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1344",
+    "customer_id": "C-060",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-23T19:05:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1345",
+    "customer_id": "C-135",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-14T20:38:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1346",
+    "customer_id": "C-064",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-23T21:27:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1347",
+    "customer_id": "C-081",
+    "sku": "SKU-EARB-129",
+    "price": 129.0,
+    "order_date": "2026-10-16T11:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1348",
+    "customer_id": "C-118",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-27T12:35:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1349",
+    "customer_id": "C-106",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-11T16:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1350",
+    "customer_id": "C-126",
+    "sku": "SKU-HEAD-649",
+    "price": 649.0,
+    "order_date": "2026-10-16T17:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1351",
+    "customer_id": "C-095",
+    "sku": "SKU-PROJ-1199",
+    "price": 1199.0,
+    "order_date": "2026-10-17T11:37:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1352",
+    "customer_id": "C-014",
+    "sku": "SKU-PLUG-29",
+    "price": 29.0,
+    "order_date": "2026-10-13T11:55:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1353",
+    "customer_id": "C-100",
+    "sku": "SKU-SSD-129",
+    "price": 129.0,
+    "order_date": "2026-10-02T19:58:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1354",
+    "customer_id": "C-121",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-19T13:15:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1355",
+    "customer_id": "C-115",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-07T17:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1356",
+    "customer_id": "C-034",
+    "sku": "SKU-THERM-129",
+    "price": 129.0,
+    "order_date": "2026-10-23T15:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1357",
+    "customer_id": "C-046",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-16T16:14:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1358",
+    "customer_id": "C-025",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-18T13:49:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1359",
+    "customer_id": "C-001",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-06T13:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1360",
+    "customer_id": "C-037",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-26T10:48:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1361",
+    "customer_id": "C-134",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-10T14:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1362",
+    "customer_id": "C-092",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-30T13:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1363",
+    "customer_id": "C-147",
+    "sku": "SKU-SPKR-89",
+    "price": 89.0,
+    "order_date": "2026-10-09T16:12:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1364",
+    "customer_id": "C-066",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-08T08:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1365",
+    "customer_id": "C-058",
+    "sku": "SKU-HUB-35",
+    "price": 35.0,
+    "order_date": "2026-10-19T10:56:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1366",
+    "customer_id": "C-072",
+    "sku": "SKU-WATCH-449",
+    "price": 449.0,
+    "order_date": "2026-10-07T12:07:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1367",
+    "customer_id": "C-113",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-13T21:16:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1368",
+    "customer_id": "C-084",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-08T08:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1369",
+    "customer_id": "C-106",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-12T18:00:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1370",
+    "customer_id": "C-112",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-07T09:11:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1371",
+    "customer_id": "C-138",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-04T11:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1015",
+    "customer_id": "C-139",
+    "sku": "SKU-CAM-79",
+    "price": 79.0,
+    "order_date": "2026-10-24T14:54:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1373",
+    "customer_id": "C-093",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-29T18:44:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1374",
+    "customer_id": "C-116",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-28T10:26:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1375",
+    "customer_id": "C-054",
+    "sku": "SKU-CHRG-29",
+    "price": 29.0,
+    "order_date": "2026-10-24T09:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1376",
+    "customer_id": "C-082",
+    "sku": "SKU-CTRL-69",
+    "price": 69.0,
+    "order_date": "2026-10-30T16:21:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1377",
+    "customer_id": "C-055",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-23T18:42:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1378",
+    "customer_id": "C-125",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-03T17:40:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1379",
+    "customer_id": "C-080",
+    "sku": "SKU-READ-139",
+    "price": 139.0,
+    "order_date": "2026-10-29T14:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1380",
+    "customer_id": "C-111",
+    "sku": "SKU-KEYB-99",
+    "price": 99.0,
+    "order_date": "2026-10-14T16:03:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1381",
+    "customer_id": "C-065",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-10-17T18:45:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1382",
+    "customer_id": "C-138",
+    "sku": "SKU-BULB-19",
+    "price": 19.0,
+    "order_date": "2026-10-05T10:47:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1027",
+    "customer_id": "C-148",
+    "sku": "SKU-CAM-899",
+    "price": 899.0,
+    "order_date": "2026-10-10T11:28:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1384",
+    "customer_id": "C-147",
+    "sku": "SKU-VAC-449",
+    "price": 449.0,
+    "order_date": "2026-10-07T19:25:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1385",
+    "customer_id": "C-139",
+    "sku": "SKU-CAM-189",
+    "price": 189.0,
+    "order_date": "2026-11-01T18:31:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1386",
+    "customer_id": "C-014",
+    "sku": "SKU-ROUT-179",
+    "price": 179.0,
+    "order_date": "2026-10-12T13:43:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1387",
+    "customer_id": "C-057",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-03T08:36:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1388",
+    "customer_id": "C-116",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-25T19:09:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1389",
+    "customer_id": "C-057",
+    "sku": "SKU-DRON-349",
+    "price": 349.0,
+    "order_date": "2026-10-31T17:19:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1390",
+    "customer_id": "C-075",
+    "sku": "SKU-PLUG-45",
+    "price": 45.0,
+    "order_date": "2026-10-04T11:52:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1391",
+    "customer_id": "C-131",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-23T19:10:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1392",
+    "customer_id": "C-092",
+    "sku": "SKU-WEBC-119",
+    "price": 119.0,
+    "order_date": "2026-10-09T09:30:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1393",
+    "customer_id": "C-150",
+    "sku": "SKU-VR-399",
+    "price": 399.0,
+    "order_date": "2026-10-23T10:13:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1394",
+    "customer_id": "C-096",
+    "sku": "SKU-TRPD-59",
+    "price": 59.0,
+    "order_date": "2026-10-17T19:32:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1395",
+    "customer_id": "C-033",
+    "sku": "SKU-CBL-19",
+    "price": 19.0,
+    "order_date": "2026-10-01T20:41:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1396",
+    "customer_id": "C-043",
+    "sku": "SKU-CAM-329",
+    "price": 329.0,
+    "order_date": "2026-10-26T21:46:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1397",
+    "customer_id": "C-012",
+    "sku": "SKU-TAB-499",
+    "price": 499.0,
+    "order_date": "2026-10-11T15:35:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1398",
+    "customer_id": "C-113",
+    "sku": "SKU-PBNK-49",
+    "price": 49.0,
+    "order_date": "2026-10-27T17:53:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1399",
+    "customer_id": "C-104",
+    "sku": "SKU-STAND-24",
+    "price": 24.0,
+    "order_date": "2026-10-10T20:50:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  },
+  {
+    "order_id": "O-1400",
+    "customer_id": "C-059",
+    "sku": "SKU-PLUG-29",
+    "price": 29.0,
+    "order_date": "2026-10-07T17:20:00Z",
+    "status": "FULFILLED",
+    "fulfillment_region": "US"
+  }
+]

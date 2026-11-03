@@ -1,0 +1,322 @@
+[
+  {
+    "sku": "SKU-HEAD-649",
+    "title": "Noise Cancelling Headphones Pro",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 649.0,
+    "listing_claims": ["40 hours battery life", "Premium carry case included", "Built to survive travel"]
+  },
+  {
+    "sku": "SKU-PLUG-45",
+    "title": "Smart Plug Mini",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 45.0,
+    "listing_claims": ["Works with all smart homes", "Simple setup in under 3 minutes"]
+  },
+  {
+    "sku": "SKU-WATCH-299",
+    "title": "Fitness Watch Elite",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 299.0,
+    "listing_claims": ["7-day battery life", "Water resistant up to 50m"]
+  },
+  {
+    "sku": "SKU-EARB-129",
+    "title": "Wireless Earbuds Air",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 129.0,
+    "listing_claims": ["Up to 60 hours battery life", "Sweat resistant IPX4"]
+  },
+  {
+    "sku": "SKU-SPKR-89",
+    "title": "Portable Bluetooth Speaker",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 89.0,
+    "listing_claims": ["Waterproof IP67", "360 degree sound"]
+  },
+  {
+    "sku": "SKU-SPKR-249",
+    "title": "Smart Speaker Hub",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 249.0,
+    "listing_claims": ["Works with all major voice assistants"]
+  },
+  {
+    "sku": "SKU-BULB-19",
+    "title": "Smart Bulb Starter Pack",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 19.0,
+    "listing_claims": ["Lasts 25 years", "Works with any voice assistant"]
+  },
+  {
+    "sku": "SKU-PLUG-29",
+    "title": "Smart Plug Dual Outlet",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 29.0,
+    "listing_claims": ["Energy monitoring", "Works with Alexa and Google"]
+  },
+  {
+    "sku": "SKU-TRACK-79",
+    "title": "Fitness Tracker Slim",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 79.0,
+    "listing_claims": ["Heart rate and sleep tracking", "5 day battery life"]
+  },
+  {
+    "sku": "SKU-WATCH-449",
+    "title": "Smartwatch Pro GPS",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 449.0,
+    "listing_claims": ["Built-in GPS", "Up to 14 days battery life"]
+  },
+  {
+    "sku": "SKU-CAM-329",
+    "title": "4K Action Camera",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 329.0,
+    "listing_claims": ["Waterproof to 10m", "Shoots 4K at 60fps"]
+  },
+  {
+    "sku": "SKU-CAM-189",
+    "title": "Dash Cam Front and Rear",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 189.0,
+    "listing_claims": ["Night vision", "Loop recording"]
+  },
+  {
+    "sku": "SKU-CAM-159",
+    "title": "Doorbell Camera Wi-Fi",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 159.0,
+    "listing_claims": ["Two-way audio", "Motion alerts"]
+  },
+  {
+    "sku": "SKU-CAM-79",
+    "title": "Indoor Security Camera",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 79.0,
+    "listing_claims": ["Pan and tilt", "Local storage"]
+  },
+  {
+    "sku": "SKU-CAM-899",
+    "title": "Mirrorless Camera Kit",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 899.0,
+    "listing_claims": ["24MP sensor", "Includes 18-55mm lens"]
+  },
+  {
+    "sku": "SKU-DRON-1499",
+    "title": "Ultra Drone X",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 1499.0,
+    "listing_claims": ["45 minute flight time", "Obstacle avoidance"]
+  },
+  {
+    "sku": "SKU-DRON-349",
+    "title": "Mini Drone Explorer",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 349.0,
+    "listing_claims": ["Foldable design", "15 minute flight time"]
+  },
+  {
+    "sku": "SKU-TAB-499",
+    "title": "Tablet 11 inch",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 499.0,
+    "listing_claims": ["All-day battery", "Stylus support"]
+  },
+  {
+    "sku": "SKU-READ-139",
+    "title": "E-Reader Glow",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 139.0,
+    "listing_claims": ["Front light", "Weeks of battery life"]
+  },
+  {
+    "sku": "SKU-PBNK-49",
+    "title": "Power Bank 10K",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 49.0,
+    "listing_claims": ["10,000 mAh", "Dual USB output"]
+  },
+  {
+    "sku": "SKU-PBNK-69",
+    "title": "PowerCore 30K",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 69.0,
+    "listing_claims": ["30,000 mAh of usable power", "Charges in 90 minutes"]
+  },
+  {
+    "sku": "SKU-CHRG-29",
+    "title": "Wireless Charging Pad",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 29.0,
+    "listing_claims": ["Fast wireless charging", "Non-slip surface"]
+  },
+  {
+    "sku": "SKU-CHRG-39",
+    "title": "Fast Charger 65W",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 39.0,
+    "listing_claims": ["GaN technology", "Charges laptop and phone"]
+  },
+  {
+    "sku": "SKU-CBL-19",
+    "title": "USB-C Braided Cable",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 19.0,
+    "listing_claims": ["Tangle-free", "2 meter length"]
+  },
+  {
+    "sku": "SKU-KEYB-99",
+    "title": "Wireless Keyboard Slim",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 99.0,
+    "listing_claims": ["Quiet keys", "Multi-device pairing"]
+  },
+  {
+    "sku": "SKU-MOUS-39",
+    "title": "Wireless Mouse Quiet",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 39.0,
+    "listing_claims": ["Silent clicks", "Rechargeable battery"]
+  },
+  {
+    "sku": "SKU-WEBC-119",
+    "title": "Webcam 1080p",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 119.0,
+    "listing_claims": ["Auto light correction", "Built-in dual mics"]
+  },
+  {
+    "sku": "SKU-ROUT-179",
+    "title": "Mesh Wi-Fi Router",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 179.0,
+    "listing_claims": ["Covers 3,000 sq ft", "Wi-Fi 6"]
+  },
+  {
+    "sku": "SKU-SSD-129",
+    "title": "Portable SSD 1TB",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 129.0,
+    "listing_claims": ["1050 MB/s read speed", "Shock resistant"]
+  },
+  {
+    "sku": "SKU-MON-279",
+    "title": "27 inch Monitor 1440p",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 279.0,
+    "listing_claims": ["144Hz refresh rate", "Built-in speakers"]
+  },
+  {
+    "sku": "SKU-VR-399",
+    "title": "VR Headset Play",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 399.0,
+    "listing_claims": ["Standalone, no PC needed", "Lightweight design"]
+  },
+  {
+    "sku": "SKU-CTRL-69",
+    "title": "Game Controller Pro",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 69.0,
+    "listing_claims": ["Hall effect joysticks", "30 hours battery life"]
+  },
+  {
+    "sku": "SKU-VAC-449",
+    "title": "Robot Vacuum Mapper",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 449.0,
+    "listing_claims": ["Room mapping", "Self-emptying base"]
+  },
+  {
+    "sku": "SKU-THERM-129",
+    "title": "Smart Thermostat",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 129.0,
+    "listing_claims": ["Learns your schedule", "Energy savings reports"]
+  },
+  {
+    "sku": "SKU-LOCK-199",
+    "title": "Smart Door Lock",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 199.0,
+    "listing_claims": ["Keyless entry", "Fits most standard doors"]
+  },
+  {
+    "sku": "SKU-PROJ-1199",
+    "title": "Home Projector 4K",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 1199.0,
+    "listing_claims": ["Built-in speakers", "Up to 150 inch image"]
+  },
+  {
+    "sku": "SKU-HUB-35",
+    "title": "USB-C Hub 7-in-1",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 35.0,
+    "listing_claims": ["HDMI 4K output", "100W pass-through charging"]
+  },
+  {
+    "sku": "SKU-STAND-24",
+    "title": "Laptop Stand Aluminum",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 24.0,
+    "listing_claims": ["Adjustable height", "Fits up to 17 inch"]
+  },
+  {
+    "sku": "SKU-TRPD-59",
+    "title": "Travel Tripod",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 59.0,
+    "listing_claims": ["Carry bag included", "Phone and camera mount"]
+  },
+  {
+    "sku": "SKU-TAG-29",
+    "title": "GPS Luggage Tag",
+    "category": "GADGETS",
+    "market": "US",
+    "price": 29.0,
+    "listing_claims": ["Tracks up to 200 feet", "Replaceable battery"]
+  }
+]
