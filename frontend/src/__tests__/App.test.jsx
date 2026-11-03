@@ -367,3 +367,60 @@ describe("switching cases", () => {
     expect(screen.queryByText("Generating recommendation...")).not.toBeInTheDocument();
   });
 });
+
+describe("trace runs", () => {
+  it("groups a repeated recommendation into a second run without merging the first", async () => {
+    const user = userEvent.setup();
+    const firstRun = [
+      event("case_loaded", "Case loaded", {}, "2026-11-02T10:00:00+00:00"),
+      event("validation_passed", "Proposal passed validation; awaiting human approval"),
+    ];
+    const secondRun = [
+      ...firstRun,
+      event("case_loaded", "Case loaded", {}, "2026-11-02T10:05:00+00:00"),
+      event("validation_passed", "Proposal passed validation; awaiting human approval"),
+    ];
+    // The backend returns the full history on every request, so the second response contains both runs.
+    let trace = [];
+    installFetch(
+      baseRoutes({
+        "GET /api/cases/C-1001/trace": () => ok(trace),
+        "POST /api/cases/C-1001/propose": () => ok(ESCALATE_RUN),
+      }),
+    );
+    render(<App />);
+    await openCase(user, "C-1001");
+    await screen.findByRole("button", { name: "Generate recommendation" });
+
+    trace = firstRun;
+    await user.click(screen.getByRole("button", { name: "Generate recommendation" }));
+    expect(await screen.findByRole("region", { name: "Run 1" })).toBeInTheDocument();
+
+    trace = secondRun;
+    await user.click(screen.getByRole("button", { name: "Generate recommendation" }));
+
+    const run1 = await screen.findByRole("region", { name: "Run 1" });
+    const run2 = await screen.findByRole("region", { name: "Run 2" });
+    expect(within(run1).getAllByText("Case loaded")).toHaveLength(1);
+    expect(within(run2).getAllByText("Case loaded")).toHaveLength(1);
+    expect(within(run2).getByRole("heading", { name: /Run 2/ })).toBeInTheDocument();
+  });
+
+  it("shows events before any case_loaded under Earlier activity, unnumbered and in order", async () => {
+    const user = userEvent.setup();
+    installFetch(
+      baseRoutes({
+        "GET /api/cases/C-1001/trace": () =>
+          ok([event("provider_error", "Provider failed", { error: "boom" }), event("case_loaded", "Case loaded")]),
+      }),
+    );
+    render(<App />);
+    await openCase(user, "C-1001");
+
+    const earlier = await screen.findByRole("region", { name: "Earlier activity" });
+    expect(within(earlier).getByText("Provider failed")).toBeInTheDocument();
+    expect(within(earlier).queryByText("Case loaded")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Run 1" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Run 0" })).not.toBeInTheDocument();
+  });
+});
