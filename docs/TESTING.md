@@ -26,7 +26,7 @@ $env:PYTHONPATH = "backend"                        # Git Bash: export PYTHONPATH
 python -m pytest tests -q
 ```
 
-**Expected:** all tests pass (49 at the time of writing). A failure here means do not proceed to Levels 2 to 4.
+**Expected:** all tests pass (70 at the time of writing). A failure here means do not proceed to Levels 2 to 4.
 
 What is covered: read tools, write-tool gating, validator rules ($200 threshold, clause citation, goodwill caps),
 policy lookup, the loop (`tests/test_workflow.py`), and the Bedrock provider with a stubbed client
@@ -129,11 +129,37 @@ When you test for the team, note: date, level reached, provider (offline or the 
 pass or fail, and any failures with the exact error text. Put eval and demo-run results in the tracker notes
 for the relevant task (T15, T20, T22).
 
+## 5. Evaluation scorecard (T20)
+
+Runs all 30 cases in `evals/eval_cases.json` through `propose_resolution` and writes a JSON scorecard. Offline by default; no AWS calls.
+
+```powershell
+python evals/run_evals.py                          # offline rule-based provider -> evals/scorecard.json
+python evals/run_evals.py --provider bedrock       # live Bedrock; same env as Level 3 (or --bedrock)
+python evals/run_evals.py --out scratch/card.json  # other output path
+```
+
+The script adds `backend/` to its own import path, so `PYTHONPATH` is not needed for it. Eval traces go to `traces/eval_run.jsonl` (git-ignored, one file per run), never to `mock_actions.jsonl`.
+The exit code is 1 when policy-citation validity is below 100%. Accuracy is reported, not gated.
+
+**Metric definitions**
+
+| Metric | Definition |
+|---|---|
+| Decision accuracy | Cases whose decision surfaced to the human equals `expected_decision`, over all 30 |
+| Policy-citation validity | Cases with a proposal whose cited clause IDs all sit in the case's own policy scope, over cases that produced a proposal. Target 100% |
+| Correct-escalation rate | Expected ESCALATE cases the agent surfaced as ESCALATE |
+| Unnecessary-escalation rate | Expected non-ESCALATE cases the agent surfaced as ESCALATE |
+| False-refund rate | Expected non-REFUND cases where a REFUND was surfaced to the human |
+| Unsafe-remedy cases | Expected ESCALATE, but a REPLACE, REFUND, STORE_CREDIT or GOODWILL_CREDIT was surfaced. Listed by case ID |
+| Avg tool calls per case | Read-tool calls per case (7 with today's pre-fetch design, so constant until a tool-loop agent exists) |
+| Blocked runs | `VALIDATION_FAILED`, `NO_POLICY`, `PROVIDER_ERROR`. Counted as incorrect, excluded from false-refund and unsafe-remedy (no human saw them), reported as `validator_blocked`, `no_policy`, `provider_errors` |
+
+The scorecard JSON holds `meta`, `metrics`, `denominators`, `by_decision` (expected × actual confusion counts), `mismatches` (the cases to look at) and `unsafe_remedy_cases`. It does not hold per-case rows, so the file stays small across runs. For a single case's detail, read its events in `traces/eval_run.jsonl`, which is rewritten on each run. Scoring logic is in `backend/cosmic_resolve/evaluation.py`; tests are in `tests/test_run_evals.py`.
+
 ## Known gaps
 
 - No prompt-injection case exists yet, so injection resistance is untested.
-- `evals/run_evals.py` only checks that expected decisions are valid enum values. It is not a real evaluation (T20).
-- `evals/eval_cases.json` expects REPLACE for $649 and REFUND for $299, which contradicts the $200 escalation rule.
 - API is read-only for now (health, cases, propose, traces); no approval endpoint or real UI yet (T25, T21).
 
 Trace API: `GET /traces?case_id=C-1001&limit=50` and `GET /cases/C-1001/trace` return events oldest first. With the Bedrock provider each run also logs a `model_exchange` event holding the full system prompt, user message and model reply.
