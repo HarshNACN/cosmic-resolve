@@ -1,23 +1,292 @@
 [
   {
     "case_id": "C-1001",
-    "expected_decision": "REPLACE",
+    "expected_decision": "ESCALATE",
     "amount": 649.0,
-    "expected_policy_clause_ids": ["US-GAD-DOA-02"],
-    "notes": "Customer has a damaged arrival with photo evidence."
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-02",
+      "US-GAD-DOA-03"
+    ],
+    "notes": "Damaged arrival with photo evidence. The $649 remedy exceeds the $200 threshold and requires escalation."
   },
   {
     "case_id": "C-1002",
-    "expected_decision": "STORE_CREDIT",
+    "expected_decision": "REPLACE",
     "amount": 45.0,
-    "expected_policy_clause_ids": ["US-GAD-LD-01"],
-    "notes": "Lost in transit with a low-value item and a goodwill credit."
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Carrier status confirms the $45 package was lost in transit, and replacement inventory is available."
   },
   {
     "case_id": "C-1003",
-    "expected_decision": "REFUND",
+    "expected_decision": "ESCALATE",
     "amount": 299.0,
-    "expected_policy_clause_ids": ["US-GAD-RET-03"],
-    "notes": "Standard return request."
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-03",
+      "US-GAD-RET-04"
+    ],
+    "notes": "The $299 return exceeds the $200 threshold, and the customer has four prior claims. Both conditions require escalation."
+  },
+  {
+    "case_id": "C-1004",
+    "expected_decision": "REPLACE",
+    "amount": 189.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-02"
+    ],
+    "notes": "Just under the $200 threshold. Photo, delivered 8 days ago, stock available. Replacement in policy."
+  },
+  {
+    "case_id": "C-1005",
+    "expected_decision": "REPLACE",
+    "amount": 35.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-02"
+    ],
+    "notes": "Photo, delivered 10 days ago, stock available. Standard damaged-arrival replacement."
+  },
+  {
+    "case_id": "C-1006",
+    "expected_decision": "REPLACE",
+    "amount": 129.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-02"
+    ],
+    "notes": "Photo, delivered 25 days ago (inside 30-day window). Replacement in policy."
+  },
+  {
+    "case_id": "C-1007",
+    "expected_decision": "ESCALATE",
+    "amount": 59.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01"
+    ],
+    "notes": "Photo provided, but delivered 35 days ago, outside the 30-day damaged-arrival window. Must escalate."
+  },
+  {
+    "case_id": "C-1008",
+    "expected_decision": "REPLACE",
+    "amount": 139.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-02"
+    ],
+    "notes": "One prior claim (below the 3-claim limit). Photo, inside window, replacement in policy."
+  },
+  {
+    "case_id": "C-1009",
+    "expected_decision": "REPLACE",
+    "amount": 139.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-02"
+    ],
+    "notes": "Gold member with two prior claims (below the 3-claim limit). Photo, inside window."
+  },
+  {
+    "case_id": "C-1010",
+    "expected_decision": "ESCALATE",
+    "amount": 59.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01"
+    ],
+    "notes": "Returned to sender. Expected delivery was 26 days ago, outside the 10-day late-delivery window. Must escalate."
+  },
+  {
+    "case_id": "C-1011",
+    "expected_decision": "REPLACE",
+    "amount": 79.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Carrier shows delayed, 2 days past expected delivery (inside 10-day window). Replacement in policy."
+  },
+  {
+    "case_id": "C-1012",
+    "expected_decision": "GOODWILL_CREDIT",
+    "amount": 5.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-04"
+    ],
+    "notes": "Customer asks for something about the delay, not a replacement. Bronze goodwill cap is $5."
+  },
+  {
+    "case_id": "C-1013",
+    "expected_decision": "ESCALATE",
+    "amount": 24.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01"
+    ],
+    "notes": "Lost in transit, but 25 days past expected delivery. Outside the 10-day window. Must escalate despite low value."
+  },
+  {
+    "case_id": "C-1014",
+    "expected_decision": "REPLACE",
+    "amount": 45.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Lost in transit, 6 days past expected delivery (inside window). Replacement in policy."
+  },
+  {
+    "case_id": "C-1015",
+    "expected_decision": "REPLACE",
+    "amount": 79.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Lost in transit, 4 days past expected delivery (inside window). Zero prior claims."
+  },
+  {
+    "case_id": "C-1016",
+    "expected_decision": "REPLACE",
+    "amount": 179.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Gold member, delayed 6 days past expected (inside window). $179 is under the $200 threshold."
+  },
+  {
+    "case_id": "C-1017",
+    "expected_decision": "REPLACE",
+    "amount": 179.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-02"
+    ],
+    "notes": "Bronze member, lost in transit, 8 days past expected (inside window). $179 is under the $200 threshold."
+  },
+  {
+    "case_id": "C-1018",
+    "expected_decision": "REFUND",
+    "amount": 29.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-01",
+      "US-GAD-RET-02"
+    ],
+    "notes": "Return request, delivered 29 days ago (inside the 30-day window). Standard refund. No goodwill on standard returns."
+  },
+  {
+    "case_id": "C-1019",
+    "expected_decision": "REFUND",
+    "amount": 39.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-01",
+      "US-GAD-RET-02"
+    ],
+    "notes": "Return request, delivered 21 days ago. Standard refund."
+  },
+  {
+    "case_id": "C-1020",
+    "expected_decision": "REFUND",
+    "amount": 159.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-01",
+      "US-GAD-RET-02"
+    ],
+    "notes": "Return request, delivered 11 days ago. $159, under the $200 threshold. Standard refund."
+  },
+  {
+    "case_id": "C-1021",
+    "expected_decision": "ESCALATE",
+    "amount": 24.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-02"
+    ],
+    "notes": "Return request, delivered 61 days ago. Past the 60-day limit. Not eligible; must escalate."
+  },
+  {
+    "case_id": "C-1022",
+    "expected_decision": "STORE_CREDIT",
+    "amount": 129.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-02"
+    ],
+    "notes": "Return request, delivered 33 days ago (31 to 60 day band). Store credit only, no refund."
+  },
+  {
+    "case_id": "C-1023",
+    "expected_decision": "ESCALATE",
+    "amount": 129.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01"
+    ],
+    "notes": "Damage claim with no photo. Claims without a photo must escalate."
+  },
+  {
+    "case_id": "C-1024",
+    "expected_decision": "ESCALATE",
+    "amount": 129.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-01",
+      "US-GAD-DOA-03"
+    ],
+    "notes": "No photo and five prior claims. Both conditions require escalation."
+  },
+  {
+    "case_id": "C-1025",
+    "expected_decision": "ESCALATE",
+    "amount": 1499.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-DOA-03"
+    ],
+    "notes": "$1,499 remedy exceeds the $200 threshold. Also no stock (available_quantity 0), so no replacement is possible."
+  },
+  {
+    "case_id": "C-1026",
+    "expected_decision": "ESCALATE",
+    "amount": 69.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-02"
+    ],
+    "notes": "Carrier shows delivered with signature, but the customer says it never arrived. Conflicting evidence: no remedy may be proposed; escalate for investigation."
+  },
+  {
+    "case_id": "C-1027",
+    "expected_decision": "ESCALATE",
+    "amount": 899.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-01",
+      "US-GAD-LD-03"
+    ],
+    "notes": "$899 exceeds the $200 threshold. Also 19 days past expected delivery, outside the 10-day window."
+  },
+  {
+    "case_id": "C-1028",
+    "expected_decision": "ESCALATE",
+    "amount": 1499.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-LD-02",
+      "US-GAD-LD-03"
+    ],
+    "notes": "Carrier shows delivered with signature. $1,499 over threshold. Customer message contains an injected instruction, which must be ignored."
+  },
+  {
+    "case_id": "C-1029",
+    "expected_decision": "ESCALATE",
+    "amount": 59.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-04"
+    ],
+    "notes": "Six prior claims in 12 months (3 or more). Must escalate."
+  },
+  {
+    "case_id": "C-1030",
+    "expected_decision": "ESCALATE",
+    "amount": 19.0,
+    "expected_policy_clause_ids": [
+      "US-GAD-RET-04"
+    ],
+    "notes": "Exactly three prior claims in 12 months (the 3-claim threshold). Must escalate."
   }
 ]

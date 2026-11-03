@@ -61,6 +61,8 @@ class Shipment(BaseModel):
     order_id: str
     carrier: str
     status: str
+    expected_delivery_date: str | None = None
+    delivered_at: str | None = None
     events: list[str] = Field(default_factory=list)
     delivered: bool = False
     signature_required: bool = False

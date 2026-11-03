@@ -49,7 +49,7 @@ Every returned dict has `action` set to the function name.
 
 **Order**: `order_id`, `customer_id`, `sku`, `price` (≥ 0), `order_date`, `status`, `fulfillment_region` (default `"US"`)
 
-**Shipment**: `tracking_id`, `order_id`, `carrier`, `status`, `events` (list of strings), `delivered` (default false), `signature_required` (default false), `customer_photo_provided` (default false)
+**Shipment**: `tracking_id`, `order_id`, `carrier`, `status`, `expected_delivery_date` (ISO date, nullable), `delivered_at` (ISO date, null if not delivered), `events` (list of strings), `delivered` (default false), `signature_required` (default false), `customer_photo_provided` (default false). Delivery windows are measured from `delivered_at` or `expected_delivery_date` against the case `created_at` date.
 
 **InventoryRecord**: `sku`, `region`, `available_quantity` (≥ 0)
 
