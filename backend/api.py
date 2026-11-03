@@ -15,6 +15,8 @@ from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
 from cosmic_resolve import config
 from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint
 from cosmic_resolve.models import DecisionRequest, DecisionResult
+from cosmic_resolve.voice import store as voice_store
+from cosmic_resolve.voice.routes import register as register_voice_routes
 from cosmic_resolve.workflow import AWAITING_APPROVAL, propose_resolution, recommended_action_for
 
 API_PREFIX = "/api"
@@ -64,6 +66,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(StripApiPrefix)
+register_voice_routes(app)  # local voice demo: /voice/*; every dependency is optional and imported lazily
 
 
 @app.get("/health")
@@ -73,7 +76,9 @@ def health() -> dict[str, str]:
 
 @app.get("/cases")
 def list_cases() -> list[dict]:
-    return _load_json_list("cases.json")
+    # Cases created by a voice call come first, newest on top, so a call's case appears right away.
+    voice_cases = [case.model_dump(mode="json") for case in reversed(voice_store.list_cases())]
+    return voice_cases + _load_json_list("cases.json")
 
 
 @app.get("/cases/{case_id}")

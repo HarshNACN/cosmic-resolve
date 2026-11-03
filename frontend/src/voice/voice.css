@@ -1,0 +1,375 @@
+/* Voice call panel. Kept apart from styles.css so it never conflicts with the workbench styles.
+   The workbench is deliberately free of decorative motion; the animated headset is the one requested exception,
+   so it is slow, low-contrast, confined to this panel, and switched off for prefers-reduced-motion. */
+
+/* ---------- Headset illustration ---------- */
+.headset {
+  flex: none;
+  display: block;
+}
+.hs-bg {
+  fill: var(--brand-soft);
+}
+.hs-ring {
+  fill: none;
+  stroke: var(--brand-line);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-origin: 80px 70px;
+}
+.hs-torso {
+  fill: var(--brand);
+}
+.hs-skin {
+  fill: #f1e3d6;
+}
+.hs-hair {
+  fill: #3a2d4d;
+}
+.hs-face {
+  fill: none;
+  stroke: #5b4a6e;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.hs-band {
+  fill: none;
+  stroke: var(--chrome-800);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.hs-cup {
+  fill: var(--chrome-800);
+}
+.hs-boom {
+  fill: none;
+  stroke: var(--chrome-800);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.hs-mic {
+  fill: var(--chrome-800);
+}
+.hs-figure {
+  transform-origin: 80px 150px;
+}
+.hs-dots circle {
+  fill: var(--brand-line);
+  opacity: 0;
+}
+.hs-bar {
+  fill: var(--brand-line);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: scaleY(0.3);
+  transition: transform 90ms linear;
+}
+.hs-check {
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.hs-check circle {
+  fill: var(--ok);
+}
+.hs-check path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Gentle breathing for the whole figure whenever a call is up. */
+.headset:not([data-state="idle"]):not([data-state="ended"]) .hs-figure {
+  animation: hs-breathe 5s ease-in-out infinite;
+}
+/* Slow ripples while the agent listens to the customer. */
+.headset[data-state="listening"] .hs-ring,
+.headset[data-state="recording"] .hs-ring {
+  animation: hs-ripple 3.6s ease-out infinite;
+}
+.headset[data-state="recording"] .hs-ring {
+  stroke: var(--fail);
+  animation-duration: 2.2s;
+}
+.hs-ring-2 {
+  animation-delay: 1.2s !important;
+}
+.hs-ring-3 {
+  animation-delay: 2.4s !important;
+}
+/* Drifting dots while the agent thinks. */
+.headset[data-state="thinking"] .hs-dots circle,
+.headset[data-state="connecting"] .hs-dots circle {
+  animation: hs-dot 1.6s ease-in-out infinite;
+}
+.hs-dots circle:nth-child(2) {
+  animation-delay: 0.25s !important;
+}
+.hs-dots circle:nth-child(3) {
+  animation-delay: 0.5s !important;
+}
+/* Soft level bars while the agent speaks, following the audio level. */
+.headset[data-state="speaking"] .hs-bar {
+  opacity: 0.75;
+  transform: scaleY(calc(0.3 + var(--level) * 1.7));
+}
+.hs-bar-1 {
+  transition-delay: 20ms;
+}
+.hs-bar-3 {
+  transition-delay: 40ms;
+}
+/* A slow glow while on hold with a specialist. */
+.headset[data-state="waiting"] .hs-bg {
+  animation: hs-glow 4.5s ease-in-out infinite;
+}
+.headset[data-state="resolved"] .hs-check {
+  opacity: 1;
+}
+
+@keyframes hs-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.018);
+  }
+}
+@keyframes hs-ripple {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+@keyframes hs-dot {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-4px);
+  }
+}
+@keyframes hs-glow {
+  0%,
+  100% {
+    fill: var(--brand-soft);
+  }
+  50% {
+    fill: #e4d0fa;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headset *,
+  .headset *::before,
+  .headset *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .headset[data-state="speaking"] .hs-bar {
+    transform: scaleY(0.8);
+  }
+}
+
+/* ---------- Call panel ---------- */
+.case-column > .panel.call-panel {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control, 6px);
+}
+.call-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.call-head h2 {
+  margin: 0;
+}
+.call-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.call-agent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+}
+.call-status {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-align: center;
+}
+.call-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mic-button {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.mic-button:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+.mic-button[aria-pressed="true"] {
+  background: var(--fail);
+  border-color: var(--fail);
+}
+.mic-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.mic-button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+.call-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.call-stepper li {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-3);
+}
+.call-stepper li[aria-current="step"] {
+  color: var(--brand);
+  border-color: var(--brand-line);
+  background: var(--brand-soft);
+  font-weight: 600;
+}
+.call-stepper li[data-done="true"] {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.call-transcript {
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  list-style: none;
+  background: var(--surface-sunk);
+  border-radius: var(--radius-control, 6px);
+  font-size: 13.5px;
+}
+.call-transcript li {
+  margin: 0 0 6px;
+}
+.call-transcript li:last-child {
+  margin-bottom: 0;
+}
+.call-transcript .who {
+  font-weight: 600;
+  margin-right: 6px;
+}
+.call-transcript .who-agent {
+  color: var(--brand);
+}
+.order-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.order-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.order-card:hover:not(:disabled) {
+  border-color: var(--brand-line);
+  background: var(--brand-soft);
+}
+.order-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.order-card .meta {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.call-text-form {
+  display: flex;
+  gap: 8px;
+}
+.call-text-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control, 6px);
+  font: inherit;
+  font-size: 13.5px;
+}
+.caller-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.caller-picker .field {
+  margin: 0;
+  min-width: 220px;
+}
+.tag-voice {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .call-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

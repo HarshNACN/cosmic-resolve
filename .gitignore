@@ -46,3 +46,5 @@ traces/
 *.swp
 .DS_Store
 Thumbs.db
+# Local text-to-speech voice models (large; download with: python -m piper.download_voices)
+voices/

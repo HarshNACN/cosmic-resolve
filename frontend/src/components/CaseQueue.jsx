@@ -86,6 +86,7 @@ export default function CaseQueue({ status, cases, error, onRetry, selectedId, o
                     >
                       <span className="case-item-head">
                         <span className="case-id">{item.case_id}</span>
+                        {item.channel === "VOICE" ? <span className="tag tag-voice">Voice call</span> : null}
                         {typeof item.status === "string" ? <span className="tag">{humanize(item.status)}</span> : null}
                       </span>
                       <span className="case-type">{humanize(item.case_type)}</span>
