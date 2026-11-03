@@ -22,6 +22,14 @@ export function formatTimestamp(value) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
+// Compact form for dense metadata, for example "Nov 2, 9:00 AM". Falls back to the raw value if unparseable.
+export function formatShortDateTime(value) {
+  if (typeof value !== "string" || value === "") return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+}
+
 export function asText(value) {
   if (typeof value === "string") return value;
   try {

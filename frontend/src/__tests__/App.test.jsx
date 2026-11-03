@@ -222,7 +222,7 @@ describe("recommendation", () => {
     );
     render(<App />);
     await openCase(user, "C-1001");
-    expect(await screen.findByText("No activity recorded for this case yet.")).toBeInTheDocument();
+    expect(await screen.findByText("No activity yet.")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Generate recommendation" }));
     expect(await screen.findByText("Case loaded")).toBeInTheDocument();
   });
@@ -324,7 +324,7 @@ describe("switching cases", () => {
     expect(screen.queryByText("$649.00")).not.toBeInTheDocument();
     expect(screen.queryByText("US-GAD-DOA-01")).not.toBeInTheDocument();
     expect(screen.queryByText("Case loaded")).not.toBeInTheDocument();
-    expect(screen.getByText("No recommendation has been generated for this case yet.")).toBeInTheDocument();
+    expect(screen.getByText("No recommendation yet.")).toBeInTheDocument();
   });
 
   it("ignores a late response for a case that is no longer selected", async () => {

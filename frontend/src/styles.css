@@ -196,7 +196,7 @@ pre {
 }
 .workbench {
   display: grid;
-  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+  grid-template-columns: 344px minmax(0, 1fr);
   align-items: start;
   min-height: calc(100vh - 56px);
 }
@@ -205,6 +205,8 @@ pre {
 .queue {
   position: sticky;
   top: 0;
+  min-width: 0;
+  overflow: hidden;
   height: calc(100vh - 56px);
   display: flex;
   flex-direction: column;
@@ -236,24 +238,27 @@ pre {
   max-width: 880px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px 32px 48px;
+  padding: 20px 28px 40px;
 }
+/* Sections are flat and separated by hairlines. Boxes are reserved for controls and code. */
 .case-column > .panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  padding: 20px 22px;
-  margin-bottom: 16px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 20px 0;
 }
 .case-column > .panel + .panel {
   border-top: 1px solid var(--border);
 }
+.case-column > .panel:first-child {
+  padding-top: 0;
+}
 
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  padding: 16px 18px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
 }
 
 /* ---------- Queue ---------- */
@@ -350,9 +355,14 @@ input[type="text"]:focus {
   font-size: 13px;
   color: var(--text-2);
 }
+/* One line in the rail. The full statement is in the workspace. */
 .case-preview {
   font-size: 12.5px;
   color: var(--text-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .tag {
   font-size: 12px;
@@ -362,8 +372,75 @@ input[type="text"]:focus {
 
 /* ---------- Case header and summary ---------- */
 
-.case-header {
-  margin-bottom: 14px;
+/* Header: identity on one line, status beside it, then type and compact metadata. */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.section-head h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.case-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.case-status {
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.case-meta li {
+  margin: 0;
+}
+.case-meta li + li::before {
+  content: "·";
+  margin: 0 8px;
+  color: var(--text-3);
+}
+
+/* Evidence: a compact table of IDs. Missing details are one short phrase each. */
+.evidence-list {
+  margin: 0;
+}
+.evidence-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) minmax(0, auto);
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.evidence-row:last-child {
+  border-bottom: 0;
+}
+.evidence-row dt {
+  color: var(--text-3);
+  font-size: 13px;
+}
+.evidence-row dd {
+  margin: 0;
+  font-size: 13px;
+}
+.evidence-id {
+  font-family: var(--font-mono);
+  color: var(--text);
 }
 .case-title {
   margin: 0;
@@ -403,10 +480,9 @@ input[type="text"]:focus {
 /* Customer statement: source text, shown as quoted authorship, never as a chat bubble. */
 .quoted {
   margin: 0 0 8px;
-  padding: 10px 14px;
-  border-left: 3px solid var(--border-strong);
-  background: var(--surface-sunk);
-  border-radius: 0 var(--radius-detail) var(--radius-detail) 0;
+  padding: 2px 0 2px 14px;
+  border-left: 2px solid var(--border-strong);
+  background: none;
   white-space: pre-wrap;
   max-width: 72ch;
   color: var(--text);
@@ -475,11 +551,10 @@ input[type="text"]:focus {
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px 32px;
-  padding: 16px 18px;
-  margin-bottom: 8px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-panel);
-  background: var(--surface);
+  padding: 4px 0 4px 18px;
+  margin-bottom: 4px;
+  border-left: 3px solid var(--text);
+  background: none;
 }
 .decision-label {
   margin: 0 0 2px;
@@ -535,11 +610,12 @@ input[type="text"]:focus {
 
 /* Human review: amber, with text heading and marker. Never implies approval or execution. */
 .notice {
-  padding: 12px 14px;
-  margin: 12px 0;
-  border: 1px solid var(--review-line);
-  border-radius: var(--radius-panel);
-  background: var(--review-soft);
+  padding: 2px 0 2px 16px;
+  margin: 14px 0;
+  border: 0;
+  border-left: 3px solid var(--review-line);
+  border-radius: 0;
+  background: none;
 }
 .notice h3 {
   margin: 0 0 6px;
@@ -620,11 +696,12 @@ input[type="text"]:focus {
 /* ---------- Human checkpoint ---------- */
 
 .checkpoint {
-  margin-top: 16px;
-  padding: 14px 16px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-panel);
-  background: var(--surface);
+  margin-top: 8px;
+  padding: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
 }
 .checkpoint h3 {
   margin: 0 0 4px;
@@ -837,6 +914,13 @@ input[type="text"]:focus {
 }
 .trace-other {
   --event-color: var(--trace-other);
+}
+
+/* Mid-width desktops keep a narrower rail so the workspace stays readable. */
+@media (max-width: 1199px) and (min-width: 901px) {
+  .workbench {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
 }
 
 /* ---------- Motion and small screens ---------- */

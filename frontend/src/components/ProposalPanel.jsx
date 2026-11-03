@@ -133,7 +133,7 @@ export default function ProposalPanel({ caseId, state, onGenerate, decision, onD
         </span>
       </div>
 
-      {state.status === "idle" ? <p>No recommendation has been generated for this case yet.</p> : null}
+      {state.status === "idle" ? <p className="muted">No recommendation yet.</p> : null}
       {state.status === "error" ? (
         <ErrorNotice title="Unable to generate a recommendation." detail={state.error} onRetry={onGenerate} />
       ) : null}
