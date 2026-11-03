@@ -34,6 +34,18 @@ def default_trace_path(environ: Mapping[str, str] = os.environ) -> Path:
 ON_VERCEL = os.environ.get("VERCEL") == "1"
 DEFAULT_TRACE_PATH = default_trace_path()
 
+_TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def checkpoint_writes_enabled(environ: Mapping[str, str] = os.environ) -> bool:
+    """Whether the human-checkpoint decision endpoint may execute gated (mock) writes.
+
+    Off unless CHECKPOINT_WRITES_ENABLED is explicitly set to a true value. It is read on every call, so
+    tests and local sessions can change it. vercel.json must never set it, so the public Vercel deployment
+    stays read-only at the checkpoint. This is an application-level switch, not authentication.
+    """
+    return environ.get("CHECKPOINT_WRITES_ENABLED", "").strip().lower() in _TRUE_VALUES
+
 # Flat human-approval threshold for all loyalty tiers (PRD decision #1).
 ESCALATION_THRESHOLD_USD = 200.0
 

@@ -59,7 +59,15 @@ def test_api_propose_reaches_the_offline_endpoint():
     response = client.post("/api/cases/C-1001/propose")
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"case_id", "status", "error", "proposal"}
+    assert set(body) == {
+        "case_id",
+        "status",
+        "error",
+        "proposal",
+        "proposal_fingerprint",
+        "recommended_action",
+        "checkpoint_writes_enabled",
+    }
     assert body["case_id"] == "C-1001"
     assert body["status"] == "AWAITING_APPROVAL"
     assert body["proposal"]["policy_clause_ids"]

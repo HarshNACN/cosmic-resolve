@@ -749,6 +749,100 @@ select:focus {
   color: var(--text-muted);
 }
 
+/* ---------- Human checkpoint (restrained; confirmation before every consequential action) ---------- */
+
+.checkpoint {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+}
+.checkpoint h3 {
+  margin: 0 0 6px;
+  color: var(--text-secondary);
+}
+.checkpoint > p {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.checkpoint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+.button-negative {
+  border-color: rgba(255, 128, 128, 0.55);
+  color: var(--fail);
+}
+.button-negative:hover:not(:disabled) {
+  background: rgba(255, 128, 128, 0.08);
+}
+.checkpoint-confirm {
+  margin-top: 8px;
+}
+.confirm-title {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.checkpoint-facts {
+  margin: 0 0 10px;
+}
+.clause-chip {
+  display: inline-block;
+  margin: 0 6px 4px 0;
+  padding: 1px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+.message-editor {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--cosmos-950);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+.field textarea {
+  width: 100%;
+}
+.field-error {
+  margin: 6px 0 0;
+  color: var(--fail);
+  font-size: 13px;
+}
+.result-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.executed-list {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: var(--text-secondary);
+}
+.checkpoint-result {
+  border-left: 3px solid var(--ok);
+}
+.recommended-action {
+  margin: 8px 0 0;
+  color: var(--text-primary);
+}
+.recommended-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--review);
+}
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {

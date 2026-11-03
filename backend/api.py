@@ -12,7 +12,10 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from cosmic_resolve.model_provider import RuleBasedModelProvider
 from cosmic_resolve.tracing import read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
-from cosmic_resolve.workflow import propose_resolution
+from cosmic_resolve import config
+from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint
+from cosmic_resolve.models import DecisionRequest, DecisionResult
+from cosmic_resolve.workflow import AWAITING_APPROVAL, propose_resolution, recommended_action_for
 
 API_PREFIX = "/api"
 
@@ -88,12 +91,34 @@ def propose(case_id: str) -> dict:
         run = propose_resolution(case_id, RuleBasedModelProvider())
     except DomainLookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    awaiting = run.status == AWAITING_APPROVAL and run.proposal is not None
     return {
         "case_id": case_id,
         "status": run.status,
         "error": run.error,
         "proposal": run.proposal.model_dump(mode="json") if run.proposal else None,
+        # Integrity identifier for the decision endpoint; not a credential.
+        "proposal_fingerprint": proposal_fingerprint(run.proposal) if run.proposal else None,
+        # Deterministic, backend-derived next step for an escalation awaiting a human. Null otherwise.
+        "recommended_action": recommended_action_for(run.proposal) if awaiting else None,
+        # Capability discovery: the frontend shows checkpoint controls only when this is true.
+        "checkpoint_writes_enabled": config.checkpoint_writes_enabled(),
     }
+
+
+@app.post("/cases/{case_id}/decision", response_model=DecisionResult)
+def decide_case(case_id: str, body: DecisionRequest) -> DecisionResult:
+    """Human checkpoint decision: APPROVE, EDIT_AND_APPROVE (message only) or REJECT.
+
+    Disabled unless CHECKPOINT_WRITES_ENABLED is set (403, no writes). Stateless: the server rebuilds the
+    proposal, checks the fingerprint, revalidates, and only then runs the gated write path.
+    """
+    try:
+        return decide(case_id, body)
+    except DomainLookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except CheckpointError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
 
 @app.get("/traces")

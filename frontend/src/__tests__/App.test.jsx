@@ -161,7 +161,7 @@ describe("recommendation", () => {
     expect(await screen.findByRole("heading", { name: "Needs human review" })).toBeInTheDocument();
     expect(screen.getByText("Value > $200 threshold")).toBeInTheDocument();
     expect(screen.getByText("$649.00")).toBeInTheDocument();
-    expect(screen.getByText("Human approval controls are not enabled in this view.")).toBeInTheDocument();
+    expect(screen.getByText("Approval controls are not enabled in this environment.")).toBeInTheDocument();
     for (const name of [/approve/i, /reject/i, /refund/i, /execute/i, /send/i]) {
       expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
     }
