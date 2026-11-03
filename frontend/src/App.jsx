@@ -21,10 +21,9 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true" />
           <div>
             <h1>Cosmic Resolve</h1>
-            <p className="brand-sub">Cosmic Mart post-purchase resolution workspace</p>
+            <p className="brand-sub">Cosmic Mart · Post-purchase resolution</p>
           </div>
         </div>
-        <p className="mode-label">Read-only workbench</p>
       </header>
       <div className="workbench">
         <CaseQueue

@@ -26,7 +26,7 @@ export default function PolicyBasis({ state }) {
               </li>
             ))}
           </ul>
-          <p className="muted">Policy clause details are not included in the current API response.</p>
+          <p className="muted">Policy text is unavailable from this service. The clause IDs above identify it.</p>
         </>
       )}
     </section>

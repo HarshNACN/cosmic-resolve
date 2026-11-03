@@ -38,7 +38,7 @@ function routes(overrides = {}) {
 async function openAndGenerate(user, id) {
   await user.click(await screen.findByRole("button", { name: new RegExp(id) }));
   await user.click(await screen.findByRole("button", { name: "Generate recommendation" }));
-  await screen.findByText("Recommended decision");
+  await screen.findByRole("heading", { name: "Model-generated evidence" });
 }
 
 const approveButton = () => screen.queryByRole("button", { name: "Approve" });
@@ -54,7 +54,7 @@ describe("checkpoint capability", () => {
     );
     render(<App />);
     await openAndGenerate(user, "C-1002");
-    expect(screen.getByText("Approval controls are not enabled in this environment.")).toBeInTheDocument();
+    expect(screen.getByText("Decision controls are not enabled in this environment.")).toBeInTheDocument();
     expect(approveButton()).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Reject" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit message" })).not.toBeInTheDocument();

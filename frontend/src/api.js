@@ -13,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-const UNEXPECTED = "The backend returned an unexpected response.";
+const UNEXPECTED = "The response was not in the expected format.";
 
 const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -41,7 +41,7 @@ async function request(path, { method = "GET", signal, body: payload } = {}) {
     response = await fetch(`${BASE}${path}`, init);
   } catch (error) {
     if (error && error.name === "AbortError") throw error;
-    throw new ApiError("Cannot reach the backend.");
+    throw new ApiError("The service did not respond. Retry.");
   }
 
   let body = null;
