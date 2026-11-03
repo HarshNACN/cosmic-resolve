@@ -64,7 +64,16 @@ class RuleBasedModelProvider:
             category=_ROOT_CAUSES.get(case.case_type, "UNKNOWN"),
             detail=case.complaint_text,
         )
-        return self._agent.generate_proposal(case, list(applicable_policy), order.price, evidence, root_cause)
+        return self._agent.generate_proposal(
+            case,
+            list(applicable_policy),
+            order.price,
+            evidence,
+            root_cause,
+            shipment=shipment,
+            customer=context.get("customer"),
+            inventory=context.get("inventory"),
+        )
 
 
 DEFAULT_PROVIDER = NoopModelProvider()
