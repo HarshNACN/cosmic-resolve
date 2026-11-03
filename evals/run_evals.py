@@ -1,30 +1,76 @@
+"""Run the eval set through the resolution loop and write a JSON scorecard.
+
+Usage (from the repo root, any shell; the script adds backend/ to sys.path itself):
+    python evals/run_evals.py                        # offline rule-based provider (no AWS calls)
+    python evals/run_evals.py --provider bedrock     # live Bedrock (same env as backend/demo.py --bedrock)
+    python evals/run_evals.py --out path/to/card.json
+
+Exit code 1 when policy-citation validity is below 100% (PRD target). Accuracy is reported, not gated.
+"""
 from __future__ import annotations
 
+import argparse
 import json
+import sys
 from pathlib import Path
 
-from cosmic_resolve.config import EVALS_DIR
-from cosmic_resolve.models import Decision
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT_DIR / "backend"))
+
+from cosmic_resolve.config import EVALS_DIR  # noqa: E402
+from cosmic_resolve.evaluation import (  # noqa: E402
+    EvalPreflightError,
+    citation_gate_failed,
+    format_summary,
+    load_eval_cases,
+    run_evaluation,
+)
+from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider  # noqa: E402
+
+DEFAULT_OUT = EVALS_DIR / "scorecard.json"
 
 
-def run_eval() -> dict[str, float | int]:
-    eval_cases_path = EVALS_DIR / "eval_cases.json"
-    with eval_cases_path.open("r", encoding="utf-8") as handle:
-        eval_cases = json.load(handle)
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="Run the Cosmic Resolve eval set and write a JSON scorecard.")
+    parser.add_argument("--provider", choices=["offline", "bedrock"], default="offline")
+    parser.add_argument("--bedrock", action="store_true", help="Shortcut for --provider bedrock (matches backend/demo.py).")
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help=f"Scorecard path (default {DEFAULT_OUT}).")
+    args = parser.parse_args(argv)
+    provider_name = "bedrock" if args.bedrock else args.provider
 
-    score = 0
-    for case in eval_cases:
-        decision = case["expected_decision"]
-        if decision in Decision.__members__:
-            score += 1
+    try:
+        entries = load_eval_cases()
+    except EvalPreflightError as exc:
+        print(exc, file=sys.stderr)
+        return 2
 
-    return {
-        "total_cases": len(eval_cases),
-        "expected_decisions_valid": score,
-        "accuracy": round(score / len(eval_cases), 2) if eval_cases else 0.0,
-    }
+    model_id = None
+    if provider_name == "bedrock":
+        from cosmic_resolve.bedrock_provider import BedrockModelProvider
+
+        try:
+            provider = BedrockModelProvider()
+        except ProviderError as exc:
+            print(f"Cannot start Bedrock provider: {exc}", file=sys.stderr)
+            return 2
+        model_id = provider.model_id
+        label = "bedrock"
+    else:
+        provider = RuleBasedModelProvider()
+        label = "offline rule-based"
+
+    scorecard = run_evaluation(provider, provider_label=label, model_id=model_id, entries=entries)
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(scorecard, indent=2) + "\n", encoding="utf-8")
+
+    print(format_summary(scorecard))
+    print(f"Scorecard: {args.out}")
+    if citation_gate_failed(scorecard):
+        print("FAIL: policy-citation validity is below the 100% target.", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    result = run_eval()
-    print(result)
+    sys.exit(main(sys.argv[1:]))
