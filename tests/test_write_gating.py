@@ -1,5 +1,14 @@
+import pytest
+
+from cosmic_resolve.config import SETTINGS
 from cosmic_resolve.models import ApprovalDecision
 from cosmic_resolve.tools import MockWriteError, issue_refund, issue_store_credit, send_customer_message
+
+
+@pytest.fixture(autouse=True)
+def isolated_trace(tmp_path, monkeypatch):
+    # Approved writes append mock_action events; keep them out of the repository traces/ file.
+    monkeypatch.setattr(SETTINGS, "trace_path", tmp_path / "trace.jsonl")
 
 
 def test_write_tools_execute_only_with_valid_approval() -> None:

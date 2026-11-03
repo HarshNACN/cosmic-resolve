@@ -1,7 +1,8 @@
-"""Deployment checks: vercel.json routing, the self-contained backend/data copy, and best-effort /tmp tracing.
+"""Deployment checks: vercel.json configuration, the self-contained backend/data copy, and best-effort /tmp tracing.
 
-All checks run offline. Vercel itself performs the /api -> /cases rewrite, so these tests verify the
-configuration text and the transform's effect on a path. A preview deployment is the real routing test.
+All checks run offline and verify configuration syntax and packaged data only. They do not prove Vercel
+runtime routing. The application-level /api compatibility is provided by StripApiPrefix in backend/api.py
+and is tested in tests/test_api.py. A Vercel preview deployment is the definitive routing proof.
 """
 import filecmp
 import json
@@ -63,7 +64,10 @@ def test_no_bindings_env_or_credentials_in_vercel_json():
         assert forbidden not in text, forbidden
 
 
-def test_api_prefix_transform_maps_public_path_to_fastapi_path():
+def test_vercel_transform_config_text_is_present_but_not_relied_on():
+    """Configuration presence only. A production probe showed the transform does not change the path FastAPI
+    routes on, so compatibility comes from StripApiPrefix (tested in tests/test_api.py). This test does not
+    prove Vercel runtime behavior; a preview deployment does."""
     route = _vercel()["services"]["backend"]["routes"][0]
     assert route["src"] == "/api/(.*)"
     assert route["transforms"] == [{"type": "request.path", "op": "set", "args": "/$1"}]

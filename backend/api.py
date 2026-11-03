@@ -7,11 +7,51 @@ from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from cosmic_resolve.model_provider import RuleBasedModelProvider
 from cosmic_resolve.tracing import read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
 from cosmic_resolve.workflow import propose_resolution
+
+API_PREFIX = "/api"
+
+
+def _without_api_prefix(path: str) -> str | None:
+    """Return path with one leading "/api" removed, or None if it has no such segment."""
+    if path == API_PREFIX:
+        return "/"
+    if path.startswith(API_PREFIX + "/"):
+        return path[len(API_PREFIX):]
+    return None
+
+
+class StripApiPrefix:
+    """Remove one leading /api segment from HTTP and WebSocket paths before FastAPI routes them.
+
+    Vercel Services forwards the original public path (for example /api/cases) to the backend service, but
+    the routes in this module are declared without the prefix. Local development is unaffected because the
+    Vite proxy already removes /api. Only an exact "/api" segment is removed, so /apiary and /api-v2 are
+    left alone, and a nested /api/api/... loses only its first prefix. Lifespan and other scope types pass
+    through unchanged.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] in ("http", "websocket"):
+            stripped = _without_api_prefix(scope["path"])
+            if stripped is not None:
+                updates = {"path": stripped}
+                raw_path = scope.get("raw_path")
+                if raw_path is not None:
+                    stripped_raw = _without_api_prefix(raw_path.decode("latin-1"))
+                    if stripped_raw is not None:
+                        updates["raw_path"] = stripped_raw.encode("latin-1")
+                scope = {**scope, **updates}  # copy; never mutate the server's scope in place
+        await self.app(scope, receive, send)
+
 
 app = FastAPI(title="Cosmic Resolve")
 app.add_middleware(
@@ -20,6 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(StripApiPrefix)
 
 
 @app.get("/health")
