@@ -50,3 +50,18 @@ const EVENTS = {
 export function classifyEvent(eventType) {
   return EVENTS[eventType] || { category: "other", label: "Other" };
 }
+
+// The backend appends a case_loaded event at the start of every run of a case. Grouping on those keeps
+// repeated recommendations readable. Events are never reordered; events before the first case_loaded
+// (which the backend does not normally produce) go into an earlier-activity group.
+export function groupTraceRuns(events) {
+  const runs = [];
+  for (const event of events) {
+    if (event.event_type === "case_loaded" || runs.length === 0) {
+      const isRun = event.event_type === "case_loaded";
+      runs.push({ isRun, startedAt: isRun ? event.timestamp : null, events: [] });
+    }
+    runs[runs.length - 1].events.push(event);
+  }
+  return runs;
+}
