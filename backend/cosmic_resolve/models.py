@@ -144,6 +144,79 @@ class ApprovalDecision(BaseModel):
         return self
 
 
+class CheckpointAction(str, Enum):
+    APPROVE = "APPROVE"
+    EDIT_AND_APPROVE = "EDIT_AND_APPROVE"
+    REJECT = "REJECT"
+
+
+MAX_REVIEWER_LENGTH = 80
+MAX_NOTE_LENGTH = 500
+MAX_EDITED_MESSAGE_LENGTH = 2000
+_ALLOWED_CONTROL_CHARS = {"\n", "\t"}
+
+
+def _plain_text(value: str) -> str:
+    """Reject control characters. Values are only ever stored and rendered as text, never as markup."""
+    if any(ord(ch) < 32 and ch not in _ALLOWED_CONTROL_CHARS for ch in value):
+        raise ValueError("Text must not contain control characters.")
+    return value
+
+
+class DecisionRequest(BaseModel):
+    """A human's checkpoint decision. The client sends no proposal, decision, amount, or clause IDs.
+
+    The server rebuilds the proposal and checks proposal_fingerprint against it. String fields are trimmed.
+    """
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    action: CheckpointAction
+    proposal_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+    reviewer: str = Field(min_length=1, max_length=MAX_REVIEWER_LENGTH)
+    note: str | None = Field(default=None, max_length=MAX_NOTE_LENGTH)
+    edited_message: str | None = Field(default=None, max_length=MAX_EDITED_MESSAGE_LENGTH)
+
+    @field_validator("reviewer", "note", "edited_message")
+    @classmethod
+    def _plain(cls, value: str | None) -> str | None:
+        return None if value is None else _plain_text(value)
+
+    @field_validator("note")
+    @classmethod
+    def _empty_note_is_absent(cls, value: str | None) -> str | None:
+        return value or None
+
+    @model_validator(mode="after")
+    def _edit_text_only_for_edit_action(self) -> "DecisionRequest":
+        if self.action == CheckpointAction.EDIT_AND_APPROVE:
+            if not self.edited_message:
+                raise ValueError("edited_message is required for EDIT_AND_APPROVE.")
+        elif self.edited_message is not None:
+            raise ValueError("edited_message is only allowed for EDIT_AND_APPROVE.")
+        return self
+
+
+class ExecutedAction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: str
+    amount: float | None = None
+
+
+class DecisionResult(BaseModel):
+    """Typed outcome of a checkpoint decision. Deliberately omits the approval token and trace internals."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: str
+    action: CheckpointAction
+    status: str
+    decision: Decision
+    executed_actions: list[ExecutedAction] = Field(default_factory=list)
+    outcome: str
+
+
 class TraceEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

@@ -17,8 +17,13 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Cosmic Resolve</h1>
-        <p className="muted">Case workbench. Read-only view; no actions are taken here.</p>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true" />
+          <div>
+            <h1>Cosmic Resolve</h1>
+            <p className="brand-sub">Cosmic Mart · Post-purchase resolution</p>
+          </div>
+        </div>
       </header>
       <div className="workbench">
         <CaseQueue
@@ -33,7 +38,13 @@ export default function App() {
           <CaseDetails caseId={selectedId} state={workbench.detail} onRetry={workbench.retryDetail} />
           {selectedId ? (
             <>
-              <ProposalPanel caseId={selectedId} state={workbench.proposal} onGenerate={workbench.generate} />
+              <ProposalPanel
+                caseId={selectedId}
+                state={workbench.proposal}
+                onGenerate={workbench.generate}
+                decision={workbench.decision}
+                onDecide={workbench.decide}
+              />
               <PolicyBasis state={workbench.proposal} />
               <TraceViewer caseId={selectedId} state={workbench.trace} onRetry={workbench.retryTrace} />
             </>

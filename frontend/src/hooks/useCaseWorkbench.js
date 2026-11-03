@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { errorMessage, fetchCase, fetchTrace, generateProposal } from "../api.js";
+import { errorMessage, fetchCase, fetchTrace, generateProposal, submitDecision } from "../api.js";
 
 const IDLE = { caseId: null, status: "idle", data: null, error: null };
 
@@ -13,9 +13,11 @@ export function useCaseWorkbench(caseId) {
   const [detail, setDetail] = useState(IDLE);
   const [trace, setTrace] = useState(IDLE);
   const [proposal, setProposal] = useState(IDLE);
+  const [decision, setDecision] = useState(IDLE);
   const [detailTick, setDetailTick] = useState(0);
   const [traceTick, setTraceTick] = useState(0);
   const proposalController = useRef(null);
+  const decisionController = useRef(null);
 
   // Case details: fetched when the selection changes or on retry.
   useEffect(() => {
@@ -51,15 +53,22 @@ export function useCaseWorkbench(caseId) {
     return () => controller.abort();
   }, [caseId, traceTick]);
 
-  // Changing the selected case discards any proposal and cancels one that is still in flight.
+  // Changing the selected case discards any proposal, decision and result, and cancels requests still in flight.
   useEffect(() => {
     setProposal(IDLE);
-    return () => proposalController.current?.abort();
+    setDecision(IDLE);
+    return () => {
+      proposalController.current?.abort();
+      decisionController.current?.abort();
+    };
   }, [caseId]);
 
   const generate = useCallback(() => {
     if (!caseId) return;
     proposalController.current?.abort();
+    // A new recommendation supersedes any earlier decision result for this case.
+    decisionController.current?.abort();
+    setDecision(IDLE);
     const controller = new AbortController();
     proposalController.current = controller;
     setProposal({ caseId, status: "loading", data: null, error: null });
@@ -74,12 +83,36 @@ export function useCaseWorkbench(caseId) {
       });
   }, [caseId]);
 
+  // Records a human checkpoint decision. The caller supplies only the documented decision fields; the
+  // backend rebuilds the proposal and checks the fingerprint. On success the trace is refreshed.
+  const decide = useCallback(
+    (fields) => {
+      if (!caseId) return;
+      decisionController.current?.abort();
+      const controller = new AbortController();
+      decisionController.current = controller;
+      setDecision({ caseId, status: "submitting", data: null, error: null });
+      submitDecision(caseId, fields, controller.signal)
+        .then((data) => {
+          setDecision({ caseId, status: "ready", data, error: null });
+          setTraceTick((value) => value + 1); // the decision and its actions were just traced
+        })
+        .catch((error) => {
+          if (controller.signal.aborted) return;
+          setDecision({ caseId, status: "error", data: null, error: errorMessage(error, "Unable to record the decision.") });
+        });
+    },
+    [caseId],
+  );
+
   return {
     detail: forCase(detail, caseId),
     trace: forCase(trace, caseId),
     proposal: forCase(proposal, caseId),
+    decision: forCase(decision, caseId),
     retryDetail: useCallback(() => setDetailTick((value) => value + 1), []),
     retryTrace: useCallback(() => setTraceTick((value) => value + 1), []),
     generate,
+    decide,
   };
 }
