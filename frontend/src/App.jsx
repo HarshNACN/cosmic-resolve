@@ -39,7 +39,13 @@ export default function App() {
           <CaseDetails caseId={selectedId} state={workbench.detail} onRetry={workbench.retryDetail} />
           {selectedId ? (
             <>
-              <ProposalPanel caseId={selectedId} state={workbench.proposal} onGenerate={workbench.generate} />
+              <ProposalPanel
+                caseId={selectedId}
+                state={workbench.proposal}
+                onGenerate={workbench.generate}
+                decision={workbench.decision}
+                onDecide={workbench.decide}
+              />
               <PolicyBasis state={workbench.proposal} />
               <TraceViewer caseId={selectedId} state={workbench.trace} onRetry={workbench.retryTrace} />
             </>

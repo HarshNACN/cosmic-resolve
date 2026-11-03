@@ -116,7 +116,18 @@ def propose_resolution(case_id: str, provider: ModelProvider = DEFAULT_PROVIDER)
     return CaseRun(case=case, status=AWAITING_APPROVAL, context=context, policy=policy, proposal=proposal)
 
 
-def apply_approval(run: CaseRun, approval: ApprovalDecision | None) -> CaseRun:
+def recommended_action_for(proposal: ResolutionProposal | None) -> str | None:
+    """Neutral next step for an escalation, built only from the proposal's own escalation reasons.
+
+    Used for the API response and for the escalate write payload, so the two cannot drift apart.
+    Non-escalations have no recommended action.
+    """
+    if proposal is None or proposal.decision != Decision.ESCALATE or not proposal.escalation_reasons:
+        return None
+    return "Manual review required: " + "; ".join(proposal.escalation_reasons)
+
+
+def apply_approval(run: CaseRun, approval: ApprovalDecision | None, action: str | None = None) -> CaseRun:
     """Human checkpoint. Rejection records the decision and stops; approval runs the gated write tools."""
     if run.status != AWAITING_APPROVAL or run.proposal is None:
         raise ValueError(f"Case {run.case.case_id} is not awaiting approval (status={run.status}).")
@@ -135,6 +146,7 @@ def apply_approval(run: CaseRun, approval: ApprovalDecision | None) -> CaseRun:
         approved_by=approval.approved_by,
         approved=approval.approved,
         notes=approval.notes,
+        **({"action": action} if action is not None else {}),
     )
 
     if not approval.approved:
@@ -149,12 +161,27 @@ def apply_approval(run: CaseRun, approval: ApprovalDecision | None) -> CaseRun:
     elif proposal.decision in (Decision.STORE_CREDIT, Decision.GOODWILL_CREDIT):
         run.actions.append(issue_store_credit(run.case.customer_id, proposal.amount, proposal.decision.value, approval))
     else:
-        recommended = "Manual review required: " + "; ".join(proposal.escalation_reasons)
+        recommended = recommended_action_for(proposal) or "Manual review required"
         run.actions.append(escalate(case_id, proposal.escalation_reasons, recommended, approval))
 
     if proposal.decision != Decision.ESCALATE:
         run.actions.append(send_customer_message(case_id, proposal.customer_message_draft, approval))
     run.actions.append(tag_root_cause(case_id, proposal.root_cause.category, proposal.root_cause.detail, approval))
 
+    # One summary event per approval: action names and amounts only. No customer text, reviewer data, or tokens.
+    _trace(
+        case_id,
+        "actions_executed",
+        "Gated write actions executed",
+        decision=proposal.decision.value,
+        actions=[_action_summary(entry) for entry in run.actions],
+    )
     run.status = EXECUTED
     return run
+
+
+def _action_summary(entry: dict[str, Any]) -> dict[str, Any]:
+    summary: dict[str, Any] = {"action": entry["action"]}
+    if "amount" in entry:
+        summary["amount"] = entry["amount"]
+    return summary

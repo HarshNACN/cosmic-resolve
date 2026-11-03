@@ -43,6 +43,7 @@ const EVENTS = {
   validation_failed: { category: "validation", label: "Validation", status: "Failed" },
   human_decision: { category: "human", label: "Human checkpoint" },
   mock_action: { category: "write", label: "Write action" },
+  actions_executed: { category: "write", label: "Actions executed" },
   provider_error: { category: "error", label: "Error", status: "Error" },
   no_policy: { category: "error", label: "Error", status: "No policy found" },
 };

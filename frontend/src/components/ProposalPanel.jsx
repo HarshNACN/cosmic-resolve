@@ -1,4 +1,5 @@
 import ErrorNotice from "./ErrorNotice.jsx";
+import HumanCheckpoint from "./HumanCheckpoint.jsx";
 import { formatConfidence, formatUsd, humanize } from "../format.js";
 
 function Row({ label, children }) {
@@ -50,6 +51,11 @@ function ProposalBody({ run }) {
           ) : (
             <p>{escalated ? "No escalation reasons were returned." : "No usable recommendation was produced for this case."}</p>
           )}
+          {run.recommended_action ? (
+            <p className="recommended-action">
+              <span className="recommended-label">Recommended action</span> {run.recommended_action}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -113,7 +119,7 @@ function ProposalBody({ run }) {
   );
 }
 
-export default function ProposalPanel({ caseId, state, onGenerate }) {
+export default function ProposalPanel({ caseId, state, onGenerate, decision, onDecide }) {
   const loading = state.status === "loading";
   return (
     <section className="panel" aria-labelledby="proposal-heading" aria-busy={loading}>
@@ -134,10 +140,14 @@ export default function ProposalPanel({ caseId, state, onGenerate }) {
       ) : null}
       {state.status === "ready" ? <ProposalBody run={state.data} /> : null}
 
-      <div className="checkpoint" role="note">
-        <h3>Human checkpoint</h3>
-        <p>Human approval controls are not enabled in this view.</p>
-      </div>
+      {state.status === "ready" ? (
+        <HumanCheckpoint
+          key={`${caseId}:${state.data.proposal_fingerprint ?? "none"}`}
+          run={state.data}
+          decision={decision}
+          onDecide={onDecide}
+        />
+      ) : null}
     </section>
   );
 }
