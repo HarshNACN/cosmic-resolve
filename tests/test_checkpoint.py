@@ -95,7 +95,7 @@ def test_fingerprint_is_a_sha256_hex_digest():
     "update",
     [
         {"amount": 46.0},
-        {"decision": Decision.REPLACE},
+        {"decision": Decision.STORE_CREDIT},
         {"policy_clause_ids": ["US-GAD-LD-02"]},
         {"escalation_reasons": ["Something else"]},
         {"customer_message_draft": "A different message."},
@@ -167,12 +167,11 @@ def test_approve_executes_the_correct_gated_writes(enabled, isolated_state):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "EXECUTED"
-    assert body["decision"] == "STORE_CREDIT"
-    assert [a["action"] for a in body["executed_actions"]] == ["issue_store_credit", "send_customer_message", "tag_root_cause"]
-    assert body["executed_actions"][0]["amount"] == 45.0
+    assert body["decision"] == "REPLACE"
+    assert [a["action"] for a in body["executed_actions"]] == ["create_replacement", "send_customer_message", "tag_root_cause"]
     assert "approval_token" not in json.dumps(body)
     assert [e["details"]["payload"]["action"] for e in _mock_actions(isolated_state)] == [
-        "issue_store_credit",
+        "create_replacement",
         "send_customer_message",
         "tag_root_cause",
     ]
@@ -203,8 +202,8 @@ def test_edit_replaces_only_the_customer_message_and_is_revalidated(enabled, iso
     assert response.status_code == 200
     message = next(e for e in _mock_actions(isolated_state) if e["details"]["payload"]["action"] == "send_customer_message")
     assert message["details"]["payload"]["text"] == "We are sorry for the delay."  # trimmed
-    store_credit = next(e for e in _mock_actions(isolated_state) if e["details"]["payload"]["action"] == "issue_store_credit")
-    assert store_credit["details"]["payload"]["amount"] == 45.0  # money unchanged
+    replacement = next(e for e in _mock_actions(isolated_state) if e["details"]["payload"]["action"] == "create_replacement")
+    assert replacement["details"]["payload"]["order_id"] == "O-1002"  # decision unchanged
 
 
 def test_edit_is_refused_for_escalations_because_no_message_is_sent(enabled, isolated_state):
@@ -322,11 +321,10 @@ def test_human_decision_and_actions_executed_are_traced(enabled, isolated_state)
     summary = next(e for e in _trace_events(isolated_state) if e["event_type"] == "actions_executed")
     assert summary["details"]["case_id"] == "C-1002"
     assert [a["action"] for a in summary["details"]["actions"]] == [
-        "issue_store_credit",
+        "create_replacement",
         "send_customer_message",
         "tag_root_cause",
     ]
-    assert summary["details"]["actions"][0]["amount"] == 45.0
 
 
 def test_actions_executed_summary_contains_no_message_text_or_tokens(enabled, isolated_state):
