@@ -2,11 +2,12 @@
 name = "cosmic-resolve"
 version = "0.1.0"
 description = "Starter architecture for the Cosmic Resolve hackathon prototype."
-readme = "../README.md"
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.10.0",
   "python-dotenv>=1.0.0",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
 ]
 
 [project.optional-dependencies]
@@ -16,6 +17,7 @@ bedrock = [
 ]
 dev = [
   "pytest>=8.0.0",
+  "httpx>=0.27.0",  # FastAPI TestClient
 ]
 
 [tool.pytest.ini_options]

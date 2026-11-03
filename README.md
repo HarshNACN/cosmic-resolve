@@ -10,7 +10,7 @@ cosmic-resolve/
 │   ├── cosmic_resolve/   # Main Python package
 │   ├── app.py           # FastAPI application entry point
 │   └── pyproject.toml   # Python project configuration
-├── frontend/            # React + Vite frontend (placeholder)
+├── frontend/            # React + Vite frontend skeleton (cd frontend; npm install; npm run dev)
 ├── data/                # Synthetic/mocked Cosmic Mart data fixtures
 ├── evals/               # Evaluation assets and test cases
 ├── tests/               # Integration and unit tests
