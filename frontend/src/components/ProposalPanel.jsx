@@ -61,11 +61,30 @@ function ProposalBody({ run }) {
 
       {proposal ? (
         <>
-          <h3>Proposal</h3>
+          <div className="decision">
+            <div className="decision-main">
+              <p className="decision-label">Recommended decision</p>
+              <p className="decision-value">{humanize(proposal.decision)}</p>
+            </div>
+            <div className="decision-figures">
+              <div>
+                <p className="decision-label">Amount</p>
+                <p className="decision-amount">{formatUsd(proposal.amount)}</p>
+              </div>
+              <div>
+                <p className="decision-label">Confidence</p>
+                <p className="confidence">
+                  <span className="confidence-value">{formatConfidence(proposal.confidence)}</span>
+                  {typeof proposal.confidence === "number" ? (
+                    <span className="meter" aria-hidden="true">
+                      <span className="meter-fill" style={{ width: formatConfidence(proposal.confidence) }} />
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+          </div>
           <dl className="details">
-            <Row label="Decision">{humanize(proposal.decision)}</Row>
-            <Row label="Amount">{formatUsd(proposal.amount)}</Row>
-            <Row label="Confidence">{formatConfidence(proposal.confidence)}</Row>
             <Row label="Root cause">
               {proposal.root_cause
                 ? `${humanize(proposal.root_cause.category)}${proposal.root_cause.detail ? `: ${proposal.root_cause.detail}` : ""}`
