@@ -2,7 +2,7 @@
 
 Source of truth: `backend/cosmic_resolve/tools.py` (functions) and `backend/cosmic_resolve/models.py` (return shapes). This document describes the current code. The PRD (§6.2) defines the intended tool set.
 
-Status: **draft for sign-off** (T06). Owners to confirm: Architect, Builders, Data lead.
+Status: **agreed** (T06), 2026-11-03. Signed off by the Architect, builders and Data lead.
 
 ## Conventions
 
@@ -63,12 +63,10 @@ Every returned dict has `action` set to the function name.
 
 **ResolutionProposal** (agent output, validated by `validators.validate_proposal`): `case_id`, `decision` (`REPLACE | REFUND | STORE_CREDIT | GOODWILL_CREDIT | ESCALATE`), `amount` (≥ 0), `policy_clause_ids` (non-empty), `evidence`, `confidence` (0–1), `escalation_reasons`, `customer_message_draft`, `root_cause` (`RootCause`)
 
-## Open items for sign-off
+## Decisions (T06 sign-off)
 
-These are questions, not changes. Nothing in code has been altered.
-
-1. **Shipment events** are plain strings (`list[str]`). PRD §6.2 says "carrier events". **Open: team undecided** on whether structured events (timestamp, status, location) are needed.
-2. **Goodwill caps** are not in any tool or model. PRD §16 leaves per-tier caps open, so the Data lead's policy book needs to decide them.
-3. **`get_policy` raises `DomainLookupError` on no match.** Decided: raise, not return `[]`. The agent should catch this and emit `ESCALATE` with the reason "no applicable policy clause" (PRD §6.1 fallback). Implemented in `backend/cosmic_resolve/tools.py` with a test in `tests/test_tools.py`.
-4. **`escalate` and `tag_root_cause` are approval-gated.** This matches PRD §5 ("every write passes the checkpoint") but means the agent can't tag root causes without a human approval. Confirm that's intended.
-5. **Names:** the PRD and tracker reference `llm_client.py` (T15), while the repo has `model_provider.py`. Not a tool issue, but it affects where tools are called from.
+1. **Shipment events** stay plain strings (`list[str]`). Delivery dates come from `expected_delivery_date` and `delivered_at`; structured events are not needed.
+2. **Goodwill caps** are set in the policy book (Bronze $5, Silver $10, Gold $20, Platinum $40) and enforced by the validator.
+3. **`get_policy` raises `DomainLookupError` on no match.** The workflow catches it and returns a `NO_POLICY` run for manual handling (PRD §6.1 fallback). Tested in `tests/test_tools.py`.
+4. **`escalate` and `tag_root_cause` are approval-gated**, matching PRD §5 (every write passes the checkpoint). Root causes are tagged after a human approves.
+5. **Names:** the repo keeps `model_provider.py` and `bedrock_provider.py`. `llm_client.py` in the PRD and tracker is an old name.
