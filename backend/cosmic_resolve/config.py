@@ -1,8 +1,12 @@
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load <repo>/.env (git-ignored) if present. Variables already set in the shell win.
+load_dotenv(ROOT_DIR / ".env", override=False)
 DATA_DIR = ROOT_DIR / "data"
 EVALS_DIR = ROOT_DIR / "evals"
 TRACE_DIR = ROOT_DIR / "traces"

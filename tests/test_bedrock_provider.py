@@ -120,3 +120,25 @@ def test_boto3_is_only_imported_lazily():
 
     top_level = [line for line in inspect.getsource(module).splitlines() if line.startswith(("import boto3", "from boto3"))]
     assert top_level == []
+
+
+def test_full_prompt_and_response_are_traced():
+    from cosmic_resolve.tracing import read_trace_events
+
+    provider = _provider(StubClient(_tool_response(GOOD_INPUT)))
+    workflow.propose_resolution("C-1002", provider)
+    exchange = [e for e in read_trace_events(case_id="C-1002") if e.event_type == "model_exchange"]
+    assert len(exchange) == 1
+    details = exchange[0].details
+    assert "<complaint>" in details["user_message"]
+    assert details["system_prompt"]
+    assert details["response"]["content"][0]["toolUse"]["name"] == TOOL_NAME
+
+
+def test_failed_call_still_traces_the_prompt():
+    from cosmic_resolve.tracing import read_trace_events
+
+    run = workflow.propose_resolution("C-1002", _provider(StubClient(error=RuntimeError("boom"))))
+    assert run.status == "PROVIDER_ERROR"
+    exchange = [e for e in read_trace_events(case_id="C-1002") if e.event_type == "model_exchange"]
+    assert exchange and "response" not in exchange[0].details

@@ -53,6 +53,13 @@ def _trace(case_id: str, event_type: str, message: str, **details: Any) -> None:
     append_trace_event(event_type, message, {"case_id": case_id, **details})
 
 
+def _trace_exchange(case_id: str, provider: Any) -> None:
+    """Record the full prompt and model reply when the provider exposes them (Bedrock does; offline does not)."""
+    exchange = getattr(provider, "last_exchange", None)
+    if exchange:
+        _trace(case_id, "model_exchange", "Full prompt and model response", **exchange)
+
+
 def gather_context(case: SupportCase) -> dict[str, Any]:
     """Call the read tools. Order, customer and shipment are required; product and inventory are optional."""
     order = get_order(case.order_id)
@@ -93,8 +100,10 @@ def propose_resolution(case_id: str, provider: ModelProvider = DEFAULT_PROVIDER)
     try:
         proposal = provider.generate_resolution(case, context, policy)
     except ProviderError as exc:
+        _trace_exchange(case_id, provider)
         _trace(case_id, "provider_error", "Provider failed to produce a proposal", error=str(exc))
         return CaseRun(case=case, status=PROVIDER_ERROR, context=context, policy=policy, error=str(exc))
+    _trace_exchange(case_id, provider)
     _trace(case_id, "proposal_generated", "Proposal generated", proposal=proposal.model_dump(mode="json"))
 
     try:

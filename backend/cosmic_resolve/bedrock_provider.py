@@ -66,6 +66,8 @@ class BedrockModelProvider:
         if not self.model_id:
             raise ProviderError("Set BEDROCK_INFERENCE_PROFILE (or BEDROCK_MODEL_ID) to use the Bedrock provider.")
         self.max_tokens = max_tokens
+        # Full prompt and model reply of the most recent call; the workflow writes it to the trace.
+        self.last_exchange: dict[str, Any] | None = None
         if client is not None:
             self._client = client
         else:
@@ -102,11 +104,13 @@ class BedrockModelProvider:
         context: dict[str, Any],
         applicable_policy: Sequence[Any],
     ) -> ResolutionProposal:
+        user_message = self.build_user_message(case, context, applicable_policy)
+        self.last_exchange = {"model_id": self.model_id, "system_prompt": SYSTEM_PROMPT, "user_message": user_message}
         try:
             response = self._client.converse(
                 modelId=self.model_id,
                 system=[{"text": SYSTEM_PROMPT}],
-                messages=[{"role": "user", "content": [{"text": self.build_user_message(case, context, applicable_policy)}]}],
+                messages=[{"role": "user", "content": [{"text": user_message}]}],
                 toolConfig={
                     "tools": [{
                         "toolSpec": {
@@ -124,6 +128,11 @@ class BedrockModelProvider:
         except Exception as exc:  # network, auth, throttling: surface as a provider failure
             raise ProviderError(f"Bedrock call failed: {exc}") from exc
 
+        self.last_exchange["response"] = {
+            "content": response.get("output", {}).get("message", {}).get("content", []),
+            "stop_reason": response.get("stopReason"),
+            "usage": response.get("usage"),
+        }
         return self._parse(case, response)
 
     @staticmethod

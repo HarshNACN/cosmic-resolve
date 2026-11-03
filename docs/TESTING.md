@@ -131,8 +131,9 @@ for the relevant task (T15, T20, T22).
 
 ## Known gaps
 
-- Fixtures hold 3 orders, products and shipments (plus 150 customers) until T08 lands; only C-1001 to C-1003 run end to end.
 - No prompt-injection case exists yet, so injection resistance is untested.
 - `evals/run_evals.py` only checks that expected decisions are valid enum values. It is not a real evaluation (T20).
 - `evals/eval_cases.json` expects REPLACE for $649 and REFUND for $299, which contradicts the $200 escalation rule.
-- No FastAPI endpoints, trace endpoint or frontend yet.
+- API is read-only for now (health, cases, propose, traces); no approval endpoint or real UI yet (T25, T21).
+
+Trace API: `GET /traces?case_id=C-1001&limit=50` and `GET /cases/C-1001/trace` return events oldest first. With the Bedrock provider each run also logs a `model_exchange` event holding the full system prompt, user message and model reply.
