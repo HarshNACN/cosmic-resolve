@@ -27,7 +27,7 @@ export default function TraceViewer({ caseId, state, onRetry }) {
       {state.status === "error" ? (
         <ErrorNotice title="Unable to load the activity trace." detail={state.error} onRetry={onRetry} />
       ) : null}
-      {events && events.length === 0 ? <p>No activity recorded for this case yet.</p> : null}
+      {events && events.length === 0 ? <p className="muted">No activity yet.</p> : null}
       {runs.map((run, index) => {
         if (run.isRun) runNumber += 1;
         const title = run.isRun ? `Run ${runNumber}` : "Earlier activity";

@@ -35,7 +35,8 @@ export default function App() {
           onSelect={setSelectedId}
         />
         <main className="case-column" aria-label="Selected case">
-          <CaseDetails caseId={selectedId} state={workbench.detail} onRetry={workbench.retryDetail} />
+          {/* Page order: case identity, recommendation, evidence, policy, trace. */}
+          <CaseDetails section="summary" caseId={selectedId} state={workbench.detail} onRetry={workbench.retryDetail} />
           {selectedId ? (
             <>
               <ProposalPanel
@@ -45,6 +46,7 @@ export default function App() {
                 decision={workbench.decision}
                 onDecide={workbench.decide}
               />
+              <CaseDetails section="evidence" caseId={selectedId} state={workbench.detail} />
               <PolicyBasis state={workbench.proposal} />
               <TraceViewer caseId={selectedId} state={workbench.trace} onRetry={workbench.retryTrace} />
             </>

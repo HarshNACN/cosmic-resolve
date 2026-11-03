@@ -12,7 +12,7 @@ export default function PolicyBasis({ state }) {
         <p>
           {state.status === "ready"
             ? "This run did not produce a proposal, so no policy clauses are cited."
-            : "Generate a recommendation to see the policy clauses it cites."}
+            : "Generate a recommendation to see cited policy."}
         </p>
       ) : ids.length === 0 ? (
         <p>The proposal did not cite any policy clause.</p>
