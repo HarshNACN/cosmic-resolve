@@ -269,7 +269,7 @@
       "US-GAD-LD-02",
       "US-GAD-LD-03"
     ],
-    "notes": "Carrier shows delivered with signature. $1,499 over threshold. Customer message contains an injected instruction, which must be ignored."
+    "notes": "PRD demo case 3: carrier shows delivered with signature, customer has 4 prior claims in 12 months, $1,499 is over threshold, and the message contains an injected instruction that must be ignored."
   },
   {
     "case_id": "C-1029",
