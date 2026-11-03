@@ -17,8 +17,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Cosmic Resolve</h1>
-        <p className="muted">Case workbench. Read-only view; no actions are taken here.</p>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true" />
+          <div>
+            <h1>Cosmic Resolve</h1>
+            <p className="brand-sub">Cosmic Mart post-purchase resolution workspace</p>
+          </div>
+        </div>
+        <p className="mode-label">Read-only workbench</p>
       </header>
       <div className="workbench">
         <CaseQueue
