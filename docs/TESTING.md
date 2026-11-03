@@ -13,7 +13,7 @@ All commands run from the repo root in **PowerShell** (Git Bash equivalents are 
 ## 0. One-time setup
 
 ```powershell
-pip install pytest pydantic python-dotenv          # offline testing
+pip install pytest pydantic python-dotenv fastapi httpx   # offline testing
 pip install boto3 "botocore[crt]"                  # only for Level 3
 $env:PYTHONPATH = "backend"                        # Git Bash: export PYTHONPATH=backend
 ```
@@ -26,7 +26,7 @@ $env:PYTHONPATH = "backend"                        # Git Bash: export PYTHONPATH
 python -m pytest tests -q
 ```
 
-**Expected:** all tests pass (70 at the time of writing). A failure here means do not proceed to Levels 2 to 4.
+**Expected:** all tests pass (339 at the time of writing). A failure here means do not proceed to Levels 2 to 4.
 
 What is covered: read tools, write-tool gating, validator rules ($200 threshold, clause citation, goodwill caps),
 policy lookup, the loop (`tests/test_workflow.py`), and the Bedrock provider with a stubbed client
@@ -155,11 +155,10 @@ The exit code is 1 when policy-citation validity is below 100%. Accuracy is repo
 | Avg tool calls per case | Read-tool calls per case (7 with today's pre-fetch design, so constant until a tool-loop agent exists) |
 | Blocked runs | `VALIDATION_FAILED`, `NO_POLICY`, `PROVIDER_ERROR`. Counted as incorrect, excluded from false-refund and unsafe-remedy (no human saw them), reported as `validator_blocked`, `no_policy`, `provider_errors` |
 
-The scorecard JSON holds `meta`, `metrics`, `denominators`, `by_decision` (expected × actual confusion counts), `mismatches` (the cases to look at) and `unsafe_remedy_cases`. It does not hold per-case rows, so the file stays small across runs. For a single case's detail, read its events in `traces/eval_run.jsonl`, which is rewritten on each run. Scoring logic is in `backend/cosmic_resolve/evaluation.py`; tests are in `tests/test_run_evals.py`.
+`evals/scorecard.json` is a run history: `{"runs": [...]}`, oldest first. Each run appends one entry and earlier runs are never rewritten. A run entry holds `meta` (provider, model ID, timestamp), `metrics`, `denominators`, `by_decision` (expected × actual confusion counts), `mismatches` (the cases to look at) and `unsafe_remedy_cases`. It does not hold per-case rows, so the file grows by a few KB per run. If the file cannot be parsed, the run stops before it starts and nothing is written. For a single case's detail, read its events in `traces/eval_run.jsonl`, which is rewritten on each run. Scoring logic is in `backend/cosmic_resolve/evaluation.py`; tests are in `tests/test_run_evals.py`.
 
 ## Known gaps
 
-- No prompt-injection case exists yet, so injection resistance is untested.
 - API is read-only for now (health, cases, propose, traces); no approval endpoint or real UI yet (T25, T21).
 
 Trace API: `GET /traces?case_id=C-1001&limit=50` and `GET /cases/C-1001/trace` return events oldest first. With the Bedrock provider each run also logs a `model_exchange` event holding the full system prompt, user message and model reply.

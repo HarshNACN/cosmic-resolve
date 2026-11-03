@@ -20,9 +20,11 @@ sys.path.insert(0, str(ROOT_DIR / "backend"))
 from cosmic_resolve.config import EVALS_DIR  # noqa: E402
 from cosmic_resolve.evaluation import (  # noqa: E402
     EvalPreflightError,
+    append_run,
     citation_gate_failed,
     format_summary,
     load_eval_cases,
+    load_history,
     run_evaluation,
 )
 from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider  # noqa: E402
@@ -44,6 +46,13 @@ def main(argv: list[str]) -> int:
         print(exc, file=sys.stderr)
         return 2
 
+    # Check the history file before a (possibly paid, live) run, so an unreadable file cannot cost a run.
+    try:
+        load_history(args.out)
+    except ValueError as exc:
+        print(f"{exc} Nothing was run and nothing was written.", file=sys.stderr)
+        return 2
+
     model_id = None
     if provider_name == "bedrock":
         from cosmic_resolve.bedrock_provider import BedrockModelProvider
@@ -61,11 +70,10 @@ def main(argv: list[str]) -> int:
 
     scorecard = run_evaluation(provider, provider_label=label, model_id=model_id, entries=entries)
 
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(scorecard, indent=2) + "\n", encoding="utf-8")
+    history = append_run(args.out, scorecard)
 
     print(format_summary(scorecard))
-    print(f"Scorecard: {args.out}")
+    print(f"Scorecard: {args.out} (run {len(history['runs'])} in history)")
     if citation_gate_failed(scorecard):
         print("FAIL: policy-citation validity is below the 100% target.", file=sys.stderr)
         return 1
