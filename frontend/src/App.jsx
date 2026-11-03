@@ -1,30 +1,45 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import CaseDetails from "./components/CaseDetails.jsx";
+import CaseQueue from "./components/CaseQueue.jsx";
+import PolicyBasis from "./components/PolicyBasis.jsx";
+import ProposalPanel from "./components/ProposalPanel.jsx";
+import TraceViewer from "./components/TraceViewer.jsx";
+import { useCaseWorkbench } from "./hooks/useCaseWorkbench.js";
+import { useCases } from "./hooks/useCases.js";
 
-const API = "http://localhost:8000";
-
-// Placeholder shell. T21 replaces this with case queue / proposal card / trace pane.
+// Read-only case workbench. It reads cases and traces and can request a recommendation, but it has no
+// approval or write controls. Approval is enforced by the backend and is not part of this view.
 export default function App() {
-  const [cases, setCases] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch(`${API}/cases`)
-      .then((r) => r.json())
-      .then(setCases)
-      .catch((e) => setError(String(e)));
-  }, []);
+  const queue = useCases();
+  const [selectedId, setSelectedId] = useState(null);
+  const workbench = useCaseWorkbench(selectedId);
 
   return (
-    <main style={{ fontFamily: "sans-serif", padding: 24 }}>
-      <h1>Cosmic Resolve</h1>
-      {error && <p>Backend unreachable: {error}</p>}
-      <ul>
-        {cases.map((c) => (
-          <li key={c.case_id}>
-            {c.case_id} - {c.case_type}
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className="app">
+      <header className="app-header">
+        <h1>Cosmic Resolve</h1>
+        <p className="muted">Case workbench. Read-only view; no actions are taken here.</p>
+      </header>
+      <div className="workbench">
+        <CaseQueue
+          status={queue.status}
+          cases={queue.cases}
+          error={queue.error}
+          onRetry={queue.reload}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+        />
+        <main className="case-column" aria-label="Selected case">
+          <CaseDetails caseId={selectedId} state={workbench.detail} onRetry={workbench.retryDetail} />
+          {selectedId ? (
+            <>
+              <ProposalPanel caseId={selectedId} state={workbench.proposal} onGenerate={workbench.generate} />
+              <PolicyBasis state={workbench.proposal} />
+              <TraceViewer caseId={selectedId} state={workbench.trace} onRetry={workbench.retryTrace} />
+            </>
+          ) : null}
+        </main>
+      </div>
+    </div>
   );
 }
