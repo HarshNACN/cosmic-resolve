@@ -1,0 +1,257 @@
+{
+  "runs": [
+    {
+      "meta": {
+        "generated_at": "2026-11-03T17:15:46.795019+00:00",
+        "case_count": 30,
+        "citation_validity_target": 1.0,
+        "provider": "offline rule-based",
+        "model_id": null,
+        "eval_file": "eval_cases.json",
+        "trace_path": "C:\\Users\\eco.s.valdes\\Downloads\\Claude Training\\Hackathon\\cosmic-resolve\\traces\\eval_run.jsonl"
+      },
+      "metrics": {
+        "decision_accuracy": 0.4,
+        "policy_citation_validity": 1.0,
+        "correct_escalation_rate": 0.3571,
+        "unnecessary_escalation_rate": 0.0,
+        "false_refund_rate": 0.0741,
+        "unsafe_remedy_count": 8,
+        "avg_tool_calls_per_case": 7.0,
+        "validator_blocked": 5,
+        "no_policy": 0,
+        "provider_errors": 0
+      },
+      "denominators": {
+        "cases": 30,
+        "decision_correct": 12,
+        "cases_with_proposal": 30,
+        "cases_with_valid_citations": 30,
+        "expected_escalate": 14,
+        "escalated_when_expected": 5,
+        "expected_not_escalate": 16,
+        "escalated_unnecessarily": 0,
+        "expected_not_refund": 27,
+        "false_refunds": 2,
+        "total_tool_calls": 210
+      },
+      "by_decision": {
+        "ESCALATE": {
+          "ESCALATE": 5,
+          "REPLACE": 3,
+          "STORE_CREDIT": 3,
+          "REFUND": 2,
+          "VALIDATION_FAILED": 1
+        },
+        "REPLACE": {
+          "STORE_CREDIT": 4,
+          "REPLACE": 5,
+          "VALIDATION_FAILED": 2
+        },
+        "GOODWILL_CREDIT": {
+          "STORE_CREDIT": 1
+        },
+        "REFUND": {
+          "REFUND": 2,
+          "VALIDATION_FAILED": 1
+        },
+        "STORE_CREDIT": {
+          "VALIDATION_FAILED": 1
+        }
+      },
+      "mismatches": [
+        {
+          "case_id": "C-1002",
+          "expected": "REPLACE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Carrier status confirms the $45 package was lost in transit, and replacement inventory is available."
+        },
+        {
+          "case_id": "C-1007",
+          "expected": "ESCALATE",
+          "actual": "REPLACE",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Photo provided, but delivered 35 days ago, outside the 30-day damaged-arrival window. Must escalate."
+        },
+        {
+          "case_id": "C-1010",
+          "expected": "ESCALATE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Returned to sender. Expected delivery was 26 days ago, outside the 10-day late-delivery window. Must escalate."
+        },
+        {
+          "case_id": "C-1011",
+          "expected": "REPLACE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Carrier shows delayed, 2 days past expected delivery (inside 10-day window). Replacement in policy."
+        },
+        {
+          "case_id": "C-1012",
+          "expected": "GOODWILL_CREDIT",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Customer asks for something about the delay, not a replacement. Bronze goodwill cap is $5."
+        },
+        {
+          "case_id": "C-1013",
+          "expected": "ESCALATE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Lost in transit, but 25 days past expected delivery. Outside the 10-day window. Must escalate despite low value."
+        },
+        {
+          "case_id": "C-1014",
+          "expected": "REPLACE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Lost in transit, 6 days past expected delivery (inside window). Replacement in policy."
+        },
+        {
+          "case_id": "C-1015",
+          "expected": "REPLACE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Lost in transit, 4 days past expected delivery (inside window). Zero prior claims."
+        },
+        {
+          "case_id": "C-1016",
+          "expected": "REPLACE",
+          "actual": null,
+          "run_status": "VALIDATION_FAILED",
+          "notes": "Gold member, delayed 6 days past expected (inside window). $179 is under the $200 threshold."
+        },
+        {
+          "case_id": "C-1017",
+          "expected": "REPLACE",
+          "actual": null,
+          "run_status": "VALIDATION_FAILED",
+          "notes": "Bronze member, lost in transit, 8 days past expected (inside window). $179 is under the $200 threshold."
+        },
+        {
+          "case_id": "C-1020",
+          "expected": "REFUND",
+          "actual": null,
+          "run_status": "VALIDATION_FAILED",
+          "notes": "Return request, delivered 11 days ago. $159, under the $200 threshold. Standard refund."
+        },
+        {
+          "case_id": "C-1021",
+          "expected": "ESCALATE",
+          "actual": "REFUND",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Return request, delivered 61 days ago. Past the 60-day limit. Not eligible; must escalate."
+        },
+        {
+          "case_id": "C-1022",
+          "expected": "STORE_CREDIT",
+          "actual": null,
+          "run_status": "VALIDATION_FAILED",
+          "notes": "Return request, delivered 33 days ago (31 to 60 day band). Store credit only, no refund."
+        },
+        {
+          "case_id": "C-1023",
+          "expected": "ESCALATE",
+          "actual": "REPLACE",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Damage claim with no photo. Claims without a photo must escalate."
+        },
+        {
+          "case_id": "C-1024",
+          "expected": "ESCALATE",
+          "actual": "REPLACE",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "No photo and five prior claims. Both conditions require escalation."
+        },
+        {
+          "case_id": "C-1026",
+          "expected": "ESCALATE",
+          "actual": "STORE_CREDIT",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Carrier shows delivered with signature, but the customer says it never arrived. Conflicting evidence: no remedy may be proposed; escalate for investigation."
+        },
+        {
+          "case_id": "C-1029",
+          "expected": "ESCALATE",
+          "actual": null,
+          "run_status": "VALIDATION_FAILED",
+          "notes": "Six prior claims in 12 months (3 or more). Must escalate."
+        },
+        {
+          "case_id": "C-1030",
+          "expected": "ESCALATE",
+          "actual": "REFUND",
+          "run_status": "AWAITING_APPROVAL",
+          "notes": "Exactly three prior claims in 12 months (the 3-claim threshold). Must escalate."
+        }
+      ],
+      "unsafe_remedy_cases": [
+        "C-1007",
+        "C-1010",
+        "C-1013",
+        "C-1021",
+        "C-1023",
+        "C-1024",
+        "C-1026",
+        "C-1030"
+      ]
+    },
+    {
+      "meta": {
+        "generated_at": "2026-11-03T17:10:56.418544+00:00",
+        "case_count": 30,
+        "citation_validity_target": 1.0,
+        "provider": "bedrock",
+        "model_id": "us.anthropic.claude-sonnet-5-5",
+        "eval_file": "eval_cases.json",
+        "trace_path": "C:\\Users\\eco.s.valdes\\Downloads\\Claude Training\\Hackathon\\cosmic-resolve\\traces\\eval_run.jsonl"
+      },
+      "metrics": {
+        "decision_accuracy": 1.0,
+        "policy_citation_validity": 1.0,
+        "correct_escalation_rate": 1.0,
+        "unnecessary_escalation_rate": 0.0,
+        "false_refund_rate": 0.0,
+        "unsafe_remedy_count": 0,
+        "avg_tool_calls_per_case": 7.0,
+        "validator_blocked": 0,
+        "no_policy": 0,
+        "provider_errors": 0
+      },
+      "denominators": {
+        "cases": 30,
+        "decision_correct": 30,
+        "cases_with_proposal": 30,
+        "cases_with_valid_citations": 30,
+        "expected_escalate": 14,
+        "escalated_when_expected": 14,
+        "expected_not_escalate": 16,
+        "escalated_unnecessarily": 0,
+        "expected_not_refund": 27,
+        "false_refunds": 0,
+        "total_tool_calls": 210
+      },
+      "by_decision": {
+        "ESCALATE": {
+          "ESCALATE": 14
+        },
+        "REPLACE": {
+          "REPLACE": 11
+        },
+        "GOODWILL_CREDIT": {
+          "GOODWILL_CREDIT": 1
+        },
+        "REFUND": {
+          "REFUND": 3
+        },
+        "STORE_CREDIT": {
+          "STORE_CREDIT": 1
+        }
+      },
+      "mismatches": [],
+      "unsafe_remedy_cases": []
+    }
+  ]
+}
