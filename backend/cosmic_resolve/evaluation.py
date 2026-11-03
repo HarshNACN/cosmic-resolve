@@ -262,6 +262,31 @@ def run_evaluation(
     return build_scorecard(rows, meta)
 
 
+def load_history(path: Path) -> list[dict[str, Any]]:
+    """Return the runs already recorded in the scorecard file, oldest first. Raises ValueError if unreadable."""
+    if not path.exists():
+        return []
+    try:
+        existing = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{path} is not valid JSON, so its run history cannot be read ({exc}).") from exc
+    if isinstance(existing, dict) and isinstance(existing.get("runs"), list):
+        return list(existing["runs"])
+    if isinstance(existing, dict) and "metrics" in existing:
+        return [existing]  # older single-run file: keep it as the first run
+    raise ValueError(f"{path} has an unrecognised format, so its run history cannot be read.")
+
+
+def append_run(path: Path, scorecard: dict[str, Any]) -> dict[str, Any]:
+    """Append one run to the scorecard history. Earlier runs are never rewritten."""
+    history = {"runs": load_history(path) + [scorecard]}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_suffix(path.suffix + ".tmp")
+    temp.write_text(json.dumps(history, indent=2) + "\n", encoding="utf-8")
+    temp.replace(path)
+    return history
+
+
 def citation_gate_failed(scorecard: dict[str, Any]) -> bool:
     """True when policy-citation validity is below the PRD target. Accuracy is reported, not gated."""
     validity = scorecard["metrics"]["policy_citation_validity"]
