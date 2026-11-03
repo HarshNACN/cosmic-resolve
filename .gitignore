@@ -32,7 +32,6 @@ credentials
 # Application output
 logs/
 traces/
-evals/scorecard.json
 *.jsonl
 *.log
 *.db

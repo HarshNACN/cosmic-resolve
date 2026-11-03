@@ -30,7 +30,7 @@ def _event_types(path):
 def test_propose_makes_no_writes(trace_file):
     run = workflow.propose_resolution("C-1002", PROVIDER)
     assert run.status == workflow.AWAITING_APPROVAL
-    assert run.proposal.decision == Decision.STORE_CREDIT
+    assert run.proposal.decision == Decision.REPLACE
     assert run.actions == []
     assert "mock_action" not in _event_types(trace_file)
 
@@ -44,7 +44,7 @@ def test_over_threshold_case_escalates():
 def test_approved_run_executes_gated_writes(trace_file):
     run = workflow.apply_approval(workflow.propose_resolution("C-1002", PROVIDER), _approval())
     assert run.status == workflow.EXECUTED
-    assert [a["action"] for a in run.actions] == ["issue_store_credit", "send_customer_message", "tag_root_cause"]
+    assert [a["action"] for a in run.actions] == ["create_replacement", "send_customer_message", "tag_root_cause"]
     types = _event_types(trace_file)
     assert types.index("human_decision") < types.index("mock_action")
 

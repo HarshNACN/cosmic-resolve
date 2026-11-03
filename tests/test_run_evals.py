@@ -245,3 +245,41 @@ def test_preflight_rejects_duplicates(tmp_path):
     entries[1]["case_id"] = entries[0]["case_id"]
     with pytest.raises(EvalPreflightError, match="duplicate case_id"):
         load_eval_cases(_write_eval(tmp_path, entries))
+
+
+def test_append_run_keeps_earlier_runs(tmp_path, entries, eval_trace):
+    from cosmic_resolve.evaluation import append_run, load_history
+
+    out = tmp_path / "scorecard.json"
+    first = _run(RuleBasedModelProvider(), entries, eval_trace)
+    second = _run(FixedProvider(Decision.REFUND), entries, eval_trace)
+    append_run(out, first)
+    history = append_run(out, second)
+
+    assert len(history["runs"]) == 2
+    assert history["runs"][0]["metrics"] == first["metrics"]
+    assert history["runs"][1]["metrics"] == second["metrics"]
+    assert json.loads(out.read_text(encoding="utf-8"))["runs"][0]["meta"]["provider"] == "test"
+    assert len(load_history(out)) == 2
+
+
+def test_append_run_refuses_unreadable_file_and_leaves_it_alone(tmp_path, entries, eval_trace):
+    from cosmic_resolve.evaluation import append_run
+
+    out = tmp_path / "scorecard.json"
+    out.write_text("{ not json", encoding="utf-8")
+    card = _run(RuleBasedModelProvider(), entries, eval_trace)
+    with pytest.raises(ValueError, match="not valid JSON"):
+        append_run(out, card)
+    assert out.read_text(encoding="utf-8") == "{ not json"
+
+
+def test_append_run_keeps_legacy_single_run_file(tmp_path, entries, eval_trace):
+    from cosmic_resolve.evaluation import append_run
+
+    out = tmp_path / "scorecard.json"
+    legacy = _run(RuleBasedModelProvider(), entries, eval_trace)
+    out.write_text(json.dumps(legacy), encoding="utf-8")
+    history = append_run(out, _run(FixedProvider(Decision.REFUND), entries, eval_trace))
+    assert len(history["runs"]) == 2
+    assert history["runs"][0]["metrics"] == legacy["metrics"]
