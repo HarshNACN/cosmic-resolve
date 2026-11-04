@@ -190,3 +190,19 @@ def test_injected_client_is_used_without_creating_a_boto3_client(monkeypatch):
     monkeypatch.setattr(boto3, "client", must_not_be_called)
     injected = object()
     assert BedrockModelProvider(client=injected, model_id="test-profile")._client is injected
+
+
+def test_missing_boto3_is_a_provider_error_not_a_crash(monkeypatch):
+    import builtins
+
+    real_import = builtins.__import__
+
+    def no_boto3(name, *args, **kwargs):
+        if name == "boto3":
+            raise ImportError("No module named 'boto3'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setenv("AWS_REGION", "us-east-2")
+    monkeypatch.setattr(builtins, "__import__", no_boto3)
+    with pytest.raises(ProviderError, match="boto3"):
+        BedrockModelProvider(model_id="test-profile")

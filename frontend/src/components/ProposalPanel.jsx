@@ -11,6 +11,22 @@ function Row({ label, children }) {
   );
 }
 
+// Operational metadata only. Labels come from fixed maps, so an unexpected value shows nothing rather than raw text.
+const PROVIDER_LABELS = { bedrock: "Amazon Bedrock", offline: "Offline rules" };
+const MODE_LABELS = { agentic: "Agentic", single_shot: "Single-shot" };
+
+function ProviderDetails({ run }) {
+  const provider = PROVIDER_LABELS[run.provider];
+  if (!provider) return null;
+  const mode = MODE_LABELS[run.execution_mode];
+  return (
+    <dl className="details provider-details">
+      <Row label="Provider">{provider}</Row>
+      {mode ? <Row label="Mode">{mode}</Row> : null}
+    </dl>
+  );
+}
+
 // Validation status is not a separate field in the API. It is derived from the run status the backend
 // returns with the proposal, and labeled that way.
 function describeValidation(run) {
@@ -28,16 +44,19 @@ function describeValidation(run) {
   }
 }
 
-// Says who produced the recommendation, so a reviewer can tell the agent from the offline rules.
+// Says how the recommendation was produced, so a reviewer can tell the agent from the offline rules.
+// Keyed on execution_mode from the backend; an unknown mode shows nothing.
 function describeProvenance(run) {
-  switch (run.provider) {
-    case "agent": {
+  switch (run.execution_mode) {
+    case "agentic": {
       const calls = Number.isInteger(run.tool_calls) ? run.tool_calls : null;
-      return calls === null ? "Recommended by the Claude agent" : `Recommended by the Claude agent, ${calls} ${calls === 1 ? "tool call" : "tool calls"}`;
+      return calls === null
+        ? "Recommended by the Claude agent"
+        : `Recommended by the Claude agent, ${calls} ${calls === 1 ? "tool call" : "tool calls"}`;
     }
-    case "rules":
+    case "rule_based":
       return "Offline rule-based";
-    case "bedrock":
+    case "single_shot":
       return "Recommended by the Claude model (fixed pipeline)";
     default:
       return null;
@@ -56,6 +75,7 @@ function ProposalBody({ run }) {
 
   return (
     <>
+      <ProviderDetails run={run} />
       {provenance ? <p className="provenance muted">{provenance}</p> : null}
 
       {needsReview ? (

@@ -45,6 +45,34 @@ function SetupNote({ capabilities }) {
   );
 }
 
+const LANGUAGE_LABELS = { en: "English", es: "Español", pt: "Português (Brasil)" };
+
+// Shows which language the call is in, with a compact manual selector. Rendered only when multilingual calls are on,
+// so with the feature off the panel looks exactly as before.
+function LanguageControl({ capabilities, session, selected, onChange, disabled }) {
+  if (!capabilities?.multilingual) return null;
+  const labels = { ...LANGUAGE_LABELS, ...(capabilities.language_labels || {}) };
+  const current = session?.language || selected;
+  return (
+    <div className="language-control">
+      <span className="tag" data-testid="language-indicator" aria-live="polite">
+        {labels[current] || labels.en}
+      </span>
+      <label className="visually-hidden" htmlFor="language-select">
+        Call language
+      </label>
+      <select id="language-select" value={current} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
+        {Object.keys(LANGUAGE_LABELS).map((code) => (
+          <option key={code} value={code}>
+            {labels[code]}
+            {capabilities.languages && capabilities.languages[code] === false ? " (text only)" : ""}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function micLabel(phase) {
   if (phase === "recording") return "Stop recording and send";
   if (phase === "speaking") return "Interrupt and speak";
@@ -60,6 +88,7 @@ export default function CallPanel({ onCaseCreated }) {
   const [callers, setCallers] = useState({ status: "loading", items: [], error: null });
   const [callerId, setCallerId] = useState("");
   const [typed, setTyped] = useState("");
+  const [preferred, setPreferred] = useState("en");
   const transcriptEnd = useRef(null);
 
   const loadCallers = useCallback(() => {
@@ -96,6 +125,16 @@ export default function CallPanel({ onCaseCreated }) {
       <div className="call-head">
         <h2 id="call-heading">Customer voice call</h2>
         {session ? <span className="tag">Caller: {session.customer.first_name}</span> : null}
+        <LanguageControl
+          capabilities={call.capabilities}
+          session={session}
+          selected={preferred}
+          disabled={phase === "connecting" || phase === "recording" || phase === "thinking" || finished}
+          onChange={(language) => {
+            setPreferred(language);
+            call.changeLanguage(language);
+          }}
+        />
       </div>
 
       {phase === "idle" ? (
@@ -171,7 +210,9 @@ export default function CallPanel({ onCaseCreated }) {
             <ol className="call-transcript" aria-label="Call transcript">
               {(session?.transcript || []).map((line, index) => (
                 <li key={`${index}-${line.role}`}>
-                  <span className={line.role === "agent" ? "who who-agent" : "who"}>{line.role === "agent" ? "Cosmo" : "Customer"}</span>
+                  <span className={line.role === "agent" ? "who who-agent" : "who"}>
+                    {line.role === "agent" ? (line.note ? "Cosmo (approved message)" : "Cosmo") : "Customer"}
+                  </span>
                   {line.text}
                 </li>
               ))}
@@ -179,6 +220,11 @@ export default function CallPanel({ onCaseCreated }) {
             </ol>
 
             <SetupNote capabilities={call.capabilities} />
+            {call.missingVoice ? (
+              <p className="muted" role="status">
+                No {call.missingVoice} voice is installed, so Cosmo is replying in text only. See docs/VOICE.md to add it.
+              </p>
+            ) : null}
             {call.notice ? <ErrorNotice title="Call problem" detail={call.notice} /> : null}
 
             <div className="call-controls">

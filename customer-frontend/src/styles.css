@@ -483,3 +483,41 @@ p {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- View switch (internal / customer) ---------- */
+
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid rgba(242, 243, 248, 0.25);
+  border-radius: 8px;
+}
+.view-switch-link {
+  padding: 5px 14px;
+  border-radius: 6px;
+  color: #aab1c6;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.view-switch-link:hover {
+  color: #f2f3f8;
+}
+.view-switch-link.is-current {
+  background: #8f2de0;
+  color: #fff;
+}
+.view-switch-link:focus-visible {
+  outline: 2px solid #f2f3f8;
+  outline-offset: 2px;
+}
+@media (max-width: 520px) {
+  .brand-section {
+    display: none;
+  }
+}

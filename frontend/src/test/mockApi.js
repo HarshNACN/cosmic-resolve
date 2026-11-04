@@ -119,7 +119,8 @@ export const CHECKPOINT_ENABLED_RUN = {
   proposal_fingerprint: "a".repeat(64),
   recommended_action: "Manual review required: Value > $200 threshold",
   checkpoint_writes_enabled: true,
-  provider: "rules",
+  provider: "offline",
+  execution_mode: "rule_based",
   tool_calls: null,
 };
 
@@ -129,7 +130,8 @@ export const CHECKPOINT_ENABLED_STORE_CREDIT_RUN = {
   recommended_action: null,
   checkpoint_writes_enabled: true,
   // Provenance: produced by the Claude agent after three read-tool calls (backend/api.py propose).
-  provider: "agent",
+  provider: "bedrock",
+  execution_mode: "agentic",
   tool_calls: 3,
 };
 

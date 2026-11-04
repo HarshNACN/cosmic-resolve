@@ -6,6 +6,7 @@ import {
   createVoiceSession,
   fetchVoiceSession,
   sendTurn,
+  setCallLanguage,
   speakLine,
   voiceWarmup,
 } from "./voiceApi.js";
@@ -13,6 +14,16 @@ import {
 const POLL_MS = 1500;
 const MIN_RECORDING_BYTES = 1200; // anything smaller is a stray tap, not speech
 const TALKABLE = new Set(["listening", "speaking", "waiting"]);
+
+const DEFAULT_LOCALES = { en: "en-US", es: "es-MX", pt: "pt-BR" };
+
+// The browser's own voice, used only when the server has no voice for the line. The locale picks the right accent.
+function speakInBrowser(text, language, capabilities) {
+  if (!text || !("speechSynthesis" in window)) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = capabilities?.browser_locales?.[language] || DEFAULT_LOCALES[language] || DEFAULT_LOCALES.en;
+  window.speechSynthesis.speak(utterance);
+}
 
 const messageOf = (error) =>
   error instanceof VoiceApiError || error instanceof Error ? error.message : "Something went wrong. Please try again.";
@@ -24,12 +35,14 @@ export function useVoiceCall({ onCaseCreated } = {}) {
   const [notice, setNotice] = useState(null);
   const [level, setLevel] = useState(0);
   const [capabilities, setCapabilities] = useState(null);
+  const [missingVoice, setMissingVoice] = useState(null); // label of a language whose voice is not installed
 
   const player = useRef(null);
   const abort = useRef(null);
   const sessionRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const phaseRef = useRef("idle");
+  const languageChoice = useRef(undefined); // set before a call starts; sent when the session is created
   const finishRecordingRef = useRef(() => {});
   const caseCallback = useRef(onCaseCreated);
   caseCallback.current = onCaseCreated;
@@ -92,9 +105,26 @@ export function useVoiceCall({ onCaseCreated } = {}) {
             transcript: [...(sessionRef.current?.transcript || []), { role: "agent", text: event.text }],
           });
           // No server voice (Piper not set up): read the line with the browser's own voice instead.
-          if (capabilitiesRef.current && !capabilitiesRef.current.tts && "speechSynthesis" in window) {
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(event.text));
+          if (capabilitiesRef.current && !capabilitiesRef.current.tts) {
+            speakInBrowser(event.text, event.lang || sessionRef.current?.language, capabilitiesRef.current);
           }
+          go("speaking");
+          break;
+        case "agent_text":
+          // The associate's approved message in its original wording: shown, never spoken or translated.
+          keepSession({
+            ...sessionRef.current,
+            transcript: [...(sessionRef.current?.transcript || []), { role: "agent", text: event.text, note: true }],
+          });
+          break;
+        case "language":
+          keepSession({ ...sessionRef.current, language: event.language });
+          setMissingVoice(null);
+          break;
+        case "voice_unavailable":
+          // Text still works. Say so, and read the line with the browser's voice for that locale if there is one.
+          setMissingVoice(event.label || event.language);
+          speakInBrowser(sessionRef.current?.transcript?.at(-1)?.text || "", event.language, capabilitiesRef.current);
           go("speaking");
           break;
         case "audio":
@@ -144,7 +174,7 @@ export function useVoiceCall({ onCaseCreated } = {}) {
       await player.current.unlock(); // inside the click that started the call, so the browser allows sound
       try {
         await prepare();
-        const snapshot = await createVoiceSession(customerId);
+        const snapshot = await createVoiceSession(customerId, undefined, languageChoice.current);
         keepSession(snapshot);
         await run((onEvent, signal) => speakLine(snapshot.session_id, "greeting", onEvent, signal));
       } catch (error) {
@@ -199,6 +229,19 @@ export function useVoiceCall({ onCaseCreated } = {}) {
     [go, interrupt, run],
   );
 
+  // The manual selector. Re-asks the current step in the new language; never starts a case or ends the call.
+  const changeLanguage = useCallback(
+    (language) => {
+      languageChoice.current = language;
+      if (!sessionRef.current) return;
+      if (!TALKABLE.has(phaseRef.current)) return;
+      if (phaseRef.current === "speaking") interrupt();
+      go("thinking");
+      run((onEvent, signal) => setCallLanguage(sessionRef.current.session_id, language, onEvent, signal));
+    },
+    [go, interrupt, run],
+  );
+
   const sendText = useCallback((text) => talk({ text }), [talk]);
   const chooseOrder = useCallback((orderId) => talk({ orderId }), [talk]);
 
@@ -213,6 +256,7 @@ export function useVoiceCall({ onCaseCreated } = {}) {
     recorder.cancel();
     keepSession(null);
     setNotice(null);
+    setMissingVoice(null);
     go("idle");
   }, [go, interrupt, keepSession, recorder]);
 
@@ -253,6 +297,8 @@ export function useVoiceCall({ onCaseCreated } = {}) {
     notice,
     level,
     capabilities,
+    missingVoice,
+    changeLanguage,
     recording: recorder.recording,
     startCall,
     toggleMic,

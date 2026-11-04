@@ -20,6 +20,7 @@ from .bedrock_provider import (
     TOOL_NAME,
     BedrockModelProvider,
     _escape_untrusted,
+    map_bedrock_error,
 )
 from .model_provider import ModelProvider, ProviderError, RuleBasedModelProvider
 from .models import ResolutionProposal, SupportCase
@@ -47,6 +48,9 @@ Rules:
 
 class BedrockAgentProvider(BedrockModelProvider):
     """Bedrock provider that investigates with read tools before proposing. Same config as BedrockModelProvider."""
+
+    provider_name = "bedrock"
+    execution_mode = "agentic"
 
     def __init__(
         self,
@@ -137,7 +141,7 @@ class BedrockAgentProvider(BedrockModelProvider):
                 inferenceConfig={"maxTokens": self.max_tokens},
             )
         except Exception as exc:  # network, auth, throttling: surface as a provider failure
-            raise ProviderError(f"Bedrock call failed: {exc}") from exc
+            raise ProviderError(map_bedrock_error(exc)) from exc
 
     def _run_tool(self, case_id: str, turn: int, use: dict[str, Any]) -> dict[str, Any]:
         name = use.get("name", "")

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import ViewSwitch from "./components/ViewSwitch.jsx";
 import Progress from "./components/Progress.jsx";
 import OrderStep from "./components/OrderStep.jsx";
 import ProblemStep from "./components/ProblemStep.jsx";
@@ -79,7 +80,10 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true" />
           <span className="brand-name">Cosmic Mart</span>
         </div>
-        <span className="brand-section">Support</span>
+        <div className="header-end">
+          <span className="brand-section">Support</span>
+          <ViewSwitch current="customer" />
+        </div>
       </header>
 
       <main className="support-main" aria-labelledby="page-title">

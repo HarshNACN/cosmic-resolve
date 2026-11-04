@@ -8,6 +8,7 @@ Configuration comes only from environment variables:
 from __future__ import annotations
 
 import json
+import logging
 import os
 from typing import Any, Sequence
 
@@ -19,6 +20,71 @@ from .model_provider import ProviderError
 from .models import Decision, ResolutionProposal, SupportCase
 
 TOOL_NAME = "submit_resolution"
+
+logger = logging.getLogger(__name__)
+
+# Browser-safe messages. Raw AWS error text can contain account IDs, ARNs and request details, so it is never
+# returned. The class name and error code go to the server log instead.
+_CREDENTIAL_CODES = {
+    "ExpiredToken", "ExpiredTokenException", "InvalidClientTokenId", "UnrecognizedClientException",
+    "SignatureDoesNotMatch", "InvalidSignatureException",
+}
+_ACCESS_DENIED_CODES = {"AccessDeniedException", "AccessDenied", "UnauthorizedOperation"}
+_THROTTLED_CODES = {"ThrottlingException", "TooManyRequestsException"}
+_UNAVAILABLE_CODES = {"ServiceUnavailableException", "InternalServerException"}
+_SAFE_MESSAGES = {
+    "credentials_missing": "Bedrock credentials are not configured.",
+    "credentials_invalid": "Bedrock credentials have expired or are invalid.",
+    "access_denied": "Bedrock access is not authorized.",
+    "model_config": "Bedrock model configuration is invalid.",
+    "model_missing": "The Bedrock model or inference profile was not found.",
+    "throttled": "Bedrock is temporarily rate limited. Try again shortly.",
+    "timeout": "Bedrock did not respond in time.",
+    "unreachable": "Could not reach Bedrock.",
+    "unavailable": "Bedrock is temporarily unavailable.",
+    "other": "The Bedrock call failed.",
+}
+
+
+def _error_code(exc: BaseException) -> str:
+    response = getattr(exc, "response", None)
+    if isinstance(response, dict):
+        error = response.get("Error")
+        if isinstance(error, dict):
+            return str(error.get("Code", ""))
+    return ""
+
+
+def classify_bedrock_error(exc: BaseException) -> str:
+    """Name of the failure category. Matches botocore exceptions by class name, so boto3 is not required to import this."""
+    name = type(exc).__name__
+    if name in ("NoCredentialsError", "PartialCredentialsError"):
+        return "credentials_missing"
+    if name in ("ReadTimeoutError", "ConnectTimeoutError"):
+        return "timeout"
+    if name == "EndpointConnectionError":
+        return "unreachable"
+    code = _error_code(exc)
+    if code in _CREDENTIAL_CODES:
+        return "credentials_invalid"
+    if code in _ACCESS_DENIED_CODES:
+        return "access_denied"
+    if code in _THROTTLED_CODES:
+        return "throttled"
+    if code == "ResourceNotFoundException":
+        return "model_missing"
+    if code == "ValidationException":
+        return "model_config"
+    if code in _UNAVAILABLE_CODES:
+        return "unavailable"
+    return "other"
+
+
+def map_bedrock_error(exc: BaseException) -> str:
+    """The safe message for a failed Bedrock call. Logs the category and error code only, never the message text."""
+    kind = classify_bedrock_error(exc)
+    logger.warning("Bedrock call failed: category=%s error_class=%s code=%s", kind, type(exc).__name__, _error_code(exc) or "-")
+    return _SAFE_MESSAGES[kind]
 
 # Client timeouts for the boto3 client this module creates (injected test clients are not affected).
 # A single converse call waits at most read_timeout per attempt. The agent loop also has its own overall limit.
@@ -78,6 +144,9 @@ def _dump(model: Any, **kwargs: Any) -> Any:
 
 
 class BedrockModelProvider:
+    provider_name = "bedrock"
+    execution_mode = "single_shot"
+
     def __init__(
         self,
         client: Any | None = None,
@@ -96,7 +165,10 @@ class BedrockModelProvider:
         if client is not None:
             self._client = client
         else:
-            import boto3  # lazy: only needed for live calls
+            try:
+                import boto3  # lazy: only needed for live calls
+            except ImportError as exc:
+                raise ProviderError("boto3 is not installed, so the Bedrock provider is unavailable.") from exc
             from botocore.config import Config
 
             region = region or os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
@@ -157,7 +229,7 @@ class BedrockModelProvider:
                 inferenceConfig={"maxTokens": self.max_tokens},  # temperature is deprecated for Sonnet 5.5
             )
         except Exception as exc:  # network, auth, throttling: surface as a provider failure
-            raise ProviderError(f"Bedrock call failed: {exc}") from exc
+            raise ProviderError(map_bedrock_error(exc)) from exc
 
         self.last_exchange["response"] = {
             "content": response.get("output", {}).get("message", {}).get("content", []),

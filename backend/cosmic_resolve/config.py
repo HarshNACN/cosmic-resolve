@@ -47,13 +47,48 @@ def checkpoint_writes_enabled(environ: Mapping[str, str] = os.environ) -> bool:
     return environ.get("CHECKPOINT_WRITES_ENABLED", "").strip().lower() in _TRUE_VALUES
 
 
-def live_provider_enabled(environ: Mapping[str, str] = os.environ) -> bool:
-    """Whether the API uses the live Bedrock provider instead of the offline rule-based one.
+PROVIDER_OFFLINE = "offline"
+PROVIDER_BEDROCK = "bedrock"
+PROVIDER_VALUES = (PROVIDER_OFFLINE, PROVIDER_BEDROCK)
 
-    Off unless COSMIC_RESOLVE_LIVE is explicitly set to a true value; read on every call. Local demo only:
-    vercel.json must never set it. COSMIC_RESOLVE_PIPELINE=agent additionally selects the investigation loop.
+
+class ProviderConfigError(ValueError):
+    """The provider configuration is invalid or contradictory. Raised instead of guessing a provider.
+
+    The message never echoes the configured value, in case someone pasted a secret into the wrong variable.
     """
-    return environ.get("COSMIC_RESOLVE_LIVE", "").strip().lower() in _TRUE_VALUES
+
+
+def provider_setting(environ: Mapping[str, str] = os.environ) -> str | None:
+    """The explicit MODEL_PROVIDER value ("offline" or "bedrock"), or None when it is unset."""
+    raw = environ.get("MODEL_PROVIDER", "").strip().lower()
+    if not raw:
+        return None
+    if raw not in PROVIDER_VALUES:
+        raise ProviderConfigError("MODEL_PROVIDER must be 'offline' or 'bedrock'.")
+    return raw
+
+
+def effective_provider(environ: Mapping[str, str] = os.environ) -> str:
+    """Which provider serves recommendations: "offline" or "bedrock". Read on every call.
+
+    MODEL_PROVIDER is the authoritative setting and defaults to offline. The older local switch
+    COSMIC_RESOLVE_LIVE is honoured only when MODEL_PROVIDER is unset, so existing local demos keep working. If both
+    are set and disagree, this raises instead of picking one.
+    """
+    explicit = provider_setting(environ)
+    legacy_raw = environ.get("COSMIC_RESOLVE_LIVE", "").strip().lower()
+    legacy_on = legacy_raw in _TRUE_VALUES
+    if explicit is None:
+        return PROVIDER_BEDROCK if legacy_on else PROVIDER_OFFLINE
+    if legacy_raw and legacy_on != (explicit == PROVIDER_BEDROCK):
+        raise ProviderConfigError("MODEL_PROVIDER and COSMIC_RESOLVE_LIVE disagree. Unset COSMIC_RESOLVE_LIVE.")
+    return explicit
+
+
+def live_provider_enabled(environ: Mapping[str, str] = os.environ) -> bool:
+    """Whether recommendations come from Bedrock rather than the offline rules. See effective_provider."""
+    return effective_provider(environ) == PROVIDER_BEDROCK
 
 # Flat human-approval threshold for all loyalty tiers (PRD decision #1). Stated in data/policies.json (clauses
 # DOA-03, LD-03, RET-04); the model prompts are generated from this value.

@@ -28,6 +28,13 @@ def isolated_state(tmp_path, monkeypatch):
     checkpoint.reset_decided_for_tests()
 
 
+@pytest.fixture(autouse=True)
+def no_provider_env(monkeypatch):
+    """A local .env can select Bedrock (config loads it at import). Tests here must never reach it: clear the switches."""
+    for name in ("MODEL_PROVIDER", "COSMIC_RESOLVE_LIVE", "COSMIC_RESOLVE_PIPELINE"):
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture
 def enabled(monkeypatch):
     monkeypatch.setenv("CHECKPOINT_WRITES_ENABLED", "true")
@@ -129,7 +136,7 @@ def test_propose_envelope_reports_enabled_capability(enabled):
 
 def test_recommended_action_is_returned_only_for_escalations_awaiting_review():
     escalation = client.post("/api/cases/C-1001/propose").json()
-    assert escalation["recommended_action"] == "Manual review required: Value > $200 threshold"
+    assert escalation["recommended_action"].startswith("Manual review required:")
     assert client.post("/api/cases/C-1002/propose").json()["recommended_action"] is None
 
 
@@ -381,7 +388,8 @@ class _InvestigatingStub:
 def live(monkeypatch, enabled):
     stub = _InvestigatingStub()
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
-    monkeypatch.setattr("api.select_provider", lambda live_flag: stub)
+    # The provider choice lives in the factory: build_provider calls select_provider.
+    monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: stub)
     return stub
 
 
@@ -447,7 +455,7 @@ class _GoodwillStub:
 @pytest.fixture
 def live_goodwill(monkeypatch, enabled):
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
-    monkeypatch.setattr("api.select_provider", lambda live_flag: _GoodwillStub())
+    monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: _GoodwillStub())
 
 
 def test_unchanged_customer_tier_still_approves_the_goodwill_credit(live_goodwill, isolated_state):

@@ -31,14 +31,16 @@ describe("propose normalizer", () => {
   it("passes the provenance fields through from the backend", async () => {
     installFetch(routes(CHECKPOINT_ENABLED_STORE_CREDIT_RUN));
     const result = await generateProposal("C-1002");
-    expect(result.provider).toBe("agent");
+    expect(result.provider).toBe("bedrock");
+    expect(result.execution_mode).toBe("agentic");
     expect(result.tool_calls).toBe(3);
   });
 
   it("returns null provenance when the backend sends none, and rejects a non-integer tool count", async () => {
-    installFetch(routes({ ...CHECKPOINT_ENABLED_RUN, provider: undefined, tool_calls: "3" }));
+    installFetch(routes({ ...CHECKPOINT_ENABLED_RUN, provider: undefined, execution_mode: undefined, tool_calls: "3" }));
     const result = await generateProposal("C-1002");
     expect(result.provider).toBeNull();
+    expect(result.execution_mode).toBeNull();
     expect(result.tool_calls).toBeNull();
   });
 });
@@ -59,7 +61,7 @@ describe("provenance line in the proposal panel", () => {
   });
 
   it("says the offline rule-based provider made the recommendation", async () => {
-    await generateFor({ ...CHECKPOINT_ENABLED_STORE_CREDIT_RUN, provider: "rules", tool_calls: null });
+    await generateFor({ ...CHECKPOINT_ENABLED_STORE_CREDIT_RUN, provider: "offline", execution_mode: "rule_based", tool_calls: null });
     expect(screen.getByText("Offline rule-based")).toBeInTheDocument();
     expect(screen.queryByText(/Claude agent/)).not.toBeInTheDocument();
   });

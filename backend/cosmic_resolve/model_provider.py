@@ -28,6 +28,10 @@ _ROOT_CAUSES = {
 
 
 class RuleBasedModelProvider:
+    # Reported in the propose response and the trace, so the UI can say which provider produced a recommendation.
+    provider_name = "offline"
+    execution_mode = "rule_based"
+
     """Deterministic offline provider. Builds a proposal from the read-tool context with no model call.
 
     Stands in for the Bedrock-backed provider so the full loop can run, be tested and be evaluated offline.

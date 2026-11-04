@@ -15,6 +15,13 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
+def no_provider_env(monkeypatch):
+    """A local .env can select Bedrock (config loads it at import). Tests here must never reach it: clear the switches."""
+    for name in ("MODEL_PROVIDER", "COSMIC_RESOLVE_LIVE", "COSMIC_RESOLVE_PIPELINE"):
+        monkeypatch.delenv(name, raising=False)
+
+
+@pytest.fixture(autouse=True)
 def isolated_trace(tmp_path, monkeypatch):
     path = tmp_path / "trace.jsonl"
     monkeypatch.setattr(SETTINGS, "trace_path", path)
@@ -66,6 +73,7 @@ def test_api_propose_reaches_the_offline_endpoint():
         "pipeline",
         "provider",
         "tool_calls",
+        "execution_mode",
         "proposal",
         "proposal_fingerprint",
         "recommended_action",
@@ -74,7 +82,8 @@ def test_api_propose_reaches_the_offline_endpoint():
     assert body["case_id"] == "C-1001"
     assert body["status"] == "AWAITING_APPROVAL"
     assert body["pipeline"] == "offline"
-    assert body["provider"] == "rules"
+    assert body["provider"] == "offline"
+    assert body["execution_mode"] == "rule_based"
     assert body["tool_calls"] is None
     assert body["proposal"]["policy_clause_ids"]
 
@@ -233,10 +242,11 @@ def test_agent_propose_reports_agent_provenance_and_tool_count(monkeypatch):
 
     provider = BedrockAgentProvider(client=_ScriptedAgentClient(), model_id="test-profile")
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
-    monkeypatch.setattr("api.select_provider", lambda live_flag: provider)
+    monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: provider)
 
     body = client.post("/api/cases/C-1001/propose").json()
-    assert body["provider"] == "agent"
+    assert body["provider"] == "bedrock"
+    assert body["execution_mode"] == "agentic"
     assert body["pipeline"] == "agent"
     assert body["tool_calls"] == 2
     assert body["status"] == "AWAITING_APPROVAL"
@@ -251,9 +261,10 @@ def test_fixed_bedrock_propose_reports_bedrock_provenance_without_tool_count(mon
 
     provider = BedrockModelProvider(client=_NoToolsClient(), model_id="test-profile")
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
-    monkeypatch.setattr("api.select_provider", lambda live_flag: provider)
+    monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: provider)
 
     body = client.post("/api/cases/C-1001/propose").json()
     assert body["provider"] == "bedrock"
+    assert body["execution_mode"] == "single_shot"
     assert body["tool_calls"] is None
     assert body["status"] == "PROVIDER_ERROR"  # plain-text reply is a provider failure, not a fallback
