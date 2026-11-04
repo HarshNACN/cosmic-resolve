@@ -18,7 +18,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from . import agent_config as cfg
-from .languages import fold, normalize_language
+from . import debug
+from .languages import explicit_language_request, fold, normalize_language
 from .llm import VoiceConfigError
 
 TRANSCRIBE_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -65,6 +66,7 @@ class GroqTranscriber:
         self._client = client
 
     def _post(self, audio: bytes, filename: str, content_type: str, fields: dict[str, str]) -> dict[str, Any]:
+        debug.log("groq_request", endpoint="audio/transcriptions", model=self.model, fields=fields)
         try:
             response = self._client.post(
                 TRANSCRIBE_URL,
@@ -82,12 +84,24 @@ class GroqTranscriber:
             body = response.json()
         except ValueError as exc:
             raise TranscriptionError("The speech service returned an unreadable reply.") from exc
-        return body if isinstance(body, dict) else {}
+        body = body if isinstance(body, dict) else {}
+        debug.log("groq_response", language=body.get("language"), text=body.get("text"))
+        return body
 
     def transcribe_detailed(
-        self, audio: bytes, filename: str = "speech.webm", content_type: str = "audio/webm", hint: str | None = None
+        self,
+        audio: bytes,
+        filename: str = "speech.webm",
+        content_type: str = "audio/webm",
+        hint: str | None = None,
+        locked: bool = False,
     ) -> Transcription:
-        """The text and, with multilingual calls on, the detected language. hint is the call's current language."""
+        """The text and, with multilingual calls on, the detected language. hint is the call's current language.
+
+        locked means the customer chose that language (asked for it or picked it). Whisper's own guess is then not
+        trusted over that choice: measured, Hindi speech with English product words can be guessed as English, and
+        decoding Hindi audio as English invents English ("I said, I have to go on my own wireless earbuds").
+        """
         if not cfg.multilingual_enabled():
             body = self._post(audio, filename, content_type, {"response_format": "json", "language": "en"})
             return Transcription(str(body.get("text", "")).strip(), None)
@@ -95,6 +109,11 @@ class GroqTranscriber:
         body = self._post(audio, filename, content_type, {"response_format": "verbose_json"})
         text = str(body.get("text", "")).strip()
         detected = normalize_language(body.get("language"))
+        if locked and hint in cfg.LANGUAGES and detected != hint:
+            if explicit_language_request(text) is not None:
+                return Transcription(text, detected)  # "please speak English": a request to change, heard as spoken
+            retry = self._post(audio, filename, content_type, {"response_format": "json", "language": hint})
+            return Transcription(str(retry.get("text", "")).strip(), hint, hinted=True)
         # Measured: spoken Hindi is reported as "Urdu" (and the text comes back in Arabic script) for short answers
         # such as "हाँ, यह सही है" and "नहीं". Hindi is the supported language, so ask again for Hindi (Devanagari).
         if str(body.get("language", "")).strip().lower() == "urdu":

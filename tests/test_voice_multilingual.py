@@ -460,7 +460,7 @@ class FakeSTT:
     def __init__(self, text, language):
         self.result, self.hints = Transcription(text, language), []
 
-    def transcribe_detailed(self, audio, filename="speech.webm", content_type="audio/webm", hint=None):
+    def transcribe_detailed(self, audio, filename="speech.webm", content_type="audio/webm", hint=None, locked=False):
         self.hints.append(hint)
         return self.result
 

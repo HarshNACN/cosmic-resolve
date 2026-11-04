@@ -92,6 +92,7 @@ class VoiceSession:
     outcome: dict[str, str] | None = None
     outcome_raw: dict[str, Any] | None = None  # the verified facts behind the outcome, kept server-side for localizing
     language: str = "en"
+    language_locked: bool = False  # True once the customer asked for a language or picked one; detection then never overrides it
     created_at: str = field(default_factory=utc_now)
     order_misses: int = 0
     clarifications: int = 0

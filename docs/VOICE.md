@@ -136,7 +136,18 @@ All three voices load once at startup, in parallel, and are reused for every sen
   trusted only when the utterance is long enough or clearly in one language. One or two words ("sí", "ok", "sim") never
   change the language, because Whisper often mis-hears them (measured: "Sí" came back as English, Danish or "See you").
   A short clip that disagrees with a Spanish or Portuguese call is transcribed again with the call's language as a hint.
-- **Asking** also works: "habla español", "fale português", "please speak English".
+- **Asking** also works: "habla español", "fale português", "please speak English", "do you speak Hindi?".
+- **A language the customer chose is kept.** Asking for a language, or picking it in the selector (or before the call),
+  makes it the call's language until they ask for another one: detection no longer overrides it, and speech recognition
+  is held to it. Whisper's own guess is still read first, because that is how a spoken "please speak English" is heard;
+  if the guess disagrees and the clip is not such a request, the clip is transcribed again in the chosen language (one
+  extra call, about 0.15 s, only on disagreement). This matters because decoding Hindi speech as English *invents*
+  English: forced to English, Whisper turned a Hindi sentence about earbuds into "I said, I have to go on my own
+  wireless earbuds". Before anything is chosen, detection switches the language automatically as described above.
+- **Debugging.** `VOICE_DEBUG=true` (off by default) prints `[voice-debug]` JSON lines to the backend's stderr: the session
+  language before the turn, the fields sent to Groq (including the language hint), what Groq reported (language and raw
+  text), the final transcript sent to the page, and the language afterwards. Never the API key or audio. Transcripts are
+  customer words, so keep it off outside local debugging.
 - **Understanding** is the same code path in all three languages: yes/no ("sí", "sim", "não"), order choice
   ("el segundo", "a tomada"), missing-delivery, damage and return phrases, and the same injection defences. A spoken
   instruction is only ever complaint text.

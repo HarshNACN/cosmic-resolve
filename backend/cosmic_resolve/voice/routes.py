@@ -20,6 +20,7 @@ from starlette.datastructures import UploadFile
 
 from ..tools import DomainLookupError, get_customer
 from . import agent_config as cfg
+from . import debug
 from .dialogue import DialogueLLM, change_language, check_outcome, didnt_catch, greeting, run_turn, speak_outcome
 from .llm import BedrockDialogueLLM, VoiceConfigError
 from .orders import customer_first_name, recent_orders
@@ -206,6 +207,7 @@ def create_session(body: CreateSession) -> dict[str, Any]:
     session = new_session(body.customer_id, first_name, orders)
     if body.language and cfg.multilingual_enabled():
         session.language = body.language
+        session.language_locked = True  # chosen on the page before the call: detection will not override it
     return session.snapshot()
 
 
@@ -235,11 +237,11 @@ def speak(session_id: str, body: SpeakRequest) -> StreamingResponse:
     return _ndjson(_stream(session, speak_outcome(session)))
 
 
-def _transcribe(audio: bytes, filename: str, content_type: str, current_language: str) -> tuple[str, str | None]:
+def _transcribe(audio: bytes, filename: str, content_type: str, session: VoiceSession) -> tuple[str, str | None]:
     """(text, detected language). Detection only happens with multilingual calls on; otherwise the call is English."""
     stt = _service("stt")
     if cfg.multilingual_enabled() and hasattr(stt, "transcribe_detailed"):
-        result = stt.transcribe_detailed(audio, filename, content_type, hint=current_language)
+        result = stt.transcribe_detailed(audio, filename, content_type, hint=session.language, locked=session.language_locked)
         return result.text, result.language
     return stt.transcribe(audio, filename, content_type), None
 
@@ -277,7 +279,9 @@ async def turn(session_id: str, request: Request) -> StreamingResponse:
         if audio_bytes is not None:
             yield {"type": "stage", "stage": "transcribing"}
             try:
-                heard, detected = _transcribe(audio_bytes, filename, content_type, session.language)
+                debug.log("turn_start", session=session.session_id, language=session.language, locked=session.language_locked)
+                heard, detected = _transcribe(audio_bytes, filename, content_type, session)
+                debug.log("transcript", text=heard, detected=detected)
             except TranscriptionError as exc:
                 yield {"type": "error", "message": str(exc)}
                 return
@@ -285,6 +289,7 @@ async def turn(session_id: str, request: Request) -> StreamingResponse:
                 yield from didnt_catch(session)
                 return
         yield from run_turn(session, heard, llm, chosen_order_id=chosen, detected_language=detected)
+        debug.log("turn_end", session=session.session_id, language=session.language, locked=session.language_locked)
 
     return _ndjson(_stream(session, events()))
 
