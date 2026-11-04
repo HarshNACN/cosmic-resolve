@@ -10,7 +10,8 @@ cosmic-resolve/
 │   ├── cosmic_resolve/   # Main Python package
 │   ├── api.py           # FastAPI application entry point (uvicorn api:app)
 │   └── pyproject.toml   # Python project configuration
-├── frontend/            # React + Vite frontend skeleton (cd frontend; npm install; npm run dev)
+├── frontend/            # React + Vite staff console (cd frontend; npm install; npm run dev)
+├── customer-frontend/   # React + Vite customer-facing support app
 ├── data/                # Synthetic/mocked Cosmic Mart data fixtures
 ├── evals/               # Evaluation assets and test cases
 ├── tests/               # Integration and unit tests
@@ -38,7 +39,7 @@ Working offline loop plus a live Bedrock provider (Claude Sonnet 5.5). Every wri
 - End-to-end loop: propose, validate, human checkpoint, gated writes, trace (`workflow.py`)
 - Two providers: offline rule-based, and Bedrock (`model_provider.py`, `bedrock_provider.py`)
 - JSONL trace logging (`tracing.py`)
-- Pytest suite (49 tests, no network needed)
+- Pytest suite (offline, no network needed; `python -m pytest tests -q`)
 
 **Not yet implemented:** real evaluation harness (T20), full 30-case eval set (T19), FastAPI endpoints and trace API, React frontend, expanded fixtures (T08).
 

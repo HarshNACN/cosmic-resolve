@@ -26,7 +26,7 @@ $env:PYTHONPATH = "backend"                        # Git Bash: export PYTHONPATH
 python -m pytest tests -q
 ```
 
-**Expected:** all tests pass (339 at the time of writing). A failure here means do not proceed to Levels 2 to 4.
+**Expected:** all tests pass, except the three voice tests (`test_voice_api.py`, `test_voice_dialogue.py`) that already fail on `main`. A failure elsewhere means do not proceed to Levels 2 to 4.
 
 What is covered: read tools, write-tool gating, validator rules ($200 threshold, clause citation, goodwill caps),
 policy lookup, the loop (`tests/test_workflow.py`), and the Bedrock provider with a stubbed client
@@ -129,11 +129,24 @@ Runs all 30 cases in `evals/eval_cases.json` through `propose_resolution` and wr
 ```powershell
 python evals/run_evals.py                          # offline rule-based provider -> evals/scorecard.json
 python evals/run_evals.py --provider bedrock       # live Bedrock; same env as Level 3 (or --bedrock)
+python evals/run_evals.py --repeat 3               # run each case 3 times (1 to 10; default 1)
 python evals/run_evals.py --out scratch/card.json  # other output path
 ```
 
 The script adds `backend/` to its own import path, so `PYTHONPATH` is not needed for it. Eval traces go to `traces/eval_run.jsonl` (git-ignored, one file per run), never to `mock_actions.jsonl`.
 The exit code is 1 when policy-citation validity is below 100%. Accuracy is reported, not gated.
+
+**Expected offline result:** about 90% (27/30). The rule-based provider proposes REPLACE for the three delayed packages (C-1011, C-1012, C-1016) where the expected decision is GOODWILL_CREDIT. That is a known gap in the offline stand-in, not a regression.
+
+**Repeat runs.** The model varies from run to run, so one run is a sample. `--repeat N` runs every case N times. Accuracy and the other rates are per run (the denominator is cases × N). With N above 1 the scorecard also reports `consistency_rate` (cases that gave the same decision every run), `pass_all_rate` (cases correct in every run) and `flaky_cases` (cases with more than one outcome, with their decision counts). These are reported, not gated. They are null when N is 1.
+
+**Cost (optional).** Each run records wall-clock seconds, and for Bedrock also input and output tokens and model turns. Cost is estimated only when both price variables are set, as dollars per million tokens. Set them in `.env` (see `.env.example`) or the shell, using the current price list for your model. No prices are stored in code. If either is missing or invalid the run stops before it starts and nothing is written. Without the variables, cost is null and only tokens are reported. The prices used are saved in the scorecard `meta` (`cost_rates_usd_per_mtok`) so the figure can be checked later. The offline provider has no token counts, so its usage and cost fields are null.
+
+```powershell
+$env:COSMIC_COST_PER_MTOK_INPUT_USD = "3.00"       # example values only; use your model's current rates
+$env:COSMIC_COST_PER_MTOK_OUTPUT_USD = "15.00"
+python evals/run_evals.py --provider bedrock --repeat 3
+```
 
 **Metric definitions**
 
@@ -145,7 +158,11 @@ The exit code is 1 when policy-citation validity is below 100%. Accuracy is repo
 | Unnecessary-escalation rate | Expected non-ESCALATE cases the agent surfaced as ESCALATE |
 | False-refund rate | Expected non-REFUND cases where a REFUND was surfaced to the human |
 | Unsafe-remedy cases | Expected ESCALATE, but a REPLACE, REFUND, STORE_CREDIT or GOODWILL_CREDIT was surfaced. Listed by case ID |
-| Avg tool calls per case | Read-tool calls per case (7 with today's pre-fetch design, so constant until a tool-loop agent exists) |
+| Avg tool calls per case | Read-tool calls per case. Offline this is 7 (fixed pre-fetch); with the agent loop it counts only the model's own calls |
+| Consistency rate (`--repeat` > 1) | Cases whose runs all surfaced the same decision (or the same blocked status), over cases |
+| Pass-all rate (`--repeat` > 1) | Cases correct in every run, over cases |
+| Latency | `avg_seconds_per_case` and `p95_seconds` (nearest rank) over case runs. Measured for every provider |
+| Tokens, turns, cost | `avg_input_tokens`, `avg_output_tokens`, `avg_model_turns` per case run; `avg_cost_per_case_usd` and `total_estimated_cost_usd` when the price variables are set. Null offline |
 | Blocked runs | `VALIDATION_FAILED`, `NO_POLICY`, `PROVIDER_ERROR`. Counted as incorrect, excluded from false-refund and unsafe-remedy (no human saw them), reported as `validator_blocked`, `no_policy`, `provider_errors` |
 
 `evals/scorecard.json` is a run history: `{"runs": [...]}`, oldest first. Each run appends one entry and earlier runs are never rewritten. A run entry holds `meta` (provider, model ID, timestamp), `metrics`, `denominators`, `by_decision` (expected × actual confusion counts), `mismatches` (the cases to look at) and `unsafe_remedy_cases`. It does not hold per-case rows, so the file grows by a few KB per run. If the file cannot be parsed, the run stops before it starts and nothing is written. For a single case's detail, read its events in `traces/eval_run.jsonl`, which is rewritten on each run. Scoring logic is in `backend/cosmic_resolve/evaluation.py`; tests are in `tests/test_run_evals.py`.
