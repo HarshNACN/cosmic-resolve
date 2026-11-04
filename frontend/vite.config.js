@@ -11,10 +11,20 @@ const apiProxy = {
   },
 };
 
+// Local development mirrors the deployed layout: the customer portal is served under /support/ on this same
+// origin. Its own dev server (customer-frontend, port 5174) stays in the background; ws keeps hot reload working.
+const customerProxy = {
+  "/support": {
+    target: "http://localhost:5174",
+    changeOrigin: true,
+    ws: true,
+  },
+};
+
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173, proxy: apiProxy },
-  preview: { proxy: apiProxy },
+  server: { port: 5173, proxy: { ...apiProxy, ...customerProxy } },
+  preview: { proxy: { ...apiProxy, ...customerProxy } },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.js"],
