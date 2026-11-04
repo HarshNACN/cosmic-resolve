@@ -40,6 +40,8 @@ MESSAGE_SENT_ONLY_FOR_NON_ESCALATIONS = (
 _decided: set[str] = set()
 _decided_lock = threading.Lock()
 # Runs awaiting a human decision under the live provider, keyed by (case_id, fingerprint). Guarded by _decided_lock.
+# Bounded: only the newest MAX_REMEMBERED_RUNS are kept, so a long-running demo cannot grow without limit.
+MAX_REMEMBERED_RUNS = 50
 _runs: dict[tuple[str, str], CaseRun] = {}
 
 
@@ -96,7 +98,11 @@ def remember_run(run: CaseRun) -> None:
         return
     key = (run.case.case_id, proposal_fingerprint(run.proposal))
     with _decided_lock:
+        # Re-remembering a key moves it to the newest position, so pop before inserting.
+        _runs.pop(key, None)
         _runs[key] = copy.deepcopy(run)
+        while len(_runs) > MAX_REMEMBERED_RUNS:
+            del _runs[next(iter(_runs))]  # dicts keep insertion order: the first key is the oldest
 
 
 def _recall_run(case_id: str, fingerprint: str) -> CaseRun | None:

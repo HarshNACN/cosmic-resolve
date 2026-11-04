@@ -490,3 +490,51 @@ def test_missing_policy_at_decide_time_is_a_422_and_writes_nothing(live_goodwill
     )
     assert response.status_code == 422, response.text
     assert not _mock_actions(isolated_state)
+
+
+# --- Bounded store of remembered runs -------------------------------------------------------------------------------
+
+def _remembered_variants(count: int):
+    """`count` distinct proposals for C-1002 (only the drafted message differs), so each has its own fingerprint."""
+    import dataclasses
+
+    base = workflow.propose_resolution("C-1002", RuleBasedModelProvider())
+    runs = []
+    for index in range(count):
+        proposal = base.proposal.model_copy(update={"customer_message_draft": f"Draft number {index}."})
+        runs.append(dataclasses.replace(base, proposal=proposal))
+    return runs
+
+
+def test_remembered_runs_are_capped_and_the_oldest_are_evicted(monkeypatch, enabled, isolated_state):
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    assert checkpoint.MAX_REMEMBERED_RUNS == 50
+    runs = _remembered_variants(checkpoint.MAX_REMEMBERED_RUNS + 1)
+    fingerprints = []
+    for run in runs:
+        checkpoint.remember_run(run)
+        fingerprints.append(checkpoint.proposal_fingerprint(run.proposal))
+
+    assert len(checkpoint._runs) == 50
+
+    reject = lambda fp: client.post(
+        "/api/cases/C-1002/decision",
+        json={"reviewer": "Jordan", "proposal_fingerprint": fp, "action": "REJECT"},
+    )
+    evicted = reject(fingerprints[0])
+    assert evicted.status_code == 409, evicted.text  # the oldest run was dropped: regenerate, do not decide
+    for fp in fingerprints[1:]:
+        assert reject(fp).status_code == 200  # the newest 50 are still decidable
+
+
+def test_re_remembering_a_run_moves_it_to_the_newest_position(monkeypatch, enabled, isolated_state):
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    runs = _remembered_variants(checkpoint.MAX_REMEMBERED_RUNS)
+    for run in runs:
+        checkpoint.remember_run(run)
+    checkpoint.remember_run(runs[0])  # the oldest is shown again, so it becomes the newest
+    checkpoint.remember_run(_remembered_variants(checkpoint.MAX_REMEMBERED_RUNS + 1)[-1])  # one more evicts the next oldest
+
+    kept = {fp for (_case, fp) in checkpoint._runs}
+    assert checkpoint.proposal_fingerprint(runs[0].proposal) in kept
+    assert checkpoint.proposal_fingerprint(runs[1].proposal) not in kept
