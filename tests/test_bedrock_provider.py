@@ -154,3 +154,19 @@ def test_complaint_cannot_close_the_delimiter():
     assert message.count("<complaint>") == 1
     assert message.count("</complaint>") == 1
     assert "&lt;/complaint&gt;" in message
+
+
+def test_missing_boto3_is_a_provider_error_not_a_crash(monkeypatch):
+    import builtins
+
+    real_import = builtins.__import__
+
+    def no_boto3(name, *args, **kwargs):
+        if name == "boto3":
+            raise ImportError("No module named 'boto3'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setenv("AWS_REGION", "us-east-2")
+    monkeypatch.setattr(builtins, "__import__", no_boto3)
+    with pytest.raises(ProviderError, match="boto3"):
+        BedrockModelProvider(model_id="test-profile")

@@ -76,7 +76,10 @@ class BedrockModelProvider:
         if client is not None:
             self._client = client
         else:
-            import boto3  # lazy: only needed for live calls
+            try:
+                import boto3  # lazy: only needed for live calls
+            except ImportError as exc:
+                raise ProviderError("boto3 is not installed, so the Bedrock provider is unavailable.") from exc
 
             region = region or os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
             if not region:
