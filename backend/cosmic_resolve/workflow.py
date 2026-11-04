@@ -82,12 +82,19 @@ def gather_context(case: SupportCase) -> dict[str, Any]:
 
 
 def propose_resolution(case_id: str, provider: ModelProvider = DEFAULT_PROVIDER) -> CaseRun:
-    """Read-only half of the loop. Produces a validated proposal awaiting a human decision."""
+    """Read-only half of the loop. Produces a validated proposal awaiting a human decision.
+
+    Providers with an `investigate` method (the agent loop) choose their own read tools, so the code does not
+    pre-fetch the case records for them. Everything else (policy, validator inputs) is still fetched by code.
+    """
     case = get_case(case_id)
     _trace(case_id, "case_loaded", "Case loaded", case_type=case.case_type)
 
-    context = gather_context(case)
-    _trace(case_id, "context_gathered", "Read tools complete", loaded=[k for k, v in context.items() if v is not None])
+    investigates = callable(getattr(provider, "investigate", None))
+    context: dict[str, Any] = {}
+    if not investigates:
+        context = gather_context(case)
+        _trace(case_id, "context_gathered", "Read tools complete", loaded=[k for k, v in context.items() if v is not None])
 
     try:
         policy = get_policy(case.market, case.category, case.case_type)
@@ -98,12 +105,21 @@ def propose_resolution(case_id: str, provider: ModelProvider = DEFAULT_PROVIDER)
 
     _trace(case_id, "provider_request", "Requesting resolution", clause_ids=[c.clause_id for c in policy])
     try:
-        proposal = provider.generate_resolution(case, context, policy)
+        if investigates:
+            proposal = provider.investigate(case, policy)
+        else:
+            proposal = provider.generate_resolution(case, context, policy)
     except ProviderError as exc:
         _trace_exchange(case_id, provider)
         _trace(case_id, "provider_error", "Provider failed to produce a proposal", error=str(exc))
         return CaseRun(case=case, status=PROVIDER_ERROR, context=context, policy=policy, error=str(exc))
     _trace_exchange(case_id, provider)
+
+    if investigates:
+        # Deterministic fetch for the validator and the approval view, after the model's investigation.
+        context = gather_context(case)
+        _trace(case_id, "context_gathered", "Validator records fetched", loaded=[k for k, v in context.items() if v is not None])
+
     _trace(case_id, "proposal_generated", "Proposal generated", proposal=proposal.model_dump(mode="json"))
 
     try:

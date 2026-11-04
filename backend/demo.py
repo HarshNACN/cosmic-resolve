@@ -27,9 +27,9 @@ def main(argv: list[str]) -> int:
     case_id = case_ids[0]
 
     if "--bedrock" in argv:
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
+        from cosmic_resolve.bedrock_agent import live_bedrock_provider
 
-        provider = BedrockModelProvider()
+        provider = live_bedrock_provider()
         print(f"Provider: Bedrock ({provider.model_id})")
     else:
         provider = RuleBasedModelProvider()

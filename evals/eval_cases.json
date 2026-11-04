@@ -99,13 +99,14 @@
   },
   {
     "case_id": "C-1011",
-    "expected_decision": "REPLACE",
-    "amount": 79.0,
+    "expected_decision": "GOODWILL_CREDIT",
+    "amount": 5.0,
     "expected_policy_clause_ids": [
       "US-GAD-LD-01",
-      "US-GAD-LD-02"
+      "US-GAD-LD-02",
+      "US-GAD-LD-04"
     ],
-    "notes": "Carrier shows delayed, 2 days past expected delivery (inside 10-day window). Replacement in policy."
+    "notes": "Carrier shows a weather delay, 2 days past expected delivery (inside 10-day window). The item still arrives, so a Bronze goodwill credit ($5 cap) is the intended remedy, not a replacement. Replacement is in policy but not warranted here."
   },
   {
     "case_id": "C-1012",
@@ -148,13 +149,13 @@
   },
   {
     "case_id": "C-1016",
-    "expected_decision": "REPLACE",
-    "amount": 179.0,
+    "expected_decision": "GOODWILL_CREDIT",
+    "amount": 20.0,
     "expected_policy_clause_ids": [
       "US-GAD-LD-01",
-      "US-GAD-LD-02"
+      "US-GAD-LD-04"
     ],
-    "notes": "Gold member, delayed 6 days past expected (inside window). $179 is under the $200 threshold."
+    "notes": "Gold member, weather delay 6 days past expected, still in transit, $179 is under the $200 threshold. The item still arrives, so a goodwill credit (Gold cap $20) is the remedy, not a replacement."
   },
   {
     "case_id": "C-1017",

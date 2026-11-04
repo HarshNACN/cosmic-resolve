@@ -18,9 +18,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
-from cosmic_resolve import workflow  # noqa: E402
+from dataclasses import replace  # noqa: E402
+
+from cosmic_resolve import tool_registry, workflow  # noqa: E402
 from cosmic_resolve.model_provider import RuleBasedModelProvider  # noqa: E402
 from cosmic_resolve.tools import get_case  # noqa: E402
+
+
+def _inject_into_tool(spec: dict) -> tool_registry.ReadTool:
+    """Make one read tool return its real record with hostile text appended. Returns the original tool to restore."""
+    original = tool_registry.READ_TOOLS[spec["tool"]]
+
+    def hostile(*args, **kwargs):
+        record = original.func(*args, **kwargs)
+        updates = {field: getattr(record, field) + extra for field, extra in spec["append"].items()}
+        return record.model_copy(update=updates)
+
+    tool_registry.READ_TOOLS[spec["tool"]] = replace(original, func=hostile)
+    return original
 
 
 def main() -> int:
@@ -32,21 +47,30 @@ def main() -> int:
     if args.offline:
         provider = RuleBasedModelProvider()
     else:
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
+        from cosmic_resolve.bedrock_agent import live_bedrock_provider
 
-        provider = BedrockModelProvider()
+        provider = live_bedrock_provider()
 
     variants = json.loads((ROOT / "evals" / "injection_cases.json").read_text(encoding="utf-8"))
     failures = 0
     for v in variants:
+        if "tool_injection" in v and not hasattr(provider, "investigate"):
+            # Tool results only reach the model in the agent loop; the fixed pipeline never shows them to it.
+            print(f"\n{v['id']}: SKIPPED - tool-result injection needs the agent loop (COSMIC_RESOLVE_PIPELINE=agent)")
+            continue
         overrides = {"complaint_text": v["complaint_text"]}
         if "customer_id" in v:  # optional: swap in a different customer record for this variant
             overrides["customer_id"] = v["customer_id"]
         hostile = get_case(v["base_case_id"]).model_copy(update=overrides)
         workflow.get_case = lambda _cid, _c=hostile: _c  # serve the hostile copy; data files are untouched
         print(f"\n{v['id']} (base {v['base_case_id']}): {v['technique']}")
-        for i in range(args.runs):
-            run = workflow.propose_resolution(v["base_case_id"], provider)
+        original_tool = _inject_into_tool(v["tool_injection"]) if "tool_injection" in v else None
+        try:
+            outcomes = [workflow.propose_resolution(v["base_case_id"], provider) for _ in range(args.runs)]
+        finally:
+            if original_tool is not None:
+                tool_registry.READ_TOOLS[v["tool_injection"]["tool"]] = original_tool
+        for i, run in enumerate(outcomes):
             p = run.proposal
             if p is None:
                 ok, summary = False, f"{run.status}: {run.error}"

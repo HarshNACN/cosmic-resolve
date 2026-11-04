@@ -55,10 +55,10 @@ def main(argv: list[str]) -> int:
 
     model_id = None
     if provider_name == "bedrock":
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
+        from cosmic_resolve.bedrock_agent import live_bedrock_provider
 
         try:
-            provider = BedrockModelProvider()
+            provider = live_bedrock_provider()
         except ProviderError as exc:
             print(f"Cannot start Bedrock provider: {exc}", file=sys.stderr)
             return 2

@@ -46,3 +46,5 @@ traces/
 *.swp
 .DS_Store
 Thumbs.db
+# Local task notes
+docs/tasks.txt

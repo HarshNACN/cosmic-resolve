@@ -13,9 +13,9 @@ def main() -> None:
     (needs BEDROCK_INFERENCE_PROFILE, AWS_REGION and an AWS login).
     """
     if "--bedrock" in sys.argv:
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
+        from cosmic_resolve.bedrock_agent import live_bedrock_provider
 
-        provider = BedrockModelProvider()
+        provider = live_bedrock_provider()
         print(f"Provider: Bedrock ({provider.model_id})")
     else:
         provider = RuleBasedModelProvider()

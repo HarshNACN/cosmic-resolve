@@ -42,6 +42,11 @@ READ_TOOLS = (
 )
 
 
+# Evidence the model must fetch itself before deciding (agent loop only). Order and shipment decide the
+# remedy; the customer record decides the escalation thresholds.
+REQUIRED_EVIDENCE_TOOLS = ("get_order", "get_shipment", "get_customer")
+
+
 class EvalPreflightError(ValueError):
     """The eval file does not match the data set or the expected shape. Nothing was run."""
 
@@ -118,8 +123,18 @@ def _counting_read_tools() -> Iterator[dict[str, int]]:
 def run_case(entry: dict[str, Any], provider: ModelProvider) -> dict[str, Any]:
     """Run one eval case through propose_resolution and return its result row. Read-only; writes nothing."""
     expected = Decision(entry["expected_decision"])
+    investigates = callable(getattr(provider, "investigate", None))
     with _counting_read_tools() as counter:
         run = propose_resolution(entry["case_id"], provider)
+    # For the agent loop, count only the model's own tool calls. The counter above also sees the validator's fetches.
+    if investigates:
+        tool_names: list[str] | None = list(getattr(provider, "last_tool_names", []))
+        tool_calls = len(tool_names)
+        missing_evidence: list[str] | None = [name for name in REQUIRED_EVIDENCE_TOOLS if name not in tool_names]
+    else:
+        tool_names = None
+        tool_calls = counter["calls"]
+        missing_evidence = None
 
     proposal = run.proposal
     scope_ids = {clause.clause_id for clause in run.policy}
@@ -139,7 +154,9 @@ def run_case(entry: dict[str, Any], provider: ModelProvider) -> dict[str, Any]:
         "expected_clause_ids": list(entry.get("expected_policy_clause_ids", [])),
         "cited_clause_ids": cited,
         "clause_valid": clause_valid,
-        "tool_calls": counter["calls"],
+        "tool_calls": tool_calls,
+        "tool_names": tool_names,
+        "missing_evidence": missing_evidence,
         "decision_correct": actual == expected,
         "mismatch": actual != expected,
         "notes": entry.get("notes", ""),
@@ -174,6 +191,8 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
 
     status_counts = {status: sum(1 for r in rows if r["run_status"] == status) for status in (VALIDATION_FAILED, NO_POLICY, PROVIDER_ERROR)}
     tool_total = sum(r["tool_calls"] for r in rows)
+    with_evidence_check = [r for r in rows if r.get("missing_evidence") is not None]
+    evidence_fetched = sum(1 for r in with_evidence_check if not r["missing_evidence"])
 
     confusion: dict[str, dict[str, int]] = {}
     for r in rows:
@@ -189,6 +208,7 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
         "false_refund_rate": _ratio(false_refunds, len(not_refund_expected)),
         "unsafe_remedy_count": len(unsafe),
         "avg_tool_calls_per_case": round(tool_total / total, 2) if total else None,
+        "required_evidence_rate": _ratio(evidence_fetched, len(with_evidence_check)),
         "validator_blocked": status_counts[VALIDATION_FAILED],
         "no_policy": status_counts[NO_POLICY],
         "provider_errors": status_counts[PROVIDER_ERROR],
@@ -205,6 +225,8 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
         "expected_not_refund": len(not_refund_expected),
         "false_refunds": false_refunds,
         "total_tool_calls": tool_total,
+        "cases_with_evidence_check": len(with_evidence_check),
+        "cases_with_required_evidence": evidence_fetched,
     }
 
     return {
@@ -310,6 +332,7 @@ def format_summary(scorecard: dict[str, Any]) -> str:
         f"False-refund rate:            {_pct(m['false_refund_rate'])}  ({d['false_refunds']}/{d['expected_not_refund']})",
         f"Unsafe-remedy cases:          {m['unsafe_remedy_count']}  {scorecard['unsafe_remedy_cases']}",
         f"Avg tool calls per case:      {m['avg_tool_calls_per_case']}",
+        *([f"Required evidence fetched:    {_pct(m['required_evidence_rate'])}  ({d['cases_with_required_evidence']}/{d['cases_with_evidence_check']})"] if m["required_evidence_rate"] is not None else []),
         f"Blocked: validator={m['validator_blocked']} no_policy={m['no_policy']} provider_errors={m['provider_errors']}",
         f"Mismatches: {len(scorecard['mismatches'])} (see JSON for the list)",
     ]
