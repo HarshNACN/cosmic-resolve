@@ -11,7 +11,6 @@ set in the backend's shell and executes the mock write actions. Exits 0 when eve
 from __future__ import annotations
 
 import argparse
-import base64
 import io
 import json
 import sys

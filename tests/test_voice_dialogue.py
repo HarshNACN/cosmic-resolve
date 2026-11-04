@@ -3,7 +3,6 @@ import json
 
 import pytest
 
-from cosmic_resolve import config
 from cosmic_resolve.checkpoint import decide, proposal_fingerprint, reset_decided_for_tests
 from cosmic_resolve.config import SETTINGS
 from cosmic_resolve.model_provider import RuleBasedModelProvider

@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 from dataclasses import replace  # noqa: E402
 
 from cosmic_resolve import tool_registry, workflow  # noqa: E402
-from cosmic_resolve.model_provider import RuleBasedModelProvider  # noqa: E402
+from cosmic_resolve.bedrock_agent import select_provider  # noqa: E402
 from cosmic_resolve.tools import get_case  # noqa: E402
 
 
@@ -44,12 +44,7 @@ def main() -> int:
     parser.add_argument("--offline", action="store_true")
     args = parser.parse_args()
 
-    if args.offline:
-        provider = RuleBasedModelProvider()
-    else:
-        from cosmic_resolve.bedrock_agent import live_bedrock_provider
-
-        provider = live_bedrock_provider()
+    provider = select_provider(not args.offline)
 
     variants = json.loads((ROOT / "evals" / "injection_cases.json").read_text(encoding="utf-8"))
     failures = 0

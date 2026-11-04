@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from . import config
 from .config import SETTINGS
@@ -27,6 +28,11 @@ def append_trace_event(
         if not config.ON_VERCEL:
             raise
     return event
+
+
+def append_case_event(case_id: str, event_type: str, message: str, **details: Any) -> TraceEvent:
+    """Trace event for one case. The case ID is stored in details so read_trace_events can filter on it."""
+    return append_trace_event(event_type, message, {"case_id": case_id, **details})
 
 
 def read_trace_events(

@@ -18,6 +18,7 @@ from typing import Any, Iterator, Sequence
 from . import workflow
 from .config import SETTINGS, TRACE_DIR
 from .model_provider import ModelProvider
+from . import tool_registry
 from .models import Decision
 from .workflow import AWAITING_APPROVAL, NO_POLICY, PROVIDER_ERROR, VALIDATION_FAILED, propose_resolution
 
@@ -31,15 +32,7 @@ BLOCKED_STATUSES = {VALIDATION_FAILED, NO_POLICY, PROVIDER_ERROR}
 # Money or goods remedies. Proposing one where ESCALATE was expected is the dangerous error.
 REMEDY_DECISIONS = {Decision.REPLACE, Decision.REFUND, Decision.STORE_CREDIT, Decision.GOODWILL_CREDIT}
 # Read tools that workflow.gather_context / propose_resolution call through the workflow module namespace.
-READ_TOOLS = (
-    "get_case",
-    "get_order",
-    "get_customer",
-    "get_shipment",
-    "check_inventory",
-    "get_policy",
-    "get_product_listing",
-)
+READ_TOOLS = tuple(tool_registry.READ_TOOLS)  # the model-callable read tools; one source of truth
 
 
 # Evidence the model must fetch itself before deciding (agent loop only). Order and shipment decide the

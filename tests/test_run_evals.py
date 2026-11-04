@@ -14,7 +14,7 @@ from cosmic_resolve.evaluation import (
 )
 from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider
 from cosmic_resolve.models import Decision, ResolutionProposal, RootCause
-from cosmic_resolve.workflow import AWAITING_APPROVAL, NO_POLICY, PROVIDER_ERROR, VALIDATION_FAILED
+from cosmic_resolve.workflow import AWAITING_APPROVAL, NO_POLICY, VALIDATION_FAILED
 
 
 class OracleProvider:

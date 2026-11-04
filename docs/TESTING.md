@@ -34,20 +34,7 @@ policy lookup, the loop (`tests/test_workflow.py`), and the Bedrock provider wit
 
 ## 2. Offline demo (no AWS)
 
-Proposals for the three sample cases:
-
-```powershell
-python backend/app.py
-```
-
-**Expected:**
-```
-C-1001: AWAITING_APPROVAL - ESCALATE $649.00 [...]
-C-1002: AWAITING_APPROVAL - STORE_CREDIT $45.00 [...]
-C-1003: AWAITING_APPROVAL - ESCALATE $299.00 [...]
-```
-
-Walk one case through the human checkpoint:
+Walk one sample case through the proposal and the human checkpoint:
 
 ```powershell
 python backend/demo.py C-1002                # prompts: Approve this proposal? [y/N]
@@ -80,7 +67,6 @@ aws sts get-caller-identity                          # should print the bootcamp
 Run:
 
 ```powershell
-python backend/app.py --bedrock                      # 3 live calls, nothing executed
 python backend/demo.py C-1001 --bedrock              # live proposal + approval step
 ```
 

@@ -20,18 +20,6 @@ class ModelProvider(Protocol):
         ...
 
 
-class NoopModelProvider:
-    """Placeholder provider used when no live model is configured."""
-
-    def generate_resolution(
-        self,
-        case: SupportCase,
-        context: dict[str, Any],
-        applicable_policy: Sequence[Any],
-    ) -> ResolutionProposal:
-        raise NotImplementedError("No model provider is configured for this starter repository.")
-
-
 _ROOT_CAUSES = {
     "DAMAGED_ON_ARRIVAL": "CARRIER_DAMAGE",
     "LATE_DELIVERY": "CARRIER_DELAY",
@@ -74,6 +62,3 @@ class RuleBasedModelProvider:
             customer=context.get("customer"),
             inventory=context.get("inventory"),
         )
-
-
-DEFAULT_PROVIDER = NoopModelProvider()

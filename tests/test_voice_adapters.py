@@ -1,6 +1,5 @@
 """The three speech/model adapters, tested against fake clients. A real Piper check runs when the voice is installed."""
 import time
-from pathlib import Path
 
 import pytest
 
