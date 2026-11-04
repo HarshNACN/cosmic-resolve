@@ -21,13 +21,31 @@
     "frontend": {
       "root": "frontend",
       "framework": "vite"
+    },
+    "customer": {
+      "root": "customer-frontend",
+      "framework": "vite",
+      "outputDirectory": "dist"
     }
   },
+  "redirects": [
+    {
+      "source": "/support",
+      "destination": "/support/",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": {
         "service": "backend"
+      }
+    },
+    {
+      "source": "/support(/.*)?",
+      "destination": {
+        "service": "customer"
       }
     },
     {
