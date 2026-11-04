@@ -18,9 +18,14 @@
         }
       ]
     },
+    "landing": {
+      "root": "landing",
+      "framework": "vite"
+    },
     "frontend": {
       "root": "frontend",
-      "framework": "vite"
+      "framework": "vite",
+      "outputDirectory": "dist"
     },
     "customer": {
       "root": "customer-frontend",
@@ -32,6 +37,11 @@
     {
       "source": "/support",
       "destination": "/support/",
+      "permanent": false
+    },
+    {
+      "source": "/internal",
+      "destination": "/internal/",
       "permanent": false
     }
   ],
@@ -49,9 +59,15 @@
       }
     },
     {
-      "source": "/(.*)",
+      "source": "/internal(/.*)?",
       "destination": {
         "service": "frontend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "landing"
       }
     }
   ]

@@ -380,6 +380,7 @@ class _InvestigatingStub:
 @pytest.fixture
 def live(monkeypatch, enabled):
     stub = _InvestigatingStub()
+    monkeypatch.delenv("MODEL_PROVIDER", raising=False)  # the legacy switch below only applies when it is unset
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
     # The provider choice moved into the factory; the API now calls build_provider, which calls select_provider.
     monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: stub)

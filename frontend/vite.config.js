@@ -1,8 +1,14 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
-// The browser talks only to the Cosmic Resolve backend, through this same-origin proxy.
-// The backend must be running on port 8000 (uvicorn api:app --port 8000, from backend/).
+// The case workbench is served under /internal/ on the Cosmic Resolve site; the landing page owns "/".
+// Asset URLs are generated under /internal/assets/... and the build lands in dist/internal/, so a request for
+// /internal/assets/x.js matches a real file at that path whether or not Vercel strips the prefix. This is the same
+// arrangement customer-frontend uses for /support/.
+//
+// Local development: open http://localhost:5173 (the landing dev server). It forwards /internal here (port 5175)
+// and /api to the backend, so the browser sees one origin. The proxy below only matters when this server is
+// opened directly. The backend must be running on port 8000 (uvicorn api:app --port 8000, from backend/).
 const apiProxy = {
   "/api": {
     target: "http://localhost:8000",
@@ -11,20 +17,15 @@ const apiProxy = {
   },
 };
 
-// Local development mirrors the deployed layout: the customer portal is served under /support/ on this same
-// origin. Its own dev server (customer-frontend, port 5174) stays in the background; ws keeps hot reload working.
-const customerProxy = {
-  "/support": {
-    target: "http://localhost:5174",
-    changeOrigin: true,
-    ws: true,
-  },
-};
-
 export default defineConfig({
+  base: "/internal/",
+  build: {
+    outDir: "dist/internal",
+    emptyOutDir: true,
+  },
   plugins: [react()],
-  server: { port: 5173, proxy: { ...apiProxy, ...customerProxy } },
-  preview: { proxy: { ...apiProxy, ...customerProxy } },
+  server: { port: 5175, proxy: apiProxy },
+  preview: { port: 5175, proxy: apiProxy },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.js"],

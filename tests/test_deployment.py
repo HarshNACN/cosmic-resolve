@@ -35,13 +35,15 @@ def _vercel() -> dict:
     return json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
 
 
-def test_vercel_json_defines_backend_and_frontend_services():
+def test_vercel_json_defines_backend_landing_workbench_and_customer_services():
     services = _vercel()["services"]
-    assert set(services) == {"backend", "frontend", "customer"}
+    assert set(services) == {"backend", "landing", "frontend", "customer"}
     assert services["backend"]["root"] == "backend"
+    assert services["landing"]["root"] == "landing"
     assert services["frontend"]["root"] == "frontend"
     assert services["customer"]["root"] == "customer-frontend"
-    assert (ROOT / "backend").is_dir() and (ROOT / "frontend").is_dir()
+    for folder in ("backend", "landing", "frontend", "customer-frontend"):
+        assert (ROOT / folder).is_dir(), folder
 
 
 def test_backend_entrypoint_is_api_app_and_module_exists():
@@ -51,13 +53,22 @@ def test_backend_entrypoint_is_api_app_and_module_exists():
     assert (ROOT / "backend" / "api.py").is_file()
 
 
-def test_rewrites_route_api_then_support_then_employee_catch_all():
+def test_rewrites_route_api_support_internal_then_landing_catch_all():
     rewrites = _vercel()["rewrites"]
     assert rewrites == [
         {"source": "/api/(.*)", "destination": {"service": "backend"}},
         {"source": "/support(/.*)?", "destination": {"service": "customer"}},
-        {"source": "/(.*)", "destination": {"service": "frontend"}},
+        {"source": "/internal(/.*)?", "destination": {"service": "frontend"}},
+        {"source": "/(.*)", "destination": {"service": "landing"}},
     ]
+
+
+def test_apps_are_built_under_the_prefix_their_rewrite_serves():
+    """The prefix is baked into asset URLs and the build folder, so it must match the rewrite (see vite configs)."""
+    for folder, prefix in (("frontend", "internal"), ("customer-frontend", "support")):
+        config = (ROOT / folder / "vite.config.js").read_text(encoding="utf-8")
+        assert f'base: "/{prefix}/"' in config, folder
+        assert f'outDir: "dist/{prefix}"' in config, folder
 
 
 def test_no_bindings_env_or_credentials_in_vercel_json():

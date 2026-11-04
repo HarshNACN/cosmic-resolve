@@ -1,0 +1,488 @@
+/* Cosmic Resolve landing page.
+   Deep navy and violet are the product's identity (same as the workbench). Teal is the workbench trace colour for
+   tool calls, so here it marks the agent reaching for records: the lines in the hero and the progress of the steps.
+   The hero field is the one memorable thing; the sections below stay quiet. */
+
+:root {
+  --ink: #0b0f1a;
+  --ink-sunk: #0e1322;
+  --panel: #131a2b;
+  --panel-raised: #19223a;
+  --line: #1f2740;
+  --line-strong: #2d3858;
+  --text: #f2f3f8;
+  --muted: #aab1c6;
+  --violet: #8f2de0;
+  --violet-hover: #a04ae8;
+  --violet-light: #c9a4f5;
+  --teal: #4fb8cc;
+  --font: "Bricolage Grotesque Variable", system-ui, -apple-system, "Segoe UI Variable", "Segoe UI", Roboto, sans-serif;
+  --gutter: clamp(20px, 5vw, 64px);
+  --max: 1200px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 3px;
+}
+
+.page {
+  position: relative;
+  overflow-x: clip;
+}
+
+/* ---------- Cursor glow ---------- */
+
+.cursor-glow {
+  position: fixed;
+  top: -280px;
+  left: -280px;
+  z-index: 0;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(143, 45, 224, 0.16) 0%, rgba(143, 45, 224, 0.05) 40%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  will-change: transform;
+}
+.cursor-glow.is-on {
+  opacity: 1;
+}
+
+/* ---------- Navigation ---------- */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 64px;
+  padding: 0 var(--gutter);
+  background: rgba(11, 15, 26, 0.72);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-mark {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--violet);
+  border-radius: 50%;
+}
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text);
+}
+.brand-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.nav-links a {
+  color: var(--muted);
+  font-size: 15px;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.nav-links a:hover {
+  color: var(--text);
+}
+.nav-links .nav-cta {
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text);
+}
+.nav-links .nav-cta:hover {
+  border-color: var(--violet);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-height: min(100vh, 1000px);
+  min-height: min(100svh, 1000px); /* full screen, but not a 4000px poster on very tall displays */
+  padding: 120px var(--gutter) 96px;
+  isolation: isolate;
+}
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+/* Fade the field into the page so the canvas has no hard bottom edge. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: -1;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, var(--ink));
+  pointer-events: none;
+}
+.hero-content {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  pointer-events: none; /* let the pointer reach the field; links turn it back on */
+}
+.hero-content a {
+  pointer-events: auto;
+}
+.hero h1 {
+  max-width: 13ch;
+  font-size: clamp(2.9rem, 7.2vw, 6.2rem);
+  font-weight: 680;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+.hero-lead {
+  max-width: 52ch;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 40px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.button-primary {
+  background: var(--violet);
+  color: #fff;
+}
+.button-primary:hover {
+  background: var(--violet-hover);
+}
+.button-quiet {
+  border: 1px solid var(--line-strong);
+  background: rgba(19, 26, 43, 0.6);
+  color: var(--text);
+}
+.button-quiet:hover {
+  border-color: var(--muted);
+}
+.hero-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--gutter));
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 14px;
+}
+.hero-hint::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+/* ---------- Bands ---------- */
+
+.band {
+  position: relative;
+  z-index: 1;
+  padding: clamp(80px, 12vw, 144px) var(--gutter);
+}
+.band-sunk {
+  background: var(--ink-sunk);
+  border-block: 1px solid var(--line);
+}
+.band-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+}
+.band h2 {
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+/* ---------- How it works ---------- */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(40px, 7vw, 96px);
+  align-items: start;
+}
+.split-intro {
+  position: sticky;
+  top: 112px;
+}
+.split-intro p {
+  max-width: 36ch;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+
+.steps {
+  position: relative;
+  display: grid;
+  gap: 56px;
+  margin: 0;
+  padding: 0 0 0 60px;
+  list-style: none;
+}
+/* The rail between the first and last marker, and the part of it already reached. */
+.steps::before,
+.steps::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 15px;
+  width: 2px;
+  border-radius: 1px;
+}
+.steps::before {
+  bottom: 16px;
+  background: var(--line-strong);
+}
+.steps::after {
+  height: calc((100% - 32px) * var(--progress, 0));
+  background: var(--teal);
+  transition: height 400ms ease;
+}
+.step {
+  position: relative;
+}
+.step-marker {
+  position: absolute;
+  top: -4px;
+  left: -60px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 250ms ease, border-color 250ms ease, color 250ms ease;
+}
+.step h3 {
+  color: var(--muted);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 250ms ease;
+}
+.step p {
+  max-width: 50ch;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+.step.is-reached .step-marker {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: var(--ink);
+}
+.step.is-reached h3 {
+  color: var(--text);
+}
+
+/* ---------- Safeguards ---------- */
+
+.safeguards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(32px, 6vw, 80px);
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.safeguards li {
+  padding: 32px 0;
+  border-top: 1px solid var(--line-strong);
+}
+.safeguards h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.safeguards p {
+  max-width: 46ch;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+/* ---------- Pick a view ---------- */
+
+.doors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+.door {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 180px;
+  padding: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.door:hover {
+  border-color: var(--violet);
+  background: var(--panel-raised);
+}
+.door-title {
+  font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.door-text {
+  max-width: 40ch;
+  color: var(--muted);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+
+/* ---------- Footer ---------- */
+
+.foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 28px var(--gutter) 40px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 860px) {
+  .nav-links a:not(.nav-cta) {
+    display: none;
+  }
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .split-intro {
+    position: static;
+  }
+  .safeguards,
+  .doors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-hint {
+    display: none;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .cursor-glow {
+    display: none;
+  }
+  .steps::after,
+  .step-marker,
+  .step h3,
+  .button,
+  .door,
+  .nav-links a {
+    transition: none;
+  }
+}
