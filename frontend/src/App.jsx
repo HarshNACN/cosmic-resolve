@@ -4,6 +4,7 @@ import CaseQueue from "./components/CaseQueue.jsx";
 import PolicyBasis from "./components/PolicyBasis.jsx";
 import ProposalPanel from "./components/ProposalPanel.jsx";
 import TraceViewer from "./components/TraceViewer.jsx";
+import ViewSwitch from "./components/ViewSwitch.jsx";
 import { useCaseWorkbench } from "./hooks/useCaseWorkbench.js";
 import { useCases } from "./hooks/useCases.js";
 import CallPanel from "./voice/CallPanel.jsx";
@@ -34,6 +35,7 @@ export default function App() {
             <p className="brand-sub">Cosmic Mart · Post-purchase resolution</p>
           </div>
         </div>
+        <ViewSwitch current="internal" />
       </header>
       <div className="workbench">
         <CaseQueue

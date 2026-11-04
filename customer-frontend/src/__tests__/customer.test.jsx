@@ -464,9 +464,11 @@ describe("result semantics", () => {
   it("does not offer a way to look the reference up later", async () => {
     const user = userEvent.setup();
     const { container } = await submitDamaged(user);
-    expect(within(container).queryByRole("link")).not.toBeInTheDocument();
-    expect(within(container).queryByRole("textbox")).not.toBeInTheDocument();
-    expect(within(container).queryByText(/look|track|status/i)).not.toBeInTheDocument();
+    // The result content only; the header's Internal/Customer view switch is navigation, not a lookup.
+    const result = container.querySelector("main");
+    expect(within(result).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(result).queryByRole("textbox")).not.toBeInTheDocument();
+    expect(within(result).queryByText(/look|track|status/i)).not.toBeInTheDocument();
   });
 
   it("moves focus to the result heading so the outcome is announced", async () => {

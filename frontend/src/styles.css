@@ -971,3 +971,32 @@ input[type="text"]:focus {
     font-size: 21px;
   }
 }
+
+/* ---------- View switch (internal / customer) ---------- */
+
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--chrome-line);
+  border-radius: 8px;
+  background: var(--chrome-800);
+}
+.view-switch-link {
+  padding: 5px 14px;
+  border-radius: 6px;
+  color: var(--chrome-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.view-switch-link:hover {
+  color: var(--chrome-text);
+}
+.view-switch-link.is-current {
+  background: var(--brand);
+  color: #fff;
+}
+.view-switch-link:focus-visible {
+  outline: 2px solid var(--chrome-text);
+  outline-offset: 2px;
+}
