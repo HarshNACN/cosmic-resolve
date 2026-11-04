@@ -51,7 +51,8 @@ READ_TOOLS: dict[str, ReadTool] = {
         ReadTool(
             "get_case",
             tools.get_case,
-            "Fetch the support case (complaint, order, customer, tracking, market, category, case type).",
+            "Re-read the support case (complaint, order, customer, tracking, market, category, case type). "
+            "Not needed: the case header is already in the first message.",
             {"case_id": "Support case identifier, e.g. C-1001."},
         ),
         ReadTool(

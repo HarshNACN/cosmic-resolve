@@ -10,10 +10,13 @@ from __future__ import annotations
 
 import functools
 import json
+import math
+import time
+from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator, Sequence
+from typing import Any, Iterator, Mapping, Sequence
 
 from . import workflow
 from .config import SETTINGS, TRACE_DIR
@@ -26,6 +29,11 @@ EVAL_FILE_NAME = "eval_cases.json"
 EXPECTED_CASE_COUNT = 30
 EVAL_TRACE_PATH = TRACE_DIR / "eval_run.jsonl"
 CITATION_VALIDITY_TARGET = 1.0
+# Upper bound on repeat runs per case, to keep live spend bounded.
+MAX_REPEAT = 10
+# Optional prices per million tokens, supplied by the caller (never hardcoded). Shape:
+# {"input_per_mtok_usd": float, "output_per_mtok_usd": float}; stored in the scorecard meta when used.
+COST_RATE_KEYS = ("input_per_mtok_usd", "output_per_mtok_usd")
 
 # Runs that never surface a decision to a human. They count as incorrect and are reported separately.
 BLOCKED_STATUSES = {VALIDATION_FAILED, NO_POLICY, PROVIDER_ERROR}
@@ -113,12 +121,45 @@ def _counting_read_tools() -> Iterator[dict[str, int]]:
             setattr(workflow, name, fn)
 
 
-def run_case(entry: dict[str, Any], provider: ModelProvider) -> dict[str, Any]:
+def _usage_fields(usage: Mapping[str, int] | None, cost_rates: Mapping[str, float] | None) -> dict[str, Any]:
+    """Token, turn and cost fields for one run. Null when the provider reports no usage (offline) or no rates are given."""
+    if usage is None:
+        return {"input_tokens": None, "output_tokens": None, "model_turns": None, "estimated_cost_usd": None}
+    cost = None
+    if cost_rates:
+        cost = round(
+            (usage["inputTokens"] * cost_rates["input_per_mtok_usd"] + usage["outputTokens"] * cost_rates["output_per_mtok_usd"])
+            / 1_000_000,
+            6,
+        )
+    return {
+        "input_tokens": usage["inputTokens"],
+        "output_tokens": usage["outputTokens"],
+        "model_turns": usage["turns"],
+        "estimated_cost_usd": cost,
+    }
+
+
+def run_case(
+    entry: dict[str, Any],
+    provider: ModelProvider,
+    *,
+    cost_rates: Mapping[str, float] | None = None,
+    repeat_index: int = 0,
+) -> dict[str, Any]:
     """Run one eval case through propose_resolution and return its result row. Read-only; writes nothing."""
     expected = Decision(entry["expected_decision"])
     investigates = callable(getattr(provider, "investigate", None))
+    # Clear any usage left by an earlier run, so a stale value can never be attributed to this case.
+    try:
+        provider.last_usage = None
+    except AttributeError:
+        pass  # provider has no usage attribute (offline providers)
     with _counting_read_tools() as counter:
+        started = time.perf_counter()
         run = propose_resolution(entry["case_id"], provider)
+        seconds = time.perf_counter() - started
+    usage = getattr(provider, "last_usage", None)
     # For the agent loop, count only the model's own tool calls. The counter above also sees the validator's fetches.
     if investigates:
         tool_names: list[str] | None = list(getattr(provider, "last_tool_names", []))
@@ -153,6 +194,9 @@ def run_case(entry: dict[str, Any], provider: ModelProvider) -> dict[str, Any]:
         "decision_correct": actual == expected,
         "mismatch": actual != expected,
         "notes": entry.get("notes", ""),
+        "repeat": repeat_index,
+        "seconds": round(seconds, 3),
+        **_usage_fields(usage, cost_rates),
     }
 
 
@@ -160,9 +204,58 @@ def _ratio(numerator: int, denominator: int) -> float | None:
     return round(numerator / denominator, 4) if denominator else None
 
 
+def _outcome(row: dict[str, Any]) -> str:
+    """What a human would have seen for this run: the surfaced decision, or the blocked status."""
+    return row["actual_decision"] or row["run_status"]
+
+
+def _mean(values: Sequence[float], digits: int) -> float | None:
+    return round(sum(values) / len(values), digits) if values else None
+
+
+def _percentile(values: Sequence[float], fraction: float) -> float | None:
+    """Nearest-rank percentile. None when there are no values."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    return round(ordered[max(1, math.ceil(fraction * len(ordered))) - 1], 3)
+
+
+def _repeat_stats(rows: Sequence[dict[str, Any]], case_count: int) -> dict[str, Any]:
+    """Consistency across repeat runs. Only called when some case has more than one run."""
+    by_case: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        by_case.setdefault(row["case_id"], []).append(row)
+
+    consistent = [cid for cid, runs in by_case.items() if len({_outcome(r) for r in runs}) == 1]
+    correct_every_run = [cid for cid, runs in by_case.items() if all(r["decision_correct"] for r in runs)]
+    flaky = [
+        {
+            "case_id": cid,
+            "expected": by_case[cid][0]["expected_decision"],
+            "decision_counts": dict(Counter(_outcome(r) for r in by_case[cid])),
+        }
+        for cid in sorted(by_case)
+        if len({_outcome(r) for r in by_case[cid]}) > 1
+    ]
+    return {
+        "consistency_rate": _ratio(len(consistent), case_count),
+        "pass_all_rate": _ratio(len(correct_every_run), case_count),
+        "flaky_cases": flaky,
+        "cases_consistent": len(consistent),
+        "cases_correct_every_run": len(correct_every_run),
+    }
+
+
 def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Compute metrics from per-case rows (as returned by run_case). Pure: no I/O."""
+    """Compute metrics from per-run rows (as returned by run_case). Pure: no I/O.
+
+    Metrics and denominators count runs. `cases` counts distinct case IDs, which equals the run count when repeat=1.
+    Rows from older scorecards may lack the timing and token fields; those aggregates then come out null.
+    """
     total = len(rows)
+    case_count = len({r["case_id"] for r in rows})
+    repeated = total > case_count
     correct = sum(1 for r in rows if r["decision_correct"])
 
     with_proposal = [r for r in rows if r["proposal_produced"]]
@@ -193,6 +286,13 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
         bucket = confusion.setdefault(r["expected_decision"], {})
         bucket[actual_key] = bucket.get(actual_key, 0) + 1
 
+    repeat_stats = _repeat_stats(rows, case_count) if repeated else None
+    seconds = [r["seconds"] for r in rows if r.get("seconds") is not None]
+    input_tokens = [r["input_tokens"] for r in rows if r.get("input_tokens") is not None]
+    output_tokens = [r["output_tokens"] for r in rows if r.get("output_tokens") is not None]
+    model_turns = [r["model_turns"] for r in rows if r.get("model_turns") is not None]
+    costs = [r["estimated_cost_usd"] for r in rows if r.get("estimated_cost_usd") is not None]
+
     metrics = {
         "decision_accuracy": _ratio(correct, total),
         "policy_citation_validity": _ratio(valid_citations, len(with_proposal)),
@@ -205,9 +305,20 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
         "validator_blocked": status_counts[VALIDATION_FAILED],
         "no_policy": status_counts[NO_POLICY],
         "provider_errors": status_counts[PROVIDER_ERROR],
+        # Null when N = 1 (consistency needs repeats).
+        "consistency_rate": repeat_stats["consistency_rate"] if repeat_stats else None,
+        "pass_all_rate": repeat_stats["pass_all_rate"] if repeat_stats else None,
+        "avg_seconds_per_case": _mean(seconds, 3),
+        "p95_seconds": _percentile(seconds, 0.95),
+        "avg_input_tokens": _mean(input_tokens, 1),
+        "avg_output_tokens": _mean(output_tokens, 1),
+        "avg_model_turns": _mean(model_turns, 2),
+        "avg_cost_per_case_usd": _mean(costs, 6),
+        "total_estimated_cost_usd": round(sum(costs), 6) if costs else None,
     }
     denominators = {
-        "cases": total,
+        "cases": case_count,
+        "runs": total,
         "decision_correct": correct,
         "cases_with_proposal": len(with_proposal),
         "cases_with_valid_citations": valid_citations,
@@ -220,17 +331,23 @@ def build_scorecard(rows: Sequence[dict[str, Any]], meta: dict[str, Any] | None 
         "total_tool_calls": tool_total,
         "cases_with_evidence_check": len(with_evidence_check),
         "cases_with_required_evidence": evidence_fetched,
+        "runs_with_timing": len(seconds),
+        "runs_with_usage": len(input_tokens),
+        "runs_with_cost": len(costs),
+        "cases_consistent": repeat_stats["cases_consistent"] if repeat_stats else None,
+        "cases_correct_every_run": repeat_stats["cases_correct_every_run"] if repeat_stats else None,
     }
 
     return {
         "meta": {
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "case_count": total,
+            "case_count": case_count,
             "citation_validity_target": CITATION_VALIDITY_TARGET,
             **(meta or {}),
         },
         "metrics": metrics,
         "denominators": denominators,
+        "flaky_cases": repeat_stats["flaky_cases"] if repeat_stats else None,
         "by_decision": confusion,
         "mismatches": [
             {
@@ -254,8 +371,17 @@ def run_evaluation(
     model_id: str | None = None,
     entries: Sequence[dict[str, Any]] | None = None,
     trace_path: Path | None = None,
+    repeat: int = 1,
+    cost_rates: Mapping[str, float] | None = None,
 ) -> dict[str, Any]:
-    """Run every eval case and return the scorecard. Eval traces go to trace_path, never mock_actions.jsonl."""
+    """Run every eval case `repeat` times and return the scorecard. Eval traces go to trace_path, never mock_actions.jsonl.
+
+    Each full pass over the cases is one repeat, so an interrupted run still leaves complete passes behind.
+    """
+    if isinstance(repeat, bool) or not isinstance(repeat, int) or not 1 <= repeat <= MAX_REPEAT:
+        raise ValueError(f"repeat must be a whole number from 1 to {MAX_REPEAT}, got {repeat!r}.")
+    if cost_rates is not None and set(cost_rates) != set(COST_RATE_KEYS):
+        raise ValueError(f"cost_rates must have exactly the keys {COST_RATE_KEYS}.")
     entries = list(entries) if entries is not None else load_eval_cases()
     trace_file = trace_path or EVAL_TRACE_PATH
     if trace_file.exists():
@@ -264,7 +390,11 @@ def run_evaluation(
     previous_trace = SETTINGS.trace_path
     SETTINGS.trace_path = trace_file
     try:
-        rows = [run_case(entry, provider) for entry in entries]
+        rows = [
+            run_case(entry, provider, cost_rates=cost_rates, repeat_index=index)
+            for index in range(repeat)
+            for entry in entries
+        ]
     finally:
         SETTINGS.trace_path = previous_trace
 
@@ -273,6 +403,9 @@ def run_evaluation(
         "model_id": model_id,
         "eval_file": EVAL_FILE_NAME,
         "trace_path": str(trace_file),
+        "repeat": repeat,
+        # The prices behind estimated_cost_usd, so the number can be audited. Null when no rates were given.
+        "cost_rates_usd_per_mtok": dict(cost_rates) if cost_rates else None,
     }
     return build_scorecard(rows, meta)
 
@@ -313,12 +446,15 @@ def _pct(value: float | None) -> str:
 
 
 def format_summary(scorecard: dict[str, Any]) -> str:
+    """Human-readable summary. Lines for newer metrics appear only when the scorecard has them."""
     m = scorecard["metrics"]
     d = scorecard["denominators"]
+    runs = d.get("runs", d["cases"])  # older scorecards have no runs key: one run per case
+    cases_line = f"Cases: {d['cases']}" + (f"  (runs: {runs})" if runs != d["cases"] else "")
     lines = [
-        f"Provider: {scorecard['meta']['provider']}" + (f" ({scorecard['meta']['model_id']})" if scorecard["meta"]["model_id"] else ""),
-        f"Cases: {d['cases']}",
-        f"Decision accuracy:            {_pct(m['decision_accuracy'])}  ({d['decision_correct']}/{d['cases']})",
+        f"Provider: {scorecard['meta'].get('provider')}" + (f" ({scorecard['meta']['model_id']})" if scorecard["meta"].get("model_id") else ""),
+        cases_line,
+        f"Decision accuracy:            {_pct(m['decision_accuracy'])}  ({d['decision_correct']}/{runs})",
         f"Policy-citation validity:     {_pct(m['policy_citation_validity'])}  (target 100%)",
         f"Correct-escalation rate:      {_pct(m['correct_escalation_rate'])}  ({d['escalated_when_expected']}/{d['expected_escalate']})",
         f"Unnecessary-escalation rate:  {_pct(m['unnecessary_escalation_rate'])}  ({d['escalated_unnecessarily']}/{d['expected_not_escalate']})",
@@ -329,4 +465,24 @@ def format_summary(scorecard: dict[str, Any]) -> str:
         f"Blocked: validator={m['validator_blocked']} no_policy={m['no_policy']} provider_errors={m['provider_errors']}",
         f"Mismatches: {len(scorecard['mismatches'])} (see JSON for the list)",
     ]
+    if m.get("consistency_rate") is not None:
+        flaky = scorecard.get("flaky_cases") or []
+        repeat_lines = [
+            f"Consistency (same decision every run): {_pct(m['consistency_rate'])}  ({d['cases_consistent']}/{d['cases']})",
+            f"Correct in every run:        {_pct(m['pass_all_rate'])}  ({d['cases_correct_every_run']}/{d['cases']})",
+        ]
+        lines[3:3] = repeat_lines  # right after the accuracy line
+        lines.append("Flaky cases: " + (", ".join(item["case_id"] for item in flaky) if flaky else "none"))
+    if m.get("avg_seconds_per_case") is not None:
+        lines.append(f"Latency per case run:         avg {m['avg_seconds_per_case']:.2f} s, p95 {m['p95_seconds']:.2f} s")
+    if m.get("avg_input_tokens") is not None:
+        lines.append(
+            f"Tokens per case run:          input {m['avg_input_tokens']:.0f}, output {m['avg_output_tokens']:.0f}, "
+            f"model turns {m['avg_model_turns']:.2f}"
+        )
+    if m.get("total_estimated_cost_usd") is not None:
+        lines.append(
+            f"Estimated cost:               ${m['total_estimated_cost_usd']:.4f} total, "
+            f"${m['avg_cost_per_case_usd']:.5f} per case run (rates in meta)"
+        )
     return "\n".join(lines)

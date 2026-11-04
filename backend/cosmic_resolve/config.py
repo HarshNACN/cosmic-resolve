@@ -55,11 +55,12 @@ def live_provider_enabled(environ: Mapping[str, str] = os.environ) -> bool:
     """
     return environ.get("COSMIC_RESOLVE_LIVE", "").strip().lower() in _TRUE_VALUES
 
-# Flat human-approval threshold for all loyalty tiers (PRD decision #1).
+# Flat human-approval threshold for all loyalty tiers (PRD decision #1). Stated in data/policies.json (clauses
+# DOA-03, LD-03, RET-04); the model prompts are generated from this value.
 ESCALATION_THRESHOLD_USD = 200.0
 
-# Maximum GOODWILL_CREDIT per loyalty tier, enforced in code (PRD decision #2).
-# Illustrative placeholders until the Data lead's policy book (T09) sets the final caps.
+# Maximum GOODWILL_CREDIT per loyalty tier, enforced in code (PRD decision #2). These are the policy-book values
+# stated in data/policies.json (clauses DOA-04 and LD-04); tests/test_policies.py checks they still match.
 GOODWILL_CAPS_USD: dict[str, float] = {
     "BRONZE": 5.0,
     "SILVER": 10.0,
