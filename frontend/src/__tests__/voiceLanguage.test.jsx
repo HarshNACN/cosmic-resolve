@@ -250,3 +250,57 @@ describe("speech and voices", () => {
     expect(note).toHaveTextContent("Cosmo (approved message)");
   });
 });
+
+describe("Hindi", () => {
+  const HINDI = "Hindi — हिन्दी";
+  const LINE = "ज़रूर, अब हम हिन्दी में बात करेंगे।";
+  const hindiTurn = () =>
+    stream([
+      { type: "language", language: "hi", previous: "en", source: "manual" },
+      { type: "agent_sentence", text: LINE, lang: "hi" },
+      { type: "state", session: snapshot({ language: "hi", transcript: said(GREETING, LINE) }) },
+      { type: "done" },
+    ]);
+
+  it("is offered in the selector, sent to the server, and shown in the existing indicator", async () => {
+    const user = userEvent.setup();
+    const onCaseCreated = vi.fn();
+    installFetch(
+      { ...MULTILINGUAL, languages: { en: true, es: true, pt: true, hi: true }, language_labels: { ...LABELS, hi: HINDI } },
+      { "POST /api/voice/sessions/s1/language": hindiTurn },
+    );
+    render(<CallPanel onCaseCreated={onCaseCreated} />);
+    await startCall(user);
+    expect(screen.getByRole("option", { name: HINDI })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Call language"), "hi");
+    await screen.findByText(LINE, { selector: "li" });
+    expect(JSON.parse(calls.find((c) => c.key === "POST /api/voice/sessions/s1/language").init.body)).toEqual({ language: "hi" });
+    await waitFor(() => expect(indicator()).toHaveTextContent(HINDI));
+    expect(onCaseCreated).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the browser's Hindi voice (hi-IN) when the server has no voice", async () => {
+    const user = userEvent.setup();
+    const spoken = [];
+    vi.stubGlobal("SpeechSynthesisUtterance", class { constructor(text) { this.text = text; } });
+    vi.stubGlobal("speechSynthesis", { speak: (u) => spoken.push(u), cancel: vi.fn() });
+    installFetch(
+      { ...MULTILINGUAL, tts: false, languages: { en: false, es: false, pt: false, hi: false } },
+      { "POST /api/voice/sessions/s1/language": hindiTurn },
+    );
+    render(<CallPanel />);
+    await startCall(user);
+    await user.selectOptions(screen.getByLabelText("Call language"), "hi");
+    await screen.findByText(LINE, { selector: "li" });
+    expect(spoken.find((u) => u.text === LINE).lang).toBe("hi-IN");
+  });
+
+  it("keeps the interface unchanged when the feature is off", async () => {
+    const user = userEvent.setup();
+    installFetch(ENGLISH_ONLY);
+    render(<CallPanel />);
+    await startCall(user);
+    expect(screen.queryByRole("option", { name: HINDI })).not.toBeInTheDocument();
+  });
+});

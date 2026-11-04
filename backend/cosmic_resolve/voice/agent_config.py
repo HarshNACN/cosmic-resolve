@@ -23,6 +23,9 @@ ENV_PIPER_VOICE = "PIPER_VOICE"
 MAX_UTTERANCE_CHARS = 500
 MAX_AUDIO_BYTES = 2_000_000
 SPEAK_MAX_TOKENS = 120      # one short sentence; plain text streaming
+# Devanagari costs several tokens per word, so a Hindi sentence needs a higher ceiling or it could be cut off mid-word.
+# Only a cap: the model still stops after one sentence, so the time to the first sentence does not change.
+SPEAK_MAX_TOKENS_BY_LANGUAGE = {"hi": 360}
 EXTRACT_MAX_TOKENS = 600    # tool-call extraction; models spend tokens on reasoning, so 150 truncates
 EXTRACT_TIMEOUT_SECONDS = 6.0
 MAX_ORDER_CARDS = 5
@@ -102,25 +105,27 @@ OUTCOME_LEADS = {
 
 
 # --- Languages ---------------------------------------------------------------------------------------------------
-# Multilingual calls (English, Latin American Spanish, Brazilian Portuguese) are opt-in. With VOICE_MULTILINGUAL off,
+# Multilingual calls (English, Latin American Spanish, Brazilian Portuguese, Hindi) are opt-in. With VOICE_MULTILINGUAL off,
 # every line below resolves to the English one and the call behaves exactly as it did before.
 ENV_MULTILINGUAL = "VOICE_MULTILINGUAL"
 ENV_PIPER_VOICE_ES = "PIPER_VOICE_ES"
 ENV_PIPER_VOICE_PT = "PIPER_VOICE_PT"
-ENV_PIPER_VOICES = {"en": ENV_PIPER_VOICE, "es": ENV_PIPER_VOICE_ES, "pt": ENV_PIPER_VOICE_PT}
+ENV_PIPER_VOICE_HI = "PIPER_VOICE_HI"
+ENV_PIPER_VOICES = {"en": ENV_PIPER_VOICE, "es": ENV_PIPER_VOICE_ES, "pt": ENV_PIPER_VOICE_PT, "hi": ENV_PIPER_VOICE_HI}
 
-LANGUAGES = ("en", "es", "pt")
+LANGUAGES = ("en", "es", "pt", "hi")
 DEFAULT_LANGUAGE = "en"
-LANGUAGE_LABELS = {"en": "English", "es": "Español", "pt": "Português (Brasil)"}
-LANGUAGE_NAMES = {"en": "English", "es": "Spanish", "pt": "Portuguese"}
+LANGUAGE_LABELS = {"en": "English", "es": "Español", "pt": "Português (Brasil)", "hi": "Hindi — हिन्दी"}
+LANGUAGE_NAMES = {"en": "English", "es": "Spanish", "pt": "Portuguese", "hi": "Hindi"}
 # Regional locales pick the Piper voice; browsers use hyphenated tags for their own speech synthesis.
-LOCALES = {"en": "en_US", "es": "es_MX", "pt": "pt_BR"}
-BROWSER_LOCALES = {"en": "en-US", "es": "es-MX", "pt": "pt-BR"}
+LOCALES = {"en": "en_US", "es": "es_MX", "pt": "pt_BR", "hi": "hi_IN"}
+BROWSER_LOCALES = {"en": "en-US", "es": "es-MX", "pt": "pt-BR", "hi": "hi-IN"}
 # How the model is told which language to write in.
 MODEL_LANGUAGE = {
     "en": "English",
     "es": "Latin American Spanish, warm and informal (use tú)",
     "pt": "Brazilian Portuguese, warm and friendly",
+    "hi": "Hindi written in Devanagari script (never romanised), warm and polite (use आप)",
 }
 
 _TRUE_VALUES = {"1", "true", "yes", "on"}
@@ -223,6 +228,46 @@ _PT = {
     "OF": "de",
 }
 
+_HI = {
+    "GREETING": (
+        "नमस्ते {first_name}, यह " + COMPANY + " का " + AGENT_NAME + " है। मुझे स्क्रीन पर आपके हाल के ऑर्डर दिख रहे हैं। "
+        "मैं किस ऑर्डर में आपकी मदद करूँ?"
+    ),
+    "ORDER_PICKED": "ठीक है, आपका {title} का ऑर्डर। इसमें क्या समस्या हुई?",
+    "ASK_ORDER": "माफ़ कीजिए, आप किस ऑर्डर की बात कर रहे हैं? आप बोल सकते हैं या स्क्रीन पर उसे टैप कर सकते हैं। {options}",
+    "ASK_ORDER_AGAIN": "मुझे अभी ऑर्डर समझ नहीं आया। कृपया स्क्रीन पर उसे टैप करें। {options}",
+    "ASK_DETAIL": "क्या आप थोड़ा और बता सकते हैं कि क्या हुआ?",
+    "CONFIRM": "पुष्टि के लिए: {issue}। क्या यह सही है?",
+    "ASK_YES_NO": "माफ़ कीजिए, क्या यह हाँ था या नहीं?",
+    "SUBMITTED": "धन्यवाद। मैंने आपका केस एक विशेषज्ञ को भेज दिया है, और जब तक वे जाँच करते हैं, मैं लाइन पर हूँ।",
+    "RESTART": "कोई बात नहीं, चलिए फिर से शुरू करते हैं। आप किस ऑर्डर की बात कर रहे हैं? {options}",
+    "STILL_WAITING": "विशेषज्ञ अभी आपके केस की जाँच कर रहे हैं। जैसे ही कोई जानकारी आएगी, आपको तुरंत बताया जाएगा।",
+    "OUT_OF_SCOPE": (
+        "फ़िलहाल यहाँ क्षतिग्रस्त सामान, देर से डिलीवरी और रिटर्न में ही मदद मिल सकती है। "
+        "मैंने आपका अनुरोध नोट कर लिया है, और हमारी टीम का कोई सदस्य आपसे संपर्क करेगा।"
+    ),
+    "DIDNT_CATCH": "माफ़ कीजिए, आपकी बात साफ़ सुनाई नहीं दी। क्या आप दोहरा सकते हैं?",
+    "CLOSED_LINE": "यह कॉल समाप्त हो चुकी है। " + COMPANY + " से संपर्क करने के लिए धन्यवाद।",
+    "EMPATHY_FALLBACK": "मुझे अफ़सोस है कि ऐसा हुआ।",
+    "OUTCOME_ESCALATED": (
+        "एक विशेषज्ञ ने आपके केस की ध्यान से जाँच की है और वे सीधे आपसे संपर्क करेंगे। आपके धैर्य के लिए धन्यवाद।"
+    ),
+    "OUTCOME_REJECTED": (
+        "एक विशेषज्ञ ने आपके केस की जाँच की है और वे इसे खुद संभालना चाहते हैं। वे आगे के कदमों के साथ आपसे संपर्क करेंगे। "
+        "आपके धैर्य के लिए धन्यवाद।"
+    ),
+    "OUTCOME_APPROVED_GENERIC": (
+        "अच्छी खबर: एक विशेषज्ञ ने जाँच करके आपके केस के लिए एक समाधान मंज़ूर किया है। आपके धैर्य के लिए धन्यवाद।"
+    ),
+    "PROMPT_ORDER": "मैं किस ऑर्डर में आपकी मदद करूँ? {options}",
+    "PROMPT_DESCRIBE": "आपके {title} के ऑर्डर में क्या समस्या हुई?",
+    "LANGUAGE_SWITCHED": "ज़रूर, अब हम हिन्दी में बात करेंगे।",
+    "ORDER_TAP": "मुझे अपने {title} के ऑर्डर में मदद चाहिए।",
+    "OPTIONS": "आपके ऑर्डर हैं: {titles}।",
+    "SEE_SCREEN": "विशेषज्ञ का पूरा संदेश आपकी स्क्रीन पर है।",
+    "OF": "का",  # not used in Hindi lines: see amount_phrase
+}
+
 _EN = {
     "GREETING": GREETING,
     "ORDER_PICKED": ORDER_PICKED,
@@ -244,7 +289,7 @@ _EN = {
     **_EXTRA_EN,
 }
 
-TEXT = {"en": _EN, "es": _ES, "pt": _PT}
+TEXT = {"en": _EN, "es": _ES, "pt": _PT, "hi": _HI}
 
 # The read-back wording per language. Each phrase is the whole predicate so the grammar stays natural.
 ISSUE_BY_LANGUAGE = {
@@ -258,6 +303,11 @@ ISSUE_BY_LANGUAGE = {
         "DAMAGED_ON_ARRIVAL": "o seu pedido de {title} chegou danificado",
         "LATE_DELIVERY": "o seu pedido de {title} não chegou no prazo",
         "RETURN_REQUEST": "você quer devolver o seu pedido de {title}",
+    },
+    "hi": {
+        "DAMAGED_ON_ARRIVAL": "आपका {title} का ऑर्डर क्षतिग्रस्त पहुँचा है",
+        "LATE_DELIVERY": "आपका {title} का ऑर्डर समय पर नहीं पहुँचा है",
+        "RETURN_REQUEST": "आप अपना {title} का ऑर्डर वापस करना चाहते हैं",
     },
 }
 
@@ -275,6 +325,12 @@ LEADS_BY_LANGUAGE = {
         "STORE_CREDIT": "Boas notícias: um crédito na loja{amount} foi adicionado à sua conta.",
         "GOODWILL_CREDIT": "Boas notícias: um crédito de cortesia{amount} foi adicionado à sua conta.",
     },
+    "hi": {
+        "REPLACE": "अच्छी खबर: आपके {title} का रिप्लेसमेंट रास्ते में है।",
+        "REFUND": "अच्छी खबर: आपका{amount} रिफंड, आपके {title} के ऑर्डर के लिए, मंज़ूर हो गया है।",
+        "STORE_CREDIT": "अच्छी खबर: आपके खाते में{amount} स्टोर क्रेडिट जोड़ दिया गया है।",
+        "GOODWILL_CREDIT": "अच्छी खबर: आपके खाते में{amount} गुडविल क्रेडिट जोड़ दिया गया है।",
+    },
 }
 
 
@@ -291,6 +347,13 @@ def outcome_lead(decision: str, language: str = DEFAULT_LANGUAGE) -> str | None:
     return LEADS_BY_LANGUAGE.get(language, OUTCOME_LEADS).get(decision)
 
 
+def amount_phrase(amount: float, language: str = DEFAULT_LANGUAGE) -> str:
+    """The amount as it is slotted into an outcome line: " of $45.00" (English, Spanish, Portuguese use "of"/"de")."""
+    if language == "hi":  # spoken as words, so Piper says "45 डॉलर" instead of reading out the $ sign and decimals
+        return " " + f"{amount:,.2f}".removesuffix(".00") + " डॉलर का"
+    return f" {text('OF', language)} ${amount:,.2f}"
+
+
 def speech_system(language: str = DEFAULT_LANGUAGE) -> str:
     """The empathetic-sentence prompt. English is the unchanged original; other languages add one instruction."""
     if language == DEFAULT_LANGUAGE or language not in MODEL_LANGUAGE:
@@ -304,7 +367,8 @@ def extract_system(multilingual: bool) -> str:
         return EXTRACT_SYSTEM
     return (
         EXTRACT_SYSTEM
-        + " The customer may speak English, Latin American Spanish or Brazilian Portuguese; understand all three. "
+        + " The customer may speak English, Latin American Spanish, Brazilian Portuguese or Hindi (Devanagari or romanised, "
+        "possibly mixed with English words); understand all four. "
         "Always answer with the tool's fixed values (for example confirmation is yes, no or unclear), "
         "never with words from the customer's language."
     )

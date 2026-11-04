@@ -15,7 +15,7 @@ const POLL_MS = 1500;
 const MIN_RECORDING_BYTES = 1200; // anything smaller is a stray tap, not speech
 const TALKABLE = new Set(["listening", "speaking", "waiting"]);
 
-const DEFAULT_LOCALES = { en: "en-US", es: "es-MX", pt: "pt-BR" };
+const DEFAULT_LOCALES = { en: "en-US", es: "es-MX", pt: "pt-BR", hi: "hi-IN" };
 
 // The browser's own voice, used only when the server has no voice for the line. The locale picks the right accent.
 function speakInBrowser(text, language, capabilities) {

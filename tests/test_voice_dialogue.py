@@ -32,6 +32,7 @@ REPLACE_LEAD = "Good news: a replacement for your Smart Plug Mini is on its way.
 def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(SETTINGS, "trace_path", tmp_path / "trace.jsonl")
     monkeypatch.setenv("CHECKPOINT_WRITES_ENABLED", "true")
+    monkeypatch.delenv("VOICE_MULTILINGUAL", raising=False)  # a local .env may switch it on; these tests are English-only
     store.reset()
     reset_decided_for_tests()
     yield

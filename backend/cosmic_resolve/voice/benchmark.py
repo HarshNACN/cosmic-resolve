@@ -27,8 +27,9 @@ UTTERANCES = {
     "en": "Hello, my smart plug never arrived and tracking says it was lost.",
     "es": "Hola, mi enchufe inteligente nunca llegó y el seguimiento dice que se perdió.",
     "pt": "Olá, minha tomada inteligente nunca chegou e o rastreamento diz que foi perdida.",
+    "hi": "नमस्ते, मेरा स्मार्ट प्लग अभी तक नहीं पहुँचा और ट्रैकिंग में खोया हुआ दिख रहा है।",
 }
-REPLIES = {"en": "I am so sorry that happened.", "es": "Lamento mucho lo que pasó.", "pt": "Sinto muito pelo que aconteceu."}
+REPLIES = {"en": "I am so sorry that happened.", "es": "Lamento mucho lo que pasó.", "pt": "Sinto muito pelo que aconteceu.", "hi": "मुझे अफ़सोस है कि ऐसा हुआ।"}
 
 
 def summarize(samples: list[float]) -> dict[str, float]:
@@ -82,8 +83,10 @@ def run(runs: int, with_stt: bool, with_llm: bool) -> dict[str, Any]:
         try:
             from .llm import BedrockDialogueLLM
 
-            llm = BedrockDialogueLLM()
-            next(iter(llm.speak({"expecting": "DESCRIBE", "orders": [], "selected_order": None}, "Hello")), None)  # fails fast without credentials
+            candidate = BedrockDialogueLLM()
+            probe = {"expecting": "DESCRIBE", "orders": [], "selected_order": None}
+            next(iter(candidate.speak(probe, "Hello")), None)  # fails fast without credentials
+            llm = candidate  # only a model that answered is used for the timings
         except Exception as exc:  # noqa: BLE001
             report["skipped"]["llm"] = str(exc)
 

@@ -28,6 +28,7 @@ _NOISE_PHRASES = {
     "thank you", "thanks", "thanks for watching", "thank you for watching", "you", "bye", "okay", "mm", "hmm", "uh", "um",
     "gracias", "muchas gracias", "gracias por ver el video", "subtitulos realizados por la comunidad de amaraorg",
     "obrigado", "obrigada", "tchau", "legendas pela comunidade amaraorg",
+    "धन्यवाद", "शुक्रिया", "देखने के लिए धन्यवाद", "वीडियो देखने के लिए धन्यवाद",
 }
 SHORT_CLIP_WORDS = 2
 
@@ -44,8 +45,8 @@ class Transcription:
 
 
 def is_probably_noise(text: str) -> bool:
-    cleaned = re.sub(r"[^a-z' ]", "", fold(text)).strip()
-    return len(cleaned) < 2 or cleaned in _NOISE_PHRASES
+    cleaned = re.sub(r"[^a-zऀ-ॣ०-ॿ' ]", "", fold(text)).strip()  # Latin letters and Devanagari
+    return len(cleaned) < 2 or cleaned in {fold(phrase) for phrase in _NOISE_PHRASES}
 
 
 class GroqTranscriber:
@@ -94,6 +95,11 @@ class GroqTranscriber:
         body = self._post(audio, filename, content_type, {"response_format": "verbose_json"})
         text = str(body.get("text", "")).strip()
         detected = normalize_language(body.get("language"))
+        # Measured: spoken Hindi is reported as "Urdu" (and the text comes back in Arabic script) for short answers
+        # such as "हाँ, यह सही है" and "नहीं". Hindi is the supported language, so ask again for Hindi (Devanagari).
+        if str(body.get("language", "")).strip().lower() == "urdu":
+            retry = self._post(audio, filename, content_type, {"response_format": "json", "language": "hi"})
+            return Transcription(str(retry.get("text", "")).strip(), "hi", hinted=True)
         short = len(text.split()) <= SHORT_CLIP_WORDS
         # Retry with the call's language when the detected one is unsupported, or when a short clip disagrees with a
         # Spanish/Portuguese call (where one-word answers get mis-heard as English). Never re-force English over a

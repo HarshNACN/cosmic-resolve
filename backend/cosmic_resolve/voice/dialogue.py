@@ -59,13 +59,15 @@ class DialogueLLM(Protocol):
 
 _CONTROL = re.compile(r"[\x00-\x1f\x7f]+")
 _WHITESPACE = re.compile(r"\s+")
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_SENTENCE_END = re.compile(r"(?<=[.!?।])\s+")  # । is the Hindi danda
 _DASHES = re.compile(r"\s*[–—]\s*")
 _MARKUP = re.compile(r"[*_`#>]+")
 # The empathy sentence must never promise anything or name an amount, in any language. Checked on accent-stripped text.
 _PROMISE = re.compile(
     r"refund|replac|credit|reimburs|reembols|reemplaz|reposic|devol|estorn|substitu|ressarc|compens|gratis|\bfree\b|"
-    r"guarant|garant|promis|promet|approv|aprob|\d|\$"
+    r"guarant|garant|promis|promet|approv|aprob|\d|\$|"
+    # Hindi (Devanagari): refund, return/back, money, replacement, change, credit, guarantee, promise, approved, free, payment
+    + fold(r"रिफंड|वापस|पैसे|पैसा|रिप्लेसमेंट|बदल|क्रेडिट|गारंटी|वादा|वायदा|मंज़ूर|मंजूर|मुफ़्त|मुफ्त|भुगतान|मुआवज़ा|मुआवजा|लौटा|डॉलर|रुपय")
 )
 
 
@@ -406,7 +408,7 @@ def _amount_phrase(executed: Any, language: str) -> str:
     for action in executed if isinstance(executed, list) else []:
         amount = action.get("amount") if isinstance(action, dict) else None
         if isinstance(amount, (int, float)) and not isinstance(amount, bool):
-            return f" {cfg.text('OF', language)} ${amount:,.2f}"
+            return cfg.amount_phrase(amount, language)
     return ""
 
 

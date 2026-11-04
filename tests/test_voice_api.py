@@ -51,6 +51,7 @@ class FakeSpeaker:
 def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(SETTINGS, "trace_path", tmp_path / "trace.jsonl")
     monkeypatch.setenv("CHECKPOINT_WRITES_ENABLED", "true")
+    monkeypatch.delenv("VOICE_MULTILINGUAL", raising=False)  # a local .env may switch it on; these tests are English-only
     store.reset()
     routes.reset_services()
     reset_decided_for_tests()

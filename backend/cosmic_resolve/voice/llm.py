@@ -65,7 +65,7 @@ class BedrockDialogueLLM:
             modelId=self.model_id,
             system=[{"text": cfg.speech_system(view.get("language", cfg.DEFAULT_LANGUAGE))}],
             messages=[{"role": "user", "content": [{"text": _untrusted_block(utterance)}]}],
-            inferenceConfig={"maxTokens": cfg.SPEAK_MAX_TOKENS},
+            inferenceConfig={"maxTokens": cfg.SPEAK_MAX_TOKENS_BY_LANGUAGE.get(view.get("language"), cfg.SPEAK_MAX_TOKENS)},
         )
         for event in response["stream"]:
             text = event.get("contentBlockDelta", {}).get("delta", {}).get("text")

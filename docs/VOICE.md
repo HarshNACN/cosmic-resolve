@@ -120,6 +120,7 @@ Add to your local `.env` (these names are not in `.env.example`; that file is ou
 | `VOICE_MULTILINGUAL` | `true` (anything else, or unset, means English only) |
 | `PIPER_VOICE_ES` | `voices/es_MX-ald-medium.onnx` |
 | `PIPER_VOICE_PT` | `voices/pt_BR-faber-medium.onnx` |
+| `PIPER_VOICE_HI` | optional, for Hindi: path to `hi_IN-pratham-medium.onnx` (its `.onnx.json` must sit beside it); see "Hindi" below |
 | `VOICE_CASE_CLOCK` | optional; leave unset. `real` stamps voice cases with today's date instead of the dataset's date (see below) |
 
 To turn it off, remove `VOICE_MULTILINGUAL` (or set it to `false`) and restart. Nothing is downloaded automatically.
@@ -170,8 +171,60 @@ If auto-switching misbehaves in the room, use the selector: it needs no detectio
 | `es_MX-ald-medium` | Unlicense (public domain) |
 | `pt_BR-faber-medium` | CC0 |
 | `en_US-lessac-medium` | trained on the Lessac dataset, whose terms are restrictive (originally the Blizzard challenge); fine for this prototype |
+| `hi_IN-pratham-medium` | **not verified**: the voice's MODEL_CARD (huggingface.co/rhasspy/piper-voices, `hi/hi_IN/pratham/medium`) was not reachable from here; read it before shipping |
 | `es_MX-claude-high` (alternative) | Apache-2.0 |
 | `pt_BR-edresson-low` (alternative) | CC BY 4.0 (needs attribution) |
+
+### Hindi (हिन्दी)
+
+Hindi (`hi` / `hi_IN`) is a fourth language in the same call, using the same session state, language policy, voice
+router and fixed templates. The selector shows it as "Hindi — हिन्दी".
+
+To enable it, point `PIPER_VOICE_HI` at the downloaded voice (a path relative to the repository root, or absolute) and
+restart. Nothing is downloaded. Example, if the files sit one folder above the repository:
+
+```
+PIPER_VOICE_HI=../hi_IN-pratham-medium.onnx
+```
+
+Check it loads: `python -m cosmic_resolve.voice.benchmark --no-llm --runs 3` lists which voices loaded and times them, and
+the call page marks Hindi "(text only)" when its voice is missing. The Hindi voice loads in parallel with the others at
+startup (all four voices: 8.1 s in total, once) and is reused for every sentence.
+
+What is Hindi-specific, measured with real Whisper on Hindi speech:
+
+- **Detection.** Full sentences are reported as Hindi and written in Devanagari. Short answers are not: "हाँ, यह सही है"
+  and "नहीं" came back as **Urdu** in Arabic script, and a bare "हाँ" as Korean. Urdu is therefore answered by transcribing
+  the clip again as Hindi, and an unsupported guess in a Hindi call uses the same retry with the call's language as the hint.
+  A Devanagari sentence is Hindi by its script, so it switches the call even when recognition's guess is unsupported.
+- **Hinglish.** Whisper writes Hindi with English words left in Latin ("मेरा order अभी तक नहीं पहुचा") or in
+  Devanagari ("स्मार्ट प्लग मिनी"). Both are matched to the customer's orders and to missing-delivery, damage and
+  return phrases, including the spelling without the nasal mark that Whisper often produces. Typed romanised Hindi
+  ("mera package abhi tak nahi aaya") works for the common phrases.
+- **Wording.** Short, polite (आप) and neutral about the speaker's gender. Amounts are spoken as words ("45 डॉलर का रिफंड")
+  so Piper does not read out a `$` sign and decimals. The associate's approved message is shown unchanged, as in
+  Spanish and Portuguese.
+- **Product names** stay in English everywhere (stored data, transcript, speech). No pronunciation layer was needed:
+  espeak's Hindi voice reads Latin words with English phonemes ("Smart", "USB-C" came out as English sounds in the
+  phoneme check). Numbers are read as Hindi words.
+- **Model call.** Claude is told to write Hindi in Devanagari, never romanised. The ceiling on that one sentence is
+  raised from 120 to 360 tokens for Hindi only, because Devanagari costs several tokens per word. It is a cap, not a
+  target, so it does not slow the first sentence.
+
+Measured on the demo laptop on Nov 4 (4 runs each, Groq live, Piper-generated clips, so a best case):
+
+| Stage | English | Español | Português | Hindi |
+|---|---|---|---|---|
+| Groq Whisper median / p95 | 0.33 / 0.41 s | 0.23 / 0.31 s | 0.25 / 0.31 s | 0.29 / 0.30 s |
+| Piper first chunk, warmed, median / p95 | 0.07 / 0.07 s | 0.10 / 0.10 s | 0.07 / 0.08 s | 0.10 / 0.15 s |
+
+Cold, the first Hindi sentence costs about 7 s, which is paid during startup warm-up, not on a call.
+The Claude stage was **not** measured for Hindi (no usable AWS login in the measuring shell), so the 1.5 s first-audio
+target is **not yet shown** for Hindi: run the benchmark after `aws login` with `AWS_REGION` set.
+
+Limits: the Hindi wording has not been reviewed by a native speaker; the voice has not been listened to by a person yet (check pronunciation by ear before the showcase);
+the Piper voice's licence is unverified (table above); and a Hindi caller whose first sentence is only one or two
+words stays in the current language until they say more or use the selector.
 
 ### Date note for voice cases
 

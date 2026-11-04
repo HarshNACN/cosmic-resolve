@@ -40,6 +40,11 @@ def transcriber(http):
     return GroqTranscriber(api_key="secret-key", model="whisper-test", client=http)
 
 
+@pytest.fixture(autouse=True)
+def english_only(monkeypatch):
+    monkeypatch.delenv("VOICE_MULTILINGUAL", raising=False)  # a local .env may switch it on; these tests are English-only
+
+
 def test_transcription_sends_the_key_and_model_but_never_puts_the_key_in_the_url():
     http = FakeHttp()
     assert transcriber(http).transcribe(b"audio") == "the smart plug"

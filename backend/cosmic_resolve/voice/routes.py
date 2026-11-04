@@ -152,13 +152,13 @@ class CreateSession(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     customer_id: str = Field(min_length=1, max_length=20)
-    language: str | None = Field(default=None, pattern="^(en|es|pt)$")
+    language: str | None = Field(default=None, pattern="^(en|es|pt|hi)$")
 
 
 class SetLanguage(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    language: str = Field(pattern="^(en|es|pt)$")
+    language: str = Field(pattern="^(en|es|pt|hi)$")
 
 
 class SpeakRequest(BaseModel):

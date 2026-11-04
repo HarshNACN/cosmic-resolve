@@ -45,7 +45,7 @@ function SetupNote({ capabilities }) {
   );
 }
 
-const LANGUAGE_LABELS = { en: "English", es: "Español", pt: "Português (Brasil)" };
+const LANGUAGE_LABELS = { en: "English", es: "Español", pt: "Português (Brasil)", hi: "Hindi — हिन्दी" };
 
 // Shows which language the call is in, with a compact manual selector. Rendered only when multilingual calls are on,
 // so with the feature off the panel looks exactly as before.

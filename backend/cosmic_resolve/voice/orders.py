@@ -20,6 +20,15 @@ _ORDINALS = {
     "fourth": 3, "4th": 3, "cuarto": 3, "cuarta": 3, "quarto": 3, "quarta": 3,
     "fifth": 4, "5th": 4, "quinto": 4, "quinta": 4,
 }
+# Hindi ordinals, written the way Whisper writes them (folded like the utterance, so nukta and virama survive).
+_ORDINALS.update({
+    fold(word): index
+    for index, group in enumerate((
+        ("पहला", "पहली", "पहले"), ("दूसरा", "दूसरी", "दूसरे"), ("तीसरा", "तीसरी", "तीसरे"),
+        ("चौथा", "चौथी", "चौथे"), ("पांचवां", "पांचवा", "पाँचवा", "पाँचवाँ"),
+    ))
+    for word in group
+})
 # Bare "one" or "two" is ordinary speech ("I have one problem"), so numbers only count after "number" or "option".
 _NUMBERED = re.compile(
     r"\b(?:number|option|order|item|numero|opcion|opcao|pedido)\s*"
@@ -32,6 +41,10 @@ _NUMBER_VALUES = {
     "four": 3, "cuatro": 3, "quatro": 3, "4": 3,
     "five": 4, "cinco": 4, "5": 4,
 }
+# "नंबर दो", "ऑर्डर एक": a number word right after one of these words (the \b-based pattern above cannot see Devanagari).
+_HI_NUMBER_TRIGGERS = {fold(w) for w in ("नंबर", "नम्बर", "विकल्प", "ऑर्डर", "आइटम", "number", "option")}
+_HI_NUMBER_WORDS = {fold(w): i for w, i in (("एक", 0), ("दो", 1), ("तीन", 2), ("चार", 3), ("पांच", 4), ("पाँच", 4),
+                                          ("1", 0), ("2", 1), ("3", 2), ("4", 3), ("5", 4))}
 _STOP = {"the", "and", "pro", "mini", "lite", "elite", "plus", "max", "air", "kit", "pack", "for", "with", "inch"}
 
 # Spanish and Portuguese product words, and the English title word each one stands for. (Accents are stripped.)
@@ -52,6 +65,20 @@ _SYNONYMS = {
     "tripode": ("tripod",), "tripe": ("tripod",),
     "camara": ("camera",), "tableta": ("tablet",),
 }
+# Hindi product words as Whisper writes them ("स्मार्ट प्लग मिनी" for "Smart Plug Mini"), mapped to the English title word.
+_SYNONYMS.update({
+    fold(word): english
+    for word, english in {
+        "प्लग": ("plug",), "इयरबड्स": ("earbuds",), "ईयरबड्स": ("earbuds",), "इयरफोन": ("earbuds", "headphones"),
+        "हेडफोन": ("headphones",), "हेडफ़ोन": ("headphones",), "हेडसेट": ("headset",), "माउस": ("mouse",),
+        "कीबोर्ड": ("keyboard",), "चार्जर": ("charger",), "स्पीकर": ("speaker",), "वॉच": ("watch",), "घड़ी": ("watch",),
+        "ट्राइपॉड": ("tripod",), "ड्रोन": ("drone",), "कैमरा": ("camera",), "टैबलेट": ("tablet",), "लैपटॉप": ("laptop",),
+        "थर्मोस्टेट": ("thermostat",), "थर्मोस्टैट": ("thermostat",), "वैक्यूम": ("vacuum",), "लॉक": ("lock",),
+        "प्रोजेक्टर": ("projector",), "बल्ब": ("bulb",), "लगेज": ("luggage",), "ट्रैकर": ("tracker",),
+        "मॉनिटर": ("monitor",), "राउटर": ("router",), "वेबकैम": ("webcam",), "रोबोट": ("robot",),
+        "ब्लूटूथ": ("bluetooth",),
+    }.items()
+})
 _PHRASES = {
     "caixa de som": ("speaker",),
     "alto falante": ("speaker",),
@@ -123,11 +150,15 @@ def match_order(utterance: str, orders: list[dict[str, Any]]) -> dict[str, Any] 
         index = _NUMBER_VALUES[numbered.group(1)]
         return orders[index] if index < len(orders) else None
     spoken = words(utterance)
+    for position, word in enumerate(spoken[:-1]):
+        index = _HI_NUMBER_WORDS.get(spoken[position + 1]) if word in _HI_NUMBER_TRIGGERS else None
+        if index is not None:
+            return orders[index] if index < len(orders) else None
     for word in spoken:
         index = _ORDINALS.get(word)
         if index is not None and index < len(orders) and len(spoken) <= 6:
             return orders[index]
-    if len(orders) == 1 and tokens & {"it", "that", "this", "yes", "yeah", "si", "sim", "ese", "esse", "eso", "isso"}:
+    if len(orders) == 1 and tokens & {"it", "that", "this", "yes", "yeah", "si", "sim", "ese", "esse", "eso", "isso", fold("वही"), fold("यही")}:
         return orders[0]
     return None
 

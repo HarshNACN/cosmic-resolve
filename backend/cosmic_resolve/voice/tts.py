@@ -4,7 +4,7 @@ Measured on the demo laptop: a voice loads in about 2.5 s once, then the first a
 0.04 s and a whole short sentence about 0.15 s. Audio is raw 16-bit mono PCM; the browser plays it as it arrives.
 
 English (PIPER_VOICE) is required. With VOICE_MULTILINGUAL on, Spanish (PIPER_VOICE_ES, es_MX) and Portuguese
-(PIPER_VOICE_PT, pt_BR) voices are loaded too, in parallel at startup and cached, never per sentence. A missing or
+(PIPER_VOICE_PT, pt_BR) and Hindi (PIPER_VOICE_HI, hi_IN) voices are loaded too, in parallel at startup and cached, never per sentence. A missing or
 broken extra voice does not stop the app or English calls: it is recorded in `problems` so the page can say so.
 """
 from __future__ import annotations
@@ -21,9 +21,9 @@ from .llm import VoiceConfigError
 
 DEFAULT_RATE = 22050
 # A short word in each language for the one-off warm-up synthesis a freshly loaded voice needs.
-_WARMUP_TEXT = {"en": "Hello.", "es": "Hola.", "pt": "Olá."}
+_WARMUP_TEXT = {"en": "Hello.", "es": "Hola.", "pt": "Olá.", "hi": "नमस्ते।"}
 # Voices known to work, used in setup messages (see docs/VOICE.md for licences).
-_SUGGESTED_VOICE = {"en": "en_US-lessac-medium", "es": "es_MX-ald-medium", "pt": "pt_BR-faber-medium"}
+_SUGGESTED_VOICE = {"en": "en_US-lessac-medium", "es": "es_MX-ald-medium", "pt": "pt_BR-faber-medium", "hi": "hi_IN-pratham-medium"}
 
 
 class VoiceUnavailable(RuntimeError):
@@ -73,7 +73,7 @@ class PiperSpeaker:
 
     def _load_extra_languages(self) -> None:
         wanted: dict[str, Path] = {}
-        for language in ("es", "pt"):
+        for language in ("es", "pt", "hi"):
             setting = cfg.ENV_PIPER_VOICES[language]
             raw = os.environ.get(setting, "").strip()
             if not raw:
@@ -95,7 +95,7 @@ class PiperSpeaker:
             except Exception as exc:  # noqa: BLE001 - a corrupt or unsupported voice must not stop English calls
                 return language, None, f"The {cfg.LANGUAGE_NAMES[language]} voice could not be loaded: {exc}"
 
-        with ThreadPoolExecutor(max_workers=2, thread_name_prefix="piper-load") as pool:
+        with ThreadPoolExecutor(max_workers=3, thread_name_prefix="piper-load") as pool:
             for language, loaded, problem in pool.map(load, wanted.items()):
                 if loaded is not None:
                     self._voices[language] = loaded

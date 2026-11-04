@@ -442,7 +442,7 @@ def test_piper_routes_each_language_to_its_own_voice_and_reports_a_missing_one()
     list(speaker.synthesize("Hello"))
     list(speaker.synthesize("Hola", "es"))
     assert en.spoken == ["Hello"] and es.spoken == ["Hola"]
-    assert speaker.languages() == {"en": True, "es": True, "pt": False}
+    assert speaker.languages() == {"en": True, "es": True, "pt": False, "hi": False}
     with pytest.raises(VoiceUnavailable):
         list(speaker.synthesize("Olá", "pt"))
 
@@ -516,7 +516,7 @@ def test_a_spoken_spanish_turn_is_transcribed_with_a_hint_and_spoken_with_the_sp
 def test_status_lists_languages_and_missing_voices():
     routes.configure_services(llm=FakeLLM(), stt=FakeSTT("", None), tts=FakeSpeaker(voices=("en", "es")))
     status = client.post("/voice/warmup").json()
-    assert status["multilingual"] is True and status["languages"] == {"en": True, "es": True, "pt": False}
+    assert status["multilingual"] is True and status["languages"] == {"en": True, "es": True, "pt": False, "hi": False}
     assert any("Portuguese" in problem for problem in status["problems"])
     assert status["language_labels"]["pt"] == "Português (Brasil)"
 

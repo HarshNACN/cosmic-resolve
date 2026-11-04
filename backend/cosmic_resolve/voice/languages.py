@@ -5,7 +5,8 @@ measured speech recognition of one-word answers is unreliable: "Sí" came back a
 "Sim" as Russian. So a call only changes language on an utterance long enough to be confident, and keeps the current
 language for short or ambiguous ones.
 
-Matching runs on accent-stripped, lower-case text, so "audífonos", "Sí" and "não" need no special handling.
+Matching runs on accent-stripped, lower-case text, so "audífonos", "Sí" and "não" need no special handling. Hindi
+(Devanagari) keeps its vowel and nukta marks, which are part of the letters, and is recognised by its script.
 """
 from __future__ import annotations
 
@@ -20,14 +21,17 @@ _NAMES = {
     "english": "en", "en": "en",
     "spanish": "es", "es": "es", "espanol": "es", "castellano": "es",
     "portuguese": "pt", "pt": "pt", "portugues": "pt",
+    "hindi": "hi", "hi": "hi",
 }
-_WORD = re.compile(r"\w+", re.UNICODE)
+# \w does not match Devanagari vowel signs, so the Devanagari block is listed explicitly.
+_WORD = re.compile(r"[\w\u0900-\u0963\u0966-\u097f]+", re.UNICODE)  # not the danda (U+0964), which ends a sentence
+_DEVANAGARI = re.compile(r"[\u0900-\u097f]")
 
 
 def fold(text: str) -> str:
-    """Lower-case and strip accents."""
+    """Lower-case and strip accents (Latin letters only: Devanagari virama and nukta are letters, not accents)."""
     decomposed = unicodedata.normalize("NFKD", text.lower())
-    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch) or _DEVANAGARI.match(ch))
 
 
 def words(text: str) -> list[str]:
@@ -61,6 +65,12 @@ _VOCAB = {
         "esse", "essa", "com", "estou", "ja", "correto", "incorreto", "exato", "errado", "perfeito",
     },
 }
+# Romanised Hindi ("Hinglish"). Whisper normally writes Hindi in Devanagari, which is recognised by script below, so
+# this only matters for typed text. Short everyday words ("ka", "ko", "se", "hi") are left out: other languages use them.
+_VOCAB["hi"] = {
+    "mera", "meri", "mere", "nahi", "nahin", "abhi", "aaya", "aayi", "mujhe", "chahiye", "haan", "kripya",
+    "dhanyavad", "namaste", "wapas", "karna", "yeh", "woh", "hai", "hain", "tak", "mera", "paas", "kaise",
+}
 _VOCAB["es"].discard("pedidos")  # "pedidos" is the same word in Spanish and Portuguese
 
 # An unaccented "si" can mean "if", so a written Spanish yes counts as evidence only when it carries the accent.
@@ -71,6 +81,7 @@ def detect_text_language(text: str) -> tuple[str | None, int]:
     """The clearly winning language of the text and its score, or (None, 0) when none stands out."""
     tokens = words(text)
     scores = {lang: sum(token in vocab for token in tokens) for lang, vocab in _VOCAB.items()}
+    scores["hi"] += sum(1 for token in tokens if _DEVANAGARI.search(token))  # every Devanagari word is Hindi evidence
     if _ACCENTED_ES_YES.search(text):  # a written "sí" is Spanish evidence on top of the word lists
         scores["es"] += 1
     best = max(scores, key=scores.get)
@@ -85,10 +96,16 @@ _LANGUAGE_WORDS = {
     "en": re.compile(r"\b(?:english|ingles)\b"),
     "es": re.compile(r"\b(?:spanish|espanol|castellano|espanhol)\b"),
     "pt": re.compile(r"\b(?:portuguese|portugues)\b"),
+    "hi": re.compile(fold(r"\bhindi\b|हिन्दी|हिंदी")),
 }
+# Hindi-script names for the other languages, so "अंग्रेज़ी में बात करें" (speak English) works from a Hindi call.
+_LANGUAGE_WORDS["en"] = re.compile(_LANGUAGE_WORDS["en"].pattern + fold(r"|अंग्रेज़ी|अंग्रेजी|इंग्लिश"))
+_LANGUAGE_WORDS["es"] = re.compile(_LANGUAGE_WORDS["es"].pattern + fold(r"|स्पैनिश|स्पेनिश"))
+_LANGUAGE_WORDS["pt"] = re.compile(_LANGUAGE_WORDS["pt"].pattern + fold(r"|पुर्तगाली"))
 _CUE = re.compile(
     r"\b(?:speak|talk|switch|change|use|prefer|want|hablar|habla|hablame|hablas|cambiar|cambia|cambiemos|puedes|"
     r"podemos|quiero|prefiero|falar|fale|fala|mude|mudar|trocar|troque|pode|prefiro|quero|please|favor|por|em|en|in|to)\b"
+    + fold(r"|बात|बोल|कृपया|चाहिए|चाहता|चाहती|कीजिए|कीजिये|करें|करिए|में")
 )
 
 
@@ -166,6 +183,11 @@ CASE_KEYWORDS = (
     ),
 )
 
+# Hindi has no \b-friendly word edges (vowel signs are not word characters), so yes and no are matched as whole tokens.
+_HI_YES = {fold(w) for w in ("हाँ", "हां", "हा", "ठीक", "सही", "बिल्कुल", "बिलकुल", "जरूर", "ज़रूर", "haan", "theek", "sahi", "bilkul")}
+_HI_NO = {fold(w) for w in ("नहीं", "नही", "नाही", "गलत", "ग़लत", "nahi", "nahin", "galat")}
+
+
 _NEGATIVE = re.compile(
     r"\b(no|nope|nah|not|wrong|incorrect|change|different|actually|nao|incorrecto|incorreto|errado|equivocado|"
     r"cambiar|mudar|falso)\b|n't\b"
@@ -185,7 +207,9 @@ def interpret_yes_no(text: str) -> bool | None:
     folded = fold(text)
     if _DOUBLE_NEGATIVE.search(folded):  # "that's not wrong" means yes; leave it to the model rather than guess
         return None
-    negative, positive = bool(_NEGATIVE.search(folded)), bool(_POSITIVE.search(folded))
+    spoken = set(words(text))
+    negative = bool(_NEGATIVE.search(folded)) or bool(spoken & _HI_NO)
+    positive = bool(_POSITIVE.search(folded)) or bool(spoken & _HI_YES)
     if negative and not positive:
         return False
     if positive and not negative:
@@ -193,10 +217,26 @@ def interpret_yes_no(text: str) -> bool | None:
     return None
 
 
+# Hindi phrases, written the way Whisper writes them. Whisper often drops the nasal mark ("पहुचा" for "पहुँचा", "नही"
+# for "नहीं"), so the optional [ंँ] makes both spellings match. No \b: it does not work next to Devanagari vowel signs.
+_HI_CASE_KEYWORDS = {
+    "DAMAGED_ON_ARRIVAL": re.compile(fold(
+        r"toot|tuta|kharab|टूट|टुकड़े|खराब|ख़राब|क्षतिग्रस्त|फट|दरार|चटक|डैमेज|ब्रोकन|नुकसान|काम नही[ंँ]? कर|चल नही[ंँ]? रहा"
+    )),
+    "LATE_DELIVERY": re.compile(fold(
+        r"nahi\w* (?:aaya|aayi|pahunch\w*|mila|mili)|abhi tak nahi|नही[ंँ]? (?:आया|आई|आये|आए|पहु|मिला|मिली)|पहु[ंँ]?च[ाी]? नही|आया नही|आई नही|मिला नही|अभी तक नही|"
+        r"देर|लेट|गुम|खो गय|ट्रैकिंग|कहाँ है|कहां है|इंतज़ार|इंतजार|डिलीवर नही"
+    )),
+    "RETURN_REQUEST": re.compile(fold(
+        r"wapas|vapas|वापस|लौटा|रिटर्न|रिफंड|रिफ़ंड|नही[ंँ]? चाहिए|पसंद नही|मन बदल|बदलना|साइज़|साइज|फिट नही|एक्सचेंज"
+    )),
+}
+
+
 def keyword_case_type(text: str) -> str | None:
     """Fallback classifier for the customer's issue in any supported language."""
     folded = fold(text)
     for case_type, pattern in CASE_KEYWORDS:
-        if pattern.search(folded):
+        if pattern.search(folded) or _HI_CASE_KEYWORDS[case_type].search(folded):
             return case_type
     return None
