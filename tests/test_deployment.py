@@ -37,9 +37,10 @@ def _vercel() -> dict:
 
 def test_vercel_json_defines_backend_and_frontend_services():
     services = _vercel()["services"]
-    assert set(services) == {"backend", "frontend"}
+    assert set(services) == {"backend", "frontend", "customer"}
     assert services["backend"]["root"] == "backend"
     assert services["frontend"]["root"] == "frontend"
+    assert services["customer"]["root"] == "customer-frontend"
     assert (ROOT / "backend").is_dir() and (ROOT / "frontend").is_dir()
 
 
@@ -50,10 +51,11 @@ def test_backend_entrypoint_is_api_app_and_module_exists():
     assert (ROOT / "backend" / "api.py").is_file()
 
 
-def test_rewrites_send_api_to_backend_before_catch_all_to_frontend():
+def test_rewrites_route_api_then_support_then_employee_catch_all():
     rewrites = _vercel()["rewrites"]
     assert rewrites == [
         {"source": "/api/(.*)", "destination": {"service": "backend"}},
+        {"source": "/support(/.*)?", "destination": {"service": "customer"}},
         {"source": "/(.*)", "destination": {"service": "frontend"}},
     ]
 
