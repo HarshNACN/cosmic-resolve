@@ -64,6 +64,8 @@ def test_api_propose_reaches_the_offline_endpoint():
         "status",
         "error",
         "pipeline",
+        "provider",
+        "tool_calls",
         "proposal",
         "proposal_fingerprint",
         "recommended_action",
@@ -72,6 +74,8 @@ def test_api_propose_reaches_the_offline_endpoint():
     assert body["case_id"] == "C-1001"
     assert body["status"] == "AWAITING_APPROVAL"
     assert body["pipeline"] == "offline"
+    assert body["provider"] == "rules"
+    assert body["tool_calls"] is None
     assert body["proposal"]["policy_clause_ids"]
 
 
@@ -197,3 +201,59 @@ def test_api_tests_write_traces_only_to_the_temporary_path(isolated_trace):
     client.post("/api/cases/C-1003/propose")
     assert SETTINGS.trace_path == isolated_trace
     assert isolated_trace.exists()
+
+
+# --- Provenance: who produced the proposal -------------------------------------------------------------------
+class _ScriptedAgentClient:
+    """Two read-tool turns, then submit_resolution with the offline provider's proposal for C-1001."""
+
+    def __init__(self):
+        from cosmic_resolve.bedrock_provider import TOOL_NAME
+        from cosmic_resolve.model_provider import RuleBasedModelProvider
+        from cosmic_resolve.tools import get_case, get_policy
+        from cosmic_resolve.workflow import gather_context
+
+        case = get_case("C-1001")
+        data = RuleBasedModelProvider().generate_resolution(case, gather_context(case), get_policy(case.market, case.category, case.case_type)).model_dump(mode="json")
+        data.pop("case_id")
+        root = data.pop("root_cause")
+        data["root_cause_category"], data["root_cause_detail"] = root["category"], root["detail"]
+        self._replies = [
+            {"output": {"message": {"role": "assistant", "content": [{"toolUse": {"name": "get_shipment", "input": {"tracking_id": "T-1001"}, "toolUseId": "u1"}}]}}, "stopReason": "tool_use"},
+            {"output": {"message": {"role": "assistant", "content": [{"toolUse": {"name": "get_order", "input": {"order_id": "O-1001"}, "toolUseId": "u2"}}]}}, "stopReason": "tool_use"},
+            {"output": {"message": {"role": "assistant", "content": [{"toolUse": {"name": TOOL_NAME, "input": data, "toolUseId": "u3"}}]}}, "stopReason": "tool_use"},
+        ]
+
+    def converse(self, **_kwargs):
+        return self._replies.pop(0)
+
+
+def test_agent_propose_reports_agent_provenance_and_tool_count(monkeypatch):
+    from cosmic_resolve.bedrock_agent import BedrockAgentProvider
+
+    provider = BedrockAgentProvider(client=_ScriptedAgentClient(), model_id="test-profile")
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    monkeypatch.setattr("api.select_provider", lambda live_flag: provider)
+
+    body = client.post("/api/cases/C-1001/propose").json()
+    assert body["provider"] == "agent"
+    assert body["pipeline"] == "agent"
+    assert body["tool_calls"] == 2
+    assert body["status"] == "AWAITING_APPROVAL"
+
+
+def test_fixed_bedrock_propose_reports_bedrock_provenance_without_tool_count(monkeypatch):
+    from cosmic_resolve.bedrock_provider import BedrockModelProvider
+
+    class _NoToolsClient:
+        def converse(self, **_kwargs):
+            return {"output": {"message": {"role": "assistant", "content": [{"text": "plain"}]}}, "stopReason": "end_turn"}
+
+    provider = BedrockModelProvider(client=_NoToolsClient(), model_id="test-profile")
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    monkeypatch.setattr("api.select_provider", lambda live_flag: provider)
+
+    body = client.post("/api/cases/C-1001/propose").json()
+    assert body["provider"] == "bedrock"
+    assert body["tool_calls"] is None
+    assert body["status"] == "PROVIDER_ERROR"  # plain-text reply is a provider failure, not a fallback

@@ -98,6 +98,9 @@ export async function generateProposal(caseId, signal) {
     checkpoint_writes_enabled: body.checkpoint_writes_enabled === true,
     proposal_fingerprint: typeof body.proposal_fingerprint === "string" ? body.proposal_fingerprint : null,
     recommended_action: typeof body.recommended_action === "string" ? body.recommended_action : null,
+    // Provenance: "agent", "bedrock" or "rules"; tool_calls is a count only for the agent.
+    provider: typeof body.provider === "string" ? body.provider : null,
+    tool_calls: Number.isInteger(body.tool_calls) ? body.tool_calls : null,
   };
 }
 

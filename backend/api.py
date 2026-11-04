@@ -97,6 +97,14 @@ def _pipeline_name(provider: object) -> str:
     return "offline" if isinstance(provider, RuleBasedModelProvider) else "bedrock"
 
 
+def _provenance(provider: object) -> tuple[str, int | None]:
+    """Who produced the proposal, for the UI: ("agent" | "bedrock" | "rules", tool call count or None)."""
+    name = _pipeline_name(provider)
+    if name == "agent":
+        return "agent", len(getattr(provider, "last_tool_names", []))
+    return ("rules" if name == "offline" else "bedrock"), None
+
+
 @app.post("/cases/{case_id}/propose")
 def propose(case_id: str) -> dict:
     """Read-only: returns a validated proposal awaiting a human decision. Never writes."""
@@ -112,12 +120,16 @@ def propose(case_id: str) -> dict:
     if live:
         remember_run(run)  # /decision acts only on the proposal this server generated and the human saw
     awaiting = run.status == AWAITING_APPROVAL and run.proposal is not None
+    source, tool_calls = _provenance(provider)
     return {
         "case_id": case_id,
         "status": run.status,
         "error": run.error,
         # Which path produced the proposal: "offline", "bedrock" (fixed pipeline) or "agent" (model-chosen tools).
         "pipeline": _pipeline_name(provider),
+        # Provenance for the UI: "agent", "bedrock" or "rules", and how many read tools the agent called (null otherwise).
+        "provider": source,
+        "tool_calls": tool_calls,
         "proposal": run.proposal.model_dump(mode="json") if run.proposal else None,
         # Integrity identifier for the decision endpoint; not a credential.
         "proposal_fingerprint": proposal_fingerprint(run.proposal) if run.proposal else None,

@@ -28,17 +28,36 @@ function describeValidation(run) {
   }
 }
 
+// Says who produced the recommendation, so a reviewer can tell the agent from the offline rules.
+function describeProvenance(run) {
+  switch (run.provider) {
+    case "agent": {
+      const calls = Number.isInteger(run.tool_calls) ? run.tool_calls : null;
+      return calls === null ? "Recommended by the Claude agent" : `Recommended by the Claude agent, ${calls} ${calls === 1 ? "tool call" : "tool calls"}`;
+    }
+    case "rules":
+      return "Offline rule-based";
+    case "bedrock":
+      return "Recommended by the Claude model (fixed pipeline)";
+    default:
+      return null;
+  }
+}
+
 function ProposalBody({ run }) {
   const proposal = run.proposal;
   const validation = describeValidation(run);
   const escalated = proposal?.decision === "ESCALATE";
   const needsReview = escalated || !validation.passed;
+  const provenance = describeProvenance(run);
 
   const reasons = Array.isArray(proposal?.escalation_reasons) ? proposal.escalation_reasons : [];
   const evidence = Array.isArray(proposal?.evidence) ? proposal.evidence : [];
 
   return (
     <>
+      {provenance ? <p className="provenance muted">{provenance}</p> : null}
+
       {needsReview ? (
         <div className="notice notice-review">
           <h3>Needs human review</h3>
