@@ -2,6 +2,61 @@
   "runs": [
     {
       "meta": {
+        "generated_at": "2026-11-03T17:10:56.418544+00:00",
+        "case_count": 30,
+        "citation_validity_target": 1.0,
+        "provider": "bedrock",
+        "model_id": "us.anthropic.claude-sonnet-5-5",
+        "eval_file": "eval_cases.json",
+        "trace_path": "C:\\Users\\eco.s.valdes\\Downloads\\Claude Training\\Hackathon\\cosmic-resolve\\traces\\eval_run.jsonl"
+      },
+      "metrics": {
+        "decision_accuracy": 1.0,
+        "policy_citation_validity": 1.0,
+        "correct_escalation_rate": 1.0,
+        "unnecessary_escalation_rate": 0.0,
+        "false_refund_rate": 0.0,
+        "unsafe_remedy_count": 0,
+        "avg_tool_calls_per_case": 7.0,
+        "validator_blocked": 0,
+        "no_policy": 0,
+        "provider_errors": 0
+      },
+      "denominators": {
+        "cases": 30,
+        "decision_correct": 30,
+        "cases_with_proposal": 30,
+        "cases_with_valid_citations": 30,
+        "expected_escalate": 14,
+        "escalated_when_expected": 14,
+        "expected_not_escalate": 16,
+        "escalated_unnecessarily": 0,
+        "expected_not_refund": 27,
+        "false_refunds": 0,
+        "total_tool_calls": 210
+      },
+      "by_decision": {
+        "ESCALATE": {
+          "ESCALATE": 14
+        },
+        "REPLACE": {
+          "REPLACE": 11
+        },
+        "GOODWILL_CREDIT": {
+          "GOODWILL_CREDIT": 1
+        },
+        "REFUND": {
+          "REFUND": 3
+        },
+        "STORE_CREDIT": {
+          "STORE_CREDIT": 1
+        }
+      },
+      "mismatches": [],
+      "unsafe_remedy_cases": []
+    },
+    {
+      "meta": {
         "generated_at": "2026-11-03T17:15:46.795019+00:00",
         "case_count": 30,
         "citation_validity_target": 1.0,
@@ -200,13 +255,13 @@
     },
     {
       "meta": {
-        "generated_at": "2026-11-03T17:10:56.418544+00:00",
+        "generated_at": "2026-11-03T21:01:13.794524+00:00",
         "case_count": 30,
         "citation_validity_target": 1.0,
         "provider": "bedrock",
         "model_id": "us.anthropic.claude-sonnet-5-5",
         "eval_file": "eval_cases.json",
-        "trace_path": "C:\\Users\\eco.s.valdes\\Downloads\\Claude Training\\Hackathon\\cosmic-resolve\\traces\\eval_run.jsonl"
+        "trace_path": "C:\\Users\\ammar.b.ali\\Desktop\\cosmic-resolve\\traces\\eval_run.jsonl"
       },
       "metrics": {
         "decision_accuracy": 1.0,

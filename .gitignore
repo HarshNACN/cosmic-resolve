@@ -48,3 +48,5 @@ traces/
 Thumbs.db
 # Local task notes
 docs/tasks.txt
+# Local text-to-speech voice models (large; download with: python -m piper.download_voices)
+voices/

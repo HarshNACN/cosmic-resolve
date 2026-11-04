@@ -12,9 +12,12 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from cosmic_resolve.model_provider import RuleBasedModelProvider
 from cosmic_resolve.tracing import read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
-from cosmic_resolve import config
+from cosmic_resolve import config, customer
+from cosmic_resolve.customer import CustomerOrderSummary, CustomerSupportReceipt, SupportIntakeRequest
 from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint
 from cosmic_resolve.models import DecisionRequest, DecisionResult
+from cosmic_resolve.voice import store as voice_store
+from cosmic_resolve.voice.routes import register as register_voice_routes
 from cosmic_resolve.workflow import AWAITING_APPROVAL, propose_resolution, recommended_action_for
 
 API_PREFIX = "/api"
@@ -64,6 +67,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(StripApiPrefix)
+register_voice_routes(app)  # local voice demo: /voice/*; every dependency is optional and imported lazily
 
 
 @app.get("/health")
@@ -73,7 +77,9 @@ def health() -> dict[str, str]:
 
 @app.get("/cases")
 def list_cases() -> list[dict]:
-    return _load_json_list("cases.json")
+    # Cases created by a voice call come first, newest on top, so a call's case appears right away.
+    voice_cases = [case.model_dump(mode="json") for case in reversed(voice_store.list_cases())]
+    return voice_cases + _load_json_list("cases.json")
 
 
 @app.get("/cases/{case_id}")
@@ -118,6 +124,22 @@ def decide_case(case_id: str, body: DecisionRequest) -> DecisionResult:
     except DomainLookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except CheckpointError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+# Customer-facing routes. Public URLs are /api/support/...; the /api prefix is removed by StripApiPrefix.
+# DEMO CUSTOMER MODE only: an allowlist of three synthetic orders, no authentication (see customer.py).
+@app.get("/support/demo/orders", response_model=list[CustomerOrderSummary])
+def demo_orders_for_customers() -> list[CustomerOrderSummary]:
+    return customer.demo_orders()
+
+
+@app.post("/support/requests", response_model=CustomerSupportReceipt)
+def submit_customer_request(body: SupportIntakeRequest) -> CustomerSupportReceipt:
+    """Validate and acknowledge one support request. Nothing is persisted, executed or resolved here."""
+    try:
+        return customer.receive_intake(body)
+    except customer.CustomerError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
 

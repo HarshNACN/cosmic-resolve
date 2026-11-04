@@ -45,8 +45,21 @@ def _find_record(records: list[dict[str, Any]], key: str, value: str) -> dict[st
     raise DomainLookupError(f"Record not found: {key}='{value}'")
 
 
+def _runtime_case(case_id: str) -> SupportCase | None:
+    """A case created at runtime by the voice channel (voice/store.py), or None when there is no such case."""
+    from .voice.store import get_case_record  # local import: the fixture loaders do not depend on the voice package
+
+    return get_case_record(case_id)
+
+
 def get_case(case_id: str) -> SupportCase:
-    record = _find_record(_load_json_list("cases.json"), "case_id", case_id)
+    try:
+        record = _find_record(_load_json_list("cases.json"), "case_id", case_id)
+    except DomainLookupError:
+        runtime = _runtime_case(case_id)
+        if runtime is None:
+            raise
+        return runtime
     return SupportCase.model_validate(record)
 
 

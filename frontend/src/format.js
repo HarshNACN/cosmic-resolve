@@ -51,6 +51,8 @@ const EVENTS = {
   proposal_generated: { category: "provider", label: "Provider" },
   validation_passed: { category: "validation", label: "Validation", status: "Passed" },
   validation_failed: { category: "validation", label: "Validation", status: "Failed" },
+  voice_case_created: { category: "case", label: "Voice call" },
+  voice_turn: { category: "case", label: "Voice call" },
   human_decision: { category: "human", label: "Human checkpoint" },
   mock_action: { category: "write", label: "Write action" },
   actions_executed: { category: "write", label: "Actions executed" },
