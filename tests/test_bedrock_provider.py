@@ -154,3 +154,39 @@ def test_complaint_cannot_close_the_delimiter():
     assert message.count("<complaint>") == 1
     assert message.count("</complaint>") == 1
     assert "&lt;/complaint&gt;" in message
+
+
+def test_created_boto3_client_carries_bounded_timeouts_and_retries(monkeypatch):
+    """No network: the boto3 factory is replaced and the Config it receives is inspected."""
+    import boto3
+
+    from cosmic_resolve import bedrock_provider
+
+    captured = {}
+
+    def fake_client(service, **kwargs):
+        captured["service"] = service
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(boto3, "client", fake_client)
+    BedrockModelProvider(model_id="test-profile", region="us-east-1")
+
+    config = captured["config"]
+    assert captured["service"] == "bedrock-runtime"
+    assert captured["region_name"] == "us-east-1"
+    assert config.connect_timeout == bedrock_provider.CONNECT_TIMEOUT_SECONDS
+    assert config.read_timeout == bedrock_provider.READ_TIMEOUT_SECONDS
+    assert config.retries["max_attempts"] == bedrock_provider.MAX_ATTEMPTS
+    assert config.connect_timeout <= 10 and config.read_timeout <= 30  # keeps one call well inside the 45 s budget
+
+
+def test_injected_client_is_used_without_creating_a_boto3_client(monkeypatch):
+    import boto3
+
+    def must_not_be_called(*_args, **_kwargs):
+        raise AssertionError("boto3.client should not be called when a client is injected")
+
+    monkeypatch.setattr(boto3, "client", must_not_be_called)
+    injected = object()
+    assert BedrockModelProvider(client=injected, model_id="test-profile")._client is injected

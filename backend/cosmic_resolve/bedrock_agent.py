@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, Mapping, Sequence
+import time
+from typing import Any, Callable, Mapping, Sequence
 
 from .bedrock_provider import (
     ESCALATION_RULE,
@@ -26,6 +27,8 @@ from .tool_registry import invoke_read_tool, read_tool_specs
 from .tracing import append_case_event
 
 DEFAULT_MAX_TURNS = 8
+# Overall budget for one investigation. Checked at the top of each turn, so a run ends at most one model call past it.
+DEFAULT_MAX_SECONDS = 45.0
 
 AGENT_SYSTEM_PROMPT = f"""You are a customer-support resolution assistant for Cosmic Mart. You investigate a case, propose a resolution, and a human approves it. You never execute anything.
 
@@ -45,11 +48,23 @@ Rules:
 class BedrockAgentProvider(BedrockModelProvider):
     """Bedrock provider that investigates with read tools before proposing. Same config as BedrockModelProvider."""
 
-    def __init__(self, *args: Any, max_turns: int = DEFAULT_MAX_TURNS, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        max_turns: int = DEFAULT_MAX_TURNS,
+        max_seconds: float = DEFAULT_MAX_SECONDS,
+        clock: Callable[[], float] = time.monotonic,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         if max_turns < 1:
             raise ValueError("max_turns must be at least 1.")
+        if max_seconds <= 0:
+            raise ValueError("max_seconds must be positive.")
         self.max_turns = max_turns
+        self.max_seconds = max_seconds
+        # Injected in tests so the time limit can be exercised without sleeping.
+        self._clock = clock
         # Names of the read tools the model called in the most recent investigation, in order. Used by the evals.
         self.last_tool_names: list[str] = []
 
@@ -84,7 +99,13 @@ class BedrockAgentProvider(BedrockModelProvider):
             "toolChoice": {"auto": {}},
         }
 
+        started = self._clock()
         for turn in range(1, self.max_turns + 1):
+            elapsed = self._clock() - started
+            if elapsed > self.max_seconds:
+                raise ProviderError(
+                    f"Agent investigation exceeded {self.max_seconds:.0f} seconds before turn {turn}; no proposal was produced."
+                )
             response = self._converse_turn(messages, tool_config)
             usage = response.get("usage") or {}
             self.last_usage["inputTokens"] += usage.get("inputTokens", 0)

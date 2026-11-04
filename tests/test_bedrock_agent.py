@@ -269,3 +269,39 @@ def test_fixed_pipeline_rows_have_no_evidence_check():
     assert row["missing_evidence"] is None
     assert row["tool_names"] is None
     assert row["tool_calls"] == 7
+
+
+def _ticking_clock(step: float):
+    """Each read advances the clock by `step` seconds, so the time limit trips after a known number of checks."""
+    ticks = iter(x * step for x in range(10_000))
+    return lambda: next(ticks)
+
+
+def test_investigation_stops_when_the_time_budget_is_spent():
+    client = ScriptedClient([
+        reply(tool_use("get_shipment", {"tracking_id": "T-1001"}, "u1")),
+        reply(tool_use("get_order", {"order_id": "O-1001"}, "u2")),
+        submit_response(valid_submit_input()),
+    ])
+    case, policy = _case_and_policy()
+    # Start at 0; checks before turns 1, 2 and 3 read 20, 40, 60 seconds. The 45-second budget trips before turn 3.
+    provider = _provider(client, max_seconds=45, clock=_ticking_clock(20))
+
+    with pytest.raises(ProviderError, match="exceeded 45 seconds"):
+        provider.investigate(case, policy)
+    assert len(client.calls) == 2  # no third model call once the budget is gone
+
+
+def test_investigation_within_the_time_budget_completes():
+    client = ScriptedClient([
+        reply(tool_use("get_shipment", {"tracking_id": "T-1001"}, "u1")),
+        submit_response(valid_submit_input()),
+    ])
+    case, policy = _case_and_policy()
+    proposal = _provider(client, max_seconds=45, clock=_ticking_clock(20)).investigate(case, policy)
+    assert proposal.case_id == "C-1001"
+
+
+def test_time_budget_must_be_positive():
+    with pytest.raises(ValueError):
+        _provider(ScriptedClient([]), max_seconds=0)

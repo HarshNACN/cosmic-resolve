@@ -20,6 +20,12 @@ from .models import Decision, ResolutionProposal, SupportCase
 
 TOOL_NAME = "submit_resolution"
 
+# Client timeouts for the boto3 client this module creates (injected test clients are not affected).
+# A single converse call waits at most read_timeout per attempt. The agent loop also has its own overall limit.
+CONNECT_TIMEOUT_SECONDS = 5
+READ_TIMEOUT_SECONDS = 25
+MAX_ATTEMPTS = 2
+
 # Policy numbers come from the code constants (which mirror data/policies.json), so they are never retyped.
 ESCALATION_RULE = (
     f"Any remedy above ${ESCALATION_THRESHOLD_USD:.0f} must be decision ESCALATE with at least one escalation reason. "
@@ -91,11 +97,17 @@ class BedrockModelProvider:
             self._client = client
         else:
             import boto3  # lazy: only needed for live calls
+            from botocore.config import Config
 
             region = region or os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
             if not region:
                 raise ProviderError("Set AWS_REGION to use the Bedrock provider.")
-            self._client = boto3.client("bedrock-runtime", region_name=region)
+            client_config = Config(
+                connect_timeout=CONNECT_TIMEOUT_SECONDS,
+                read_timeout=READ_TIMEOUT_SECONDS,
+                retries={"max_attempts": MAX_ATTEMPTS, "mode": "standard"},
+            )
+            self._client = boto3.client("bedrock-runtime", region_name=region, config=client_config)
 
     def build_user_message(self, case: SupportCase, context: dict[str, Any], policy: Sequence[Any]) -> str:
         facts = {
