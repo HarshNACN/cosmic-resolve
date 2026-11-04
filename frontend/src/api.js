@@ -82,8 +82,9 @@ export async function fetchTrace(caseId, signal) {
   return body.map((event) => ({ ...event, details: isObject(event.details) ? event.details : {} }));
 }
 
-// Asks the backend for a recommendation. The backend runs its offline provider, validates the result
-// and returns it for a human decision. It does not execute anything.
+// Asks the backend for a recommendation. The backend runs the provider its configuration selects (offline rules or
+// Amazon Bedrock), validates the result and returns it, with the provider labels, for a human decision.
+// It does not execute anything.
 export async function generateProposal(caseId, signal) {
   const body = await request(`/cases/${encode(caseId)}/propose`, { method: "POST", signal });
   if (!isObject(body) || typeof body.status !== "string") throw new ApiError(UNEXPECTED);
@@ -98,6 +99,9 @@ export async function generateProposal(caseId, signal) {
     checkpoint_writes_enabled: body.checkpoint_writes_enabled === true,
     proposal_fingerprint: typeof body.proposal_fingerprint === "string" ? body.proposal_fingerprint : null,
     recommended_action: typeof body.recommended_action === "string" ? body.recommended_action : null,
+    // Operational labels from the backend ("offline" or "bedrock"; "rule_based", "single_shot" or "agentic").
+    provider: typeof body.provider === "string" ? body.provider : null,
+    execution_mode: typeof body.execution_mode === "string" ? body.execution_mode : null,
   };
 }
 

@@ -77,14 +77,23 @@ def gather_context(case: SupportCase) -> dict[str, Any]:
     return context
 
 
-def propose_resolution(case_id: str, provider: ModelProvider) -> CaseRun:
+def propose_resolution(case_id: str, provider: ModelProvider, *, provider_info: dict[str, str] | None = None) -> CaseRun:
     """Read-only half of the loop. Produces a validated proposal awaiting a human decision.
 
     Providers with an `investigate` method (the agent loop) choose their own read tools, so the code does not
     pre-fetch the case records for them. Everything else (policy, validator inputs) is still fetched by code.
+    `provider_info` ({"provider", "execution_mode"}) is recorded as a provider_selected trace event when given.
     """
     case = get_case(case_id)
     append_case_event(case_id, "case_loaded", "Case loaded", case_type=case.case_type)
+    if provider_info:
+        append_case_event(
+            case_id,
+            "provider_selected",
+            f"Provider: {provider_info['provider']} ({provider_info['execution_mode']})",
+            provider=provider_info["provider"],
+            execution_mode=provider_info["execution_mode"],
+        )
 
     investigates = callable(getattr(provider, "investigate", None))
     context: dict[str, Any] = {}

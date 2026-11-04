@@ -381,7 +381,8 @@ class _InvestigatingStub:
 def live(monkeypatch, enabled):
     stub = _InvestigatingStub()
     monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
-    monkeypatch.setattr("api.select_provider", lambda live_flag: stub)
+    # The provider choice moved into the factory; the API now calls build_provider, which calls select_provider.
+    monkeypatch.setattr("cosmic_resolve.provider_factory.select_provider", lambda live_flag, environ=None: stub)
     return stub
 
 

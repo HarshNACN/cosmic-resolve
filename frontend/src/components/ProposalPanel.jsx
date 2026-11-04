@@ -11,6 +11,22 @@ function Row({ label, children }) {
   );
 }
 
+// Operational metadata only. Labels come from fixed maps, so an unexpected value shows nothing rather than raw text.
+const PROVIDER_LABELS = { bedrock: "Amazon Bedrock", offline: "Offline rules" };
+const MODE_LABELS = { agentic: "Agentic", single_shot: "Single-shot" };
+
+function ProviderDetails({ run }) {
+  const provider = PROVIDER_LABELS[run.provider];
+  if (!provider) return null;
+  const mode = MODE_LABELS[run.execution_mode];
+  return (
+    <dl className="details provider-details">
+      <Row label="Provider">{provider}</Row>
+      {mode ? <Row label="Mode">{mode}</Row> : null}
+    </dl>
+  );
+}
+
 // Validation status is not a separate field in the API. It is derived from the run status the backend
 // returns with the proposal, and labeled that way.
 function describeValidation(run) {
@@ -39,6 +55,8 @@ function ProposalBody({ run }) {
 
   return (
     <>
+      <ProviderDetails run={run} />
+
       {needsReview ? (
         <div className="notice notice-review">
           <h3>Needs human review</h3>

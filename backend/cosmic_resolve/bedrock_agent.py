@@ -12,7 +12,7 @@ import json
 import os
 from typing import Any, Mapping, Sequence
 
-from .bedrock_provider import PROPOSAL_SCHEMA, TOOL_NAME, BedrockModelProvider, _escape_untrusted
+from .bedrock_provider import PROPOSAL_SCHEMA, TOOL_NAME, BedrockModelProvider, _escape_untrusted, map_bedrock_error
 from .model_provider import ModelProvider, ProviderError, RuleBasedModelProvider
 from .models import ResolutionProposal, SupportCase
 from .tool_registry import invoke_read_tool, read_tool_specs
@@ -37,6 +37,9 @@ Rules:
 
 class BedrockAgentProvider(BedrockModelProvider):
     """Bedrock provider that investigates with read tools before proposing. Same config as BedrockModelProvider."""
+
+    provider_name = "bedrock"
+    execution_mode = "agentic"
 
     def __init__(self, *args: Any, max_turns: int = DEFAULT_MAX_TURNS, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -103,7 +106,7 @@ class BedrockAgentProvider(BedrockModelProvider):
                 inferenceConfig={"maxTokens": self.max_tokens},
             )
         except Exception as exc:  # network, auth, throttling: surface as a provider failure
-            raise ProviderError(f"Bedrock call failed: {exc}") from exc
+            raise ProviderError(map_bedrock_error(exc)) from exc
 
     def _run_tool(self, case_id: str, turn: int, use: dict[str, Any]) -> dict[str, Any]:
         name = use.get("name", "")

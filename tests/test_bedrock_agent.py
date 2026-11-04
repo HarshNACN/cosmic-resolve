@@ -148,8 +148,10 @@ def test_bedrock_failure_is_a_provider_error():
             raise RuntimeError("throttled")
 
     case, policy = _case_and_policy()
-    with pytest.raises(ProviderError, match="Bedrock call failed: throttled"):
+    # Browser-safe message: the raw exception text is not returned, only the category.
+    with pytest.raises(ProviderError, match="The Bedrock call failed.") as exc:
         _provider(Failing()).investigate(case, policy)
+    assert "throttled" not in str(exc.value)
 
 
 def test_customer_name_never_reaches_the_model():
@@ -217,17 +219,35 @@ def test_fixed_pipeline_provider_still_pre_fetches(trace_file):
     assert types.index("context_gathered") < types.index("provider_request")
 
 
+def _fake_boto3(monkeypatch):
+    """The providers read the model ID and region from os.environ and import boto3 lazily, so stub the client."""
+    import sys
+    import types
+
+    fake = types.ModuleType("boto3")
+    fake.client = lambda *args, **kwargs: object()
+    monkeypatch.setitem(sys.modules, "boto3", fake)
+
+
 def test_selector_defaults_to_fixed_pipeline(monkeypatch):
     from cosmic_resolve.bedrock_agent import live_bedrock_provider
     from cosmic_resolve.bedrock_provider import BedrockModelProvider
 
+    _fake_boto3(monkeypatch)
+    monkeypatch.setenv("BEDROCK_INFERENCE_PROFILE", "p")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.delenv("COSMIC_RESOLVE_PIPELINE", raising=False)
     provider = live_bedrock_provider({"BEDROCK_INFERENCE_PROFILE": "p", "AWS_REGION": "us-east-1"})
     assert type(provider) is BedrockModelProvider
 
 
-def test_selector_agent_flag_selects_loop():
+def test_selector_agent_flag_selects_loop(monkeypatch):
     from cosmic_resolve.bedrock_agent import live_bedrock_provider
 
+    _fake_boto3(monkeypatch)
+    monkeypatch.setenv("BEDROCK_INFERENCE_PROFILE", "p")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.setenv("COSMIC_RESOLVE_PIPELINE", "agent")
     env = {"BEDROCK_INFERENCE_PROFILE": "p", "AWS_REGION": "us-east-1", "COSMIC_RESOLVE_PIPELINE": "agent"}
     assert isinstance(live_bedrock_provider(env), BedrockAgentProvider)
 

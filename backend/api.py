@@ -5,13 +5,22 @@ The approval endpoint is added in T25. Offline provider by default (no AWS calls
 """
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from cosmic_resolve.bedrock_agent import BedrockAgentProvider, select_provider
-from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider
-from cosmic_resolve.tracing import read_trace_events
+from cosmic_resolve.model_provider import ProviderError
+from cosmic_resolve.provider_factory import (
+    build_provider,
+    configured_metadata,
+    get_provider_diagnostics,
+    log_provider_selected,
+    pipeline_label,
+    provider_metadata,
+)
+from cosmic_resolve.tracing import append_case_event, read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
 from cosmic_resolve import config, customer
 from cosmic_resolve.customer import CustomerOrderSummary, CustomerSupportReceipt, SupportIntakeRequest
@@ -19,7 +28,7 @@ from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerpr
 from cosmic_resolve.models import DecisionRequest, DecisionResult
 from cosmic_resolve.voice import store as voice_store
 from cosmic_resolve.voice.routes import register as register_voice_routes
-from cosmic_resolve.workflow import AWAITING_APPROVAL, propose_resolution, recommended_action_for
+from cosmic_resolve.workflow import AWAITING_APPROVAL, PROVIDER_ERROR, propose_resolution, recommended_action_for
 
 API_PREFIX = "/api"
 
@@ -91,33 +100,17 @@ def read_case(case_id: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-def _pipeline_name(provider: object) -> str:
-    if isinstance(provider, BedrockAgentProvider):
-        return "agent"
-    return "offline" if isinstance(provider, RuleBasedModelProvider) else "bedrock"
-
-
-@app.post("/cases/{case_id}/propose")
-def propose(case_id: str) -> dict:
-    """Read-only: returns a validated proposal awaiting a human decision. Never writes."""
-    live = config.live_provider_enabled()
-    try:
-        provider = select_provider(live)
-    except ProviderError as exc:  # live requested but Bedrock is not configured
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    try:
-        run = propose_resolution(case_id, provider)
-    except DomainLookupError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    if live:
-        remember_run(run)  # /decision acts only on the proposal this server generated and the human saw
+def _propose_response(case_id: str, run: Any, meta: dict[str, str]) -> dict:
     awaiting = run.status == AWAITING_APPROVAL and run.proposal is not None
     return {
         "case_id": case_id,
         "status": run.status,
         "error": run.error,
-        # Which path produced the proposal: "offline", "bedrock" (fixed pipeline) or "agent" (model-chosen tools).
-        "pipeline": _pipeline_name(provider),
+        # Which provider produced this, and how it reasoned. Labels only; no credentials, accounts or ARNs.
+        "provider": meta["provider"],
+        "execution_mode": meta["execution_mode"],
+        # Older label kept for compatibility: "offline", "bedrock" (single-shot) or "agent" (model-chosen tools).
+        "pipeline": pipeline_label(meta["execution_mode"]),
         "proposal": run.proposal.model_dump(mode="json") if run.proposal else None,
         # Integrity identifier for the decision endpoint; not a credential.
         "proposal_fingerprint": proposal_fingerprint(run.proposal) if run.proposal else None,
@@ -126,6 +119,51 @@ def propose(case_id: str) -> dict:
         # Capability discovery: the frontend shows checkpoint controls only when this is true.
         "checkpoint_writes_enabled": config.checkpoint_writes_enabled(),
     }
+
+
+def _setup_failure(case_id: str, exc: ProviderError) -> dict:
+    """Bedrock was selected but could not be set up. Returns PROVIDER_ERROR; it never substitutes offline rules."""
+    try:
+        get_case(case_id)
+    except DomainLookupError as lookup:
+        raise HTTPException(status_code=404, detail=str(lookup)) from lookup
+    meta = configured_metadata()
+    append_case_event(case_id, "provider_error", "Provider could not be set up", error=str(exc), **meta)
+    return _propose_response(case_id, _ErrorRun(status=PROVIDER_ERROR, error=str(exc)), meta)
+
+
+class _ErrorRun:
+    """The fields _propose_response reads, for a request that never reached the workflow."""
+
+    def __init__(self, status: str, error: str) -> None:
+        self.status = status
+        self.error = error
+        self.proposal = None
+
+
+@app.post("/cases/{case_id}/propose")
+def propose(case_id: str) -> dict:
+    """Read-only: returns a validated proposal awaiting a human decision. Never writes.
+
+    The provider comes from build_provider (MODEL_PROVIDER). When Bedrock is selected, a failure at any step is
+    returned as PROVIDER_ERROR and never replaced by the offline rules.
+    """
+    try:
+        provider = build_provider()
+    except config.ProviderConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ProviderError as exc:
+        return _setup_failure(case_id, exc)
+    meta = provider_metadata(provider)
+    if meta["provider"] == "bedrock":
+        log_provider_selected(meta, get_provider_diagnostics())  # booleans only; no credential is read here
+    try:
+        run = propose_resolution(case_id, provider, provider_info=meta)
+    except DomainLookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if meta["provider"] == "bedrock":
+        remember_run(run)  # /decision acts only on the proposal this server generated and the human saw
+    return _propose_response(case_id, run, meta)
 
 
 @app.post("/cases/{case_id}/decision", response_model=DecisionResult)
@@ -139,6 +177,8 @@ def decide_case(case_id: str, body: DecisionRequest) -> DecisionResult:
         return decide(case_id, body)
     except DomainLookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except config.ProviderConfigError as exc:  # contradictory MODEL_PROVIDER / COSMIC_RESOLVE_LIVE
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except CheckpointError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
