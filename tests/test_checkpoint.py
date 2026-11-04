@@ -423,3 +423,70 @@ def test_live_decision_cannot_be_replayed(live):
     body = {"reviewer": "Jordan", "proposal_fingerprint": fingerprint, "action": "APPROVE"}
     assert client.post("/api/cases/C-1002/decision", json=body).status_code == 200
     assert client.post("/api/cases/C-1002/decision", json=body).status_code == 409
+
+
+# --- Revalidation against fresh policy and customer data at decide time ---------------------------------------------
+
+class _GoodwillStub:
+    """Proposes an $8 goodwill credit for C-1002, which is within a SILVER cap ($10) at proposal time."""
+
+    def investigate(self, case, policy):
+        return ResolutionProposal(
+            case_id=case.case_id,
+            decision=Decision.GOODWILL_CREDIT,
+            amount=8.0,
+            policy_clause_ids=["US-GAD-LD-01"],
+            evidence=["The order was delivered late."],
+            confidence=0.8,
+            escalation_reasons=[],
+            customer_message_draft="We are sorry the delivery was late.",
+            root_cause=RootCause(category="CARRIER_DELAY", detail="Late delivery"),
+        )
+
+
+@pytest.fixture
+def live_goodwill(monkeypatch, enabled):
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    monkeypatch.setattr("api.select_provider", lambda live_flag: _GoodwillStub())
+
+
+def test_unchanged_customer_tier_still_approves_the_goodwill_credit(live_goodwill, isolated_state):
+    response = _decide("C-1002")
+    assert response.status_code == 200, response.text
+    assert _mock_actions(isolated_state)
+
+
+def test_goodwill_over_a_lowered_tier_cap_is_refused_at_decide_and_writes_nothing(live_goodwill, isolated_state, monkeypatch):
+    from cosmic_resolve import checkpoint as cp
+    from cosmic_resolve.tools import get_customer
+
+    fingerprint = _fingerprint("C-1002")
+    # The customer was downgraded to BRONZE ($5 cap) after the proposal was generated.
+    downgraded = get_customer("C-002").model_copy(update={"loyalty_tier": "BRONZE"})
+    monkeypatch.setattr(cp, "get_customer", lambda _customer_id: downgraded)
+
+    response = client.post(
+        "/api/cases/C-1002/decision",
+        json={"reviewer": "Jordan", "proposal_fingerprint": fingerprint, "action": "APPROVE"},
+    )
+    assert response.status_code == 422, response.text
+    assert "exceeds the BRONZE cap" in response.json()["detail"]
+    assert not _mock_actions(isolated_state)
+
+
+def test_missing_policy_at_decide_time_is_a_422_and_writes_nothing(live_goodwill, isolated_state, monkeypatch):
+    from cosmic_resolve import checkpoint as cp
+    from cosmic_resolve.tools import DomainLookupError
+
+    fingerprint = _fingerprint("C-1002")
+
+    def no_policy(*_args):
+        raise DomainLookupError("policy withdrawn")
+
+    monkeypatch.setattr(cp, "get_policy", no_policy)
+    response = client.post(
+        "/api/cases/C-1002/decision",
+        json={"reviewer": "Jordan", "proposal_fingerprint": fingerprint, "action": "APPROVE"},
+    )
+    assert response.status_code == 422, response.text
+    assert not _mock_actions(isolated_state)

@@ -26,7 +26,7 @@ from .models import (
     ExecutedAction,
     ResolutionProposal,
 )
-from .tools import get_case
+from .tools import DomainLookupError, get_case, get_customer, get_policy
 from .validators import validate_proposal
 from .workflow import AWAITING_APPROVAL, CaseRun, apply_approval, propose_resolution
 
@@ -114,7 +114,7 @@ def decide(case_id: str, request: DecisionRequest) -> DecisionResult:
     if not config.checkpoint_writes_enabled():
         raise CheckpointError(403, DISABLED_MESSAGE)
 
-    get_case(case_id)  # raises DomainLookupError for an unknown case; the API maps that to 404
+    case = get_case(case_id)  # raises DomainLookupError for an unknown case; the API maps that to 404
 
     key = f"{case_id}:{request.proposal_fingerprint}"
     with _decided_lock:
@@ -164,9 +164,15 @@ def decide(case_id: str, request: DecisionRequest) -> DecisionResult:
             raise CheckpointError(422, MESSAGE_SENT_ONLY_FOR_NON_ESCALATIONS)
         final = current.model_copy(update={"customer_message_draft": request.edited_message})
 
-    # Revalidate the final proposal before any write, whether or not it was edited.
+    # Revalidate the final proposal before any write, whether or not it was edited. The policy and customer
+    # (tier and caps) are read again now, not taken from the stored run, so a change since proposal time is caught.
     try:
-        validate_proposal(final, run.case, run.policy, run.context["customer"])
+        fresh_policy = get_policy(case.market, case.category, case.case_type)
+        fresh_customer = get_customer(case.customer_id)
+    except DomainLookupError as exc:
+        raise CheckpointError(422, f"The proposal failed validation: {exc}") from exc
+    try:
+        validate_proposal(final, run.case, fresh_policy, fresh_customer)
     except ValueError as exc:
         raise CheckpointError(422, f"The proposal failed validation: {exc}") from exc
 
