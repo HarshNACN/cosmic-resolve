@@ -2,6 +2,7 @@
 
 A turn streams newline-delimited JSON events so audio can start before the turn finishes:
     customer_text, stage, agent_sentence, audio, case_created, state, error, done
+and, only when multilingual calls are on: language, agent_text, voice_unavailable
 This module imports no optional dependency at import time, so the Vercel build (which has none) loads it safely.
 Voice endpoints are meant for the local demo; they hold sessions in process memory.
 """
@@ -19,7 +20,7 @@ from starlette.datastructures import UploadFile
 
 from ..tools import DomainLookupError, get_customer
 from . import agent_config as cfg
-from .dialogue import DialogueLLM, check_outcome, didnt_catch, greeting, run_turn, speak_outcome
+from .dialogue import DialogueLLM, change_language, check_outcome, didnt_catch, greeting, run_turn, speak_outcome
 from .llm import BedrockDialogueLLM, VoiceConfigError
 from .orders import customer_first_name, recent_orders
 from .store import VoiceSession, get_session, new_session
@@ -62,13 +63,31 @@ def _service(name: str) -> Any | None:
 
 def _status() -> dict[str, Any]:
     llm, stt, tts = _service("llm"), _service("stt"), _service("tts")
-    return {
+    status: dict[str, Any] = {
         "llm": llm is not None,
         "stt": stt is not None,
         "tts": tts is not None,
         "problems": [_problems[name] for name in ("stt", "llm", "tts") if name in _problems],
         "agent": cfg.AGENT_NAME,
     }
+    if cfg.multilingual_enabled():
+        status["multilingual"] = True
+        status["languages"] = _voice_languages(tts)
+        status["language_labels"] = cfg.LANGUAGE_LABELS
+        status["browser_locales"] = cfg.BROWSER_LOCALES
+        status["problems"] += list(getattr(tts, "problems", {}).values())
+    else:
+        status["multilingual"] = False
+    return status
+
+
+def _voice_languages(tts: Any) -> dict[str, bool]:
+    """Which languages Cosmo can speak with a loaded voice (text works in all of them regardless)."""
+    if tts is None:
+        return {language: False for language in cfg.LANGUAGES}
+    if hasattr(tts, "languages"):
+        return tts.languages()
+    return {language: language == cfg.DEFAULT_LANGUAGE for language in cfg.LANGUAGES}
 
 
 # --- Helpers ------------------------------------------------------------------------------------------------------
@@ -98,8 +117,13 @@ def _stream(session: VoiceSession, events: Iterator[dict[str, Any]]) -> Iterator
         for event in events:
             yield _line(event)
             if event["type"] == "agent_sentence" and speaker is not None:
+                language = event.get("lang", cfg.DEFAULT_LANGUAGE)
+                if language != cfg.DEFAULT_LANGUAGE and not _can_speak(speaker, language):
+                    # Text is already on screen; tell the page so it can say the voice is missing (or read it in the browser).
+                    yield _line({"type": "voice_unavailable", "language": language, "label": cfg.LANGUAGE_LABELS[language]})
+                    continue
                 try:
-                    for pcm, rate in speaker.synthesize(event["text"]):
+                    for pcm, rate in _synthesize(speaker, event["text"], language):
                         yield _line({"type": "audio", "rate": rate, "pcm": base64.b64encode(pcm).decode("ascii")})
                 except Exception:  # noqa: BLE001 - the text is already on screen; the browser can read it aloud instead
                     yield _line({"type": "error", "message": "Could not speak that line."})
@@ -108,6 +132,15 @@ def _stream(session: VoiceSession, events: Iterator[dict[str, Any]]) -> Iterator
     finally:
         lock.release()
     yield _line({"type": "done"})
+
+
+def _can_speak(speaker: Any, language: str) -> bool:
+    return speaker.available(language) if hasattr(speaker, "available") else language == cfg.DEFAULT_LANGUAGE
+
+
+def _synthesize(speaker: Any, text: str, language: str) -> Iterator[tuple[bytes, int]]:
+    # English keeps the original one-argument call, so a speaker written before multilingual support still works.
+    return speaker.synthesize(text) if language == cfg.DEFAULT_LANGUAGE else speaker.synthesize(text, language)
 
 
 def _ndjson(chunks: Iterator[bytes]) -> StreamingResponse:
@@ -119,6 +152,13 @@ class CreateSession(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     customer_id: str = Field(min_length=1, max_length=20)
+    language: str | None = Field(default=None, pattern="^(en|es|pt)$")
+
+
+class SetLanguage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    language: str = Field(pattern="^(en|es|pt)$")
 
 
 class SpeakRequest(BaseModel):
@@ -163,7 +203,18 @@ def create_session(body: CreateSession) -> dict[str, Any]:
     orders = recent_orders(body.customer_id)
     if not orders:
         raise HTTPException(status_code=409, detail="This customer has no orders to talk about.")
-    return new_session(body.customer_id, first_name, orders).snapshot()
+    session = new_session(body.customer_id, first_name, orders)
+    if body.language and cfg.multilingual_enabled():
+        session.language = body.language
+    return session.snapshot()
+
+
+def set_language(session_id: str, body: SetLanguage) -> StreamingResponse:
+    """The manual language selector. Re-asks the current step in the new language; never creates a case or advances the call."""
+    session = _require_session(session_id)
+    if not cfg.multilingual_enabled():
+        raise HTTPException(status_code=409, detail="Multilingual calls are switched off.")
+    return _ndjson(_stream(session, change_language(session, body.language, source="manual")))
 
 
 def read_session(session_id: str) -> dict[str, Any]:
@@ -182,6 +233,15 @@ def speak(session_id: str, body: SpeakRequest) -> StreamingResponse:
     if check_outcome(session) is None:
         raise HTTPException(status_code=409, detail="No decision has been made on this case yet.")
     return _ndjson(_stream(session, speak_outcome(session)))
+
+
+def _transcribe(audio: bytes, filename: str, content_type: str, current_language: str) -> tuple[str, str | None]:
+    """(text, detected language). Detection only happens with multilingual calls on; otherwise the call is English."""
+    stt = _service("stt")
+    if cfg.multilingual_enabled() and hasattr(stt, "transcribe_detailed"):
+        result = stt.transcribe_detailed(audio, filename, content_type, hint=current_language)
+        return result.text, result.language
+    return stt.transcribe(audio, filename, content_type), None
 
 
 async def turn(session_id: str, request: Request) -> StreamingResponse:
@@ -213,18 +273,18 @@ async def turn(session_id: str, request: Request) -> StreamingResponse:
     chosen = order_id if isinstance(order_id, str) else None
 
     def events() -> Iterator[dict[str, Any]]:
-        heard = typed
+        heard, detected = typed, None
         if audio_bytes is not None:
             yield {"type": "stage", "stage": "transcribing"}
             try:
-                heard = _service("stt").transcribe(audio_bytes, filename, content_type)
+                heard, detected = _transcribe(audio_bytes, filename, content_type, session.language)
             except TranscriptionError as exc:
                 yield {"type": "error", "message": str(exc)}
                 return
             if is_probably_noise(heard):
                 yield from didnt_catch(session)
                 return
-        yield from run_turn(session, heard, llm, chosen_order_id=chosen)
+        yield from run_turn(session, heard, llm, chosen_order_id=chosen, detected_language=detected)
 
     return _ndjson(_stream(session, events()))
 
@@ -236,4 +296,5 @@ def register(app: FastAPI) -> None:
     app.add_api_route("/voice/sessions", create_session, methods=["POST"], tags=["voice"])
     app.add_api_route("/voice/sessions/{session_id}", read_session, methods=["GET"], tags=["voice"])
     app.add_api_route("/voice/sessions/{session_id}/speak", speak, methods=["POST"], tags=["voice"])
+    app.add_api_route("/voice/sessions/{session_id}/language", set_language, methods=["POST"], tags=["voice"])
     app.add_api_route("/voice/sessions/{session_id}/turn", turn, methods=["POST"], tags=["voice"])

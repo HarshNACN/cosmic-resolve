@@ -1,6 +1,7 @@
 // Client for the local voice endpoints (/api/voice/*). All voice code lives in src/voice so it stays separate from
 // the case workbench. A turn is a streamed response of newline-delimited JSON events:
 //   customer_text, stage, agent_sentence, audio, case_created, state, error, done
+// and, with multilingual calls on: language, agent_text (shown, not spoken), voice_unavailable
 
 const BASE = "/api/voice";
 
@@ -85,13 +86,21 @@ export const voiceWarmup = (signal) => json("/warmup", { method: "POST", signal 
 
 export const fetchCallers = (signal) => json("/callers", { signal });
 
-export const createVoiceSession = (customerId, signal) =>
+export const createVoiceSession = (customerId, signal, language) =>
   json("/sessions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ customer_id: customerId }),
+    body: JSON.stringify(language ? { customer_id: customerId, language } : { customer_id: customerId }),
     signal,
   });
+
+// The manual language selector. Streams the re-asked step in the new language (en, es or pt).
+export const setCallLanguage = (sessionId, language, onEvent, signal) =>
+  stream(
+    `/sessions/${encodeURIComponent(sessionId)}/language`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language }), signal },
+    onEvent,
+  );
 
 export const fetchVoiceSession = (sessionId, signal) => json(`/sessions/${encodeURIComponent(sessionId)}`, { signal });
 
