@@ -6,8 +6,12 @@ Every sentence spoken at a decision point (which order, the read-back, the outco
 from validated data, never model-written. The customer's words are untrusted: they only ever become the complaint
 text of a case, and they reach the model inside delimiters, never as instructions.
 
+With VOICE_MULTILINGUAL on, the call can be held in English, Spanish or Portuguese. The language is session state:
+changing it never creates a case, resets the flow or executes anything, it only changes which template and voice
+are used from then on. With the flag off, the language is always English and nothing here behaves differently.
+
 run_turn() is a generator of small event dicts so the HTTP layer can stream audio as soon as a sentence exists:
-    customer_text, stage, agent_sentence, case_created, state
+    customer_text, language, stage, agent_sentence, agent_text, case_created, state
 """
 from __future__ import annotations
 
@@ -18,6 +22,13 @@ from typing import Any, Iterable, Iterator, Protocol
 
 from ..tracing import append_trace_event, read_trace_events
 from . import agent_config as cfg
+from .languages import (
+    explicit_language_request,
+    fold,
+    interpret_yes_no,
+    keyword_case_type,
+    resolve_language,
+)
 from .orders import match_order, spoken_options
 from .store import (
     STATE_CLOSED,
@@ -48,34 +59,14 @@ class DialogueLLM(Protocol):
 
 _CONTROL = re.compile(r"[\x00-\x1f\x7f]+")
 _WHITESPACE = re.compile(r"\s+")
-_DOUBLE_NEGATIVE = re.compile(r"\bnot\s+(wrong|incorrect)\b", re.I)
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
-_NEGATIVE = re.compile(r"\b(no|nope|nah|not|wrong|incorrect|change|different|actually)\b|n't\b", re.I)
-_POSITIVE = re.compile(
-    r"\b(yes|yeah|yep|yup|correct|right|exactly|sure|ok|okay|absolutely|please|confirm|confirmed|go ahead)\b", re.I
-)
-_KEYWORDS = (
-    (
-        "DAMAGED_ON_ARRIVAL",
-        re.compile(r"crack|broke|broken|damag|shatter|dent|smash|defect|scratch|doesn.t work|not working|dead on arrival", re.I),
-    ),
-    (
-        "LATE_DELIVERY",
-        re.compile(
-            r"\blate\b|never (arrived|showed|came)|not arrived|hasn.t arrived|\blost\b|missing|delay|still waiting|"
-            r"where is|tracking|didn.t (arrive|show)",
-            re.I,
-        ),
-    ),
-    (
-        "RETURN_REQUEST",
-        re.compile(r"\breturn|\brefund|send (it )?back|don.t want|changed my mind|doesn.t fit|not what i expected", re.I),
-    ),
-)
-
-
 _DASHES = re.compile(r"\s*[–—]\s*")
 _MARKUP = re.compile(r"[*_`#>]+")
+# The empathy sentence must never promise anything or name an amount, in any language. Checked on accent-stripped text.
+_PROMISE = re.compile(
+    r"refund|replac|credit|reimburs|reembols|reemplaz|reposic|devol|estorn|substitu|ressarc|compens|gratis|\bfree\b|"
+    r"guarant|garant|promis|promet|approv|aprob|\d|\$"
+)
 
 
 def speakable(text: str) -> str:
@@ -88,24 +79,9 @@ def clean_utterance(text: str) -> str:
     return _WHITESPACE.sub(" ", _CONTROL.sub(" ", text)).strip()[: cfg.MAX_UTTERANCE_CHARS].strip()
 
 
-def interpret_yes_no(text: str) -> bool | None:
-    """True for yes, False for no, None when it is unclear, mixed ("that's not right") or a double negative."""
-    if _DOUBLE_NEGATIVE.search(text):  # "that's not wrong" means yes; leave it to the model rather than guess
-        return None
-    negative, positive = bool(_NEGATIVE.search(text)), bool(_POSITIVE.search(text))
-    if negative and not positive:
-        return False
-    if positive and not negative:
-        return True
-    return None
-
-
-def keyword_case_type(text: str) -> str | None:
-    """Fallback classifier used when the model is unavailable or unsure."""
-    for case_type, pattern in _KEYWORDS:
-        if pattern.search(text):
-            return case_type
-    return None
+def safe_empathy(sentence: str) -> str:
+    """The model's sentence, or "" if it contains a promise, a number or a currency sign (the caller then uses a template)."""
+    return "" if _PROMISE.search(fold(sentence)) else sentence
 
 
 def stream_sentences(deltas: Iterable[str]) -> Iterator[str]:
@@ -125,10 +101,21 @@ def stream_sentences(deltas: Iterable[str]) -> Iterator[str]:
         yield tail
 
 
+def _lang(session: VoiceSession) -> str:
+    """The language this session speaks in. Always English unless multilingual calls are switched on."""
+    if cfg.multilingual_enabled() and session.language in cfg.LANGUAGES:
+        return session.language
+    return cfg.DEFAULT_LANGUAGE
+
+
+def _t(session: VoiceSession, key: str, **fields: Any) -> str:
+    return cfg.text(key, _lang(session)).format(**fields)
+
+
 def _view(session: VoiceSession, expecting: str) -> dict[str, Any]:
     """What the model may see: order IDs, titles and status. Never the customer's name or any account detail."""
     selected = session.selected_order()
-    return {
+    view: dict[str, Any] = {
         "expecting": expecting,
         "orders": [
             {"order_id": o["order_id"], "title": o["title"], "delivery_status": o["delivery_status"]}
@@ -136,6 +123,9 @@ def _view(session: VoiceSession, expecting: str) -> dict[str, Any]:
         ],
         "selected_order": {"order_id": selected["order_id"], "title": selected["title"]} if selected else None,
     }
+    if cfg.multilingual_enabled():
+        view["language"] = _lang(session)
+    return view
 
 
 def _trace(session: VoiceSession, event_type: str, message: str, **details: Any) -> None:
@@ -146,7 +136,14 @@ def _trace(session: VoiceSession, event_type: str, message: str, **details: Any)
 def _agent(session: VoiceSession, text: str) -> Event:
     session.add("agent", text)
     _trace(session, "voice_turn", "Agent spoke", role="agent", text=text)
-    return {"type": "agent_sentence", "text": text}
+    return {"type": "agent_sentence", "text": text, "lang": _lang(session)}
+
+
+def _note(session: VoiceSession, text: str, language: str) -> Event:
+    """A line shown in the transcript but not spoken: the human-approved message in its original wording."""
+    session.add("agent", text, note=True)
+    _trace(session, "voice_turn", "Approved message shown", role="agent", text=text, spoken=False)
+    return {"type": "agent_text", "text": text, "lang": language}
 
 
 def _safe_extract(llm: DialogueLLM | None, view: dict[str, Any], utterance: str) -> dict[str, Any]:
@@ -164,17 +161,60 @@ def _state(session: VoiceSession) -> Event:
     return {"type": "state", "session": session.snapshot()}
 
 
+# --- Language ------------------------------------------------------------------------------------------------------
+
+def switch_language(session: VoiceSession, language: str, source: str) -> Event | None:
+    """Change the call's language. Returns the event to send, or None when nothing changed (or the feature is off)."""
+    if not cfg.multilingual_enabled() or language not in cfg.LANGUAGES or language == session.language:
+        return None
+    previous, session.language = session.language, language
+    _trace(session, "voice_language_changed", "Conversation language changed", **{"from": previous, "to": language, "source": source})
+    return {"type": "language", "language": language, "previous": previous, "source": source}
+
+
+def _confirm_line(session: VoiceSession) -> str:
+    order = session.selected_order() or {"title": "order"}
+    lang = _lang(session)
+    issue = cfg.issue_phrase(session.case_type or "", lang).format(title=order["title"]) if session.case_type else ""
+    return cfg.text("CONFIRM", lang).format(title=order["title"], issue=issue)
+
+
+def _repeat_prompt(session: VoiceSession) -> Iterator[Event]:
+    """Ask the current step again, in the (new) language. Used right after a language change."""
+    lang = _lang(session)
+    if session.state == STATE_PICK_ORDER:
+        yield _agent(session, _t(session, "PROMPT_ORDER", options=spoken_options(session.orders, lang)))
+    elif session.state == STATE_DESCRIBE:
+        order = session.selected_order() or {"title": ""}
+        yield _agent(session, _t(session, "PROMPT_DESCRIBE", title=order["title"]))
+    elif session.state == STATE_CONFIRM:
+        yield _agent(session, _confirm_line(session))
+    elif session.state == STATE_SUBMITTED:
+        yield _agent(session, _t(session, "STILL_WAITING"))
+
+
+def change_language(session: VoiceSession, language: str, source: str = "manual", acknowledge: bool = True) -> Iterator[Event]:
+    """An explicit language change (a spoken request or the selector). It never creates a case or changes the flow."""
+    event = switch_language(session, language, source)
+    if event:
+        yield event
+    if event or (acknowledge and cfg.multilingual_enabled()):
+        yield _agent(session, _t(session, "LANGUAGE_SWITCHED"))
+        yield from _repeat_prompt(session)
+    yield _state(session)
+
+
 # --- Turns ---------------------------------------------------------------------------------------------------------
 
 def greeting(session: VoiceSession) -> Iterator[Event]:
     """The opening line, spoken once when the call starts."""
-    yield _agent(session, cfg.GREETING.format(first_name=session.first_name))
+    yield _agent(session, _t(session, "GREETING", first_name=session.first_name))
     yield _state(session)
 
 
 def didnt_catch(session: VoiceSession) -> Iterator[Event]:
     """The recording held no usable speech (silence or noise): ask again without touching the conversation state."""
-    yield _agent(session, cfg.DIDNT_CATCH)
+    yield _agent(session, _t(session, "DIDNT_CATCH"))
     yield _state(session)
 
 
@@ -184,23 +224,42 @@ def run_turn(
     llm: DialogueLLM | None,
     *,
     chosen_order_id: str | None = None,
+    detected_language: str | None = None,
 ) -> Iterator[Event]:
-    """Handle one customer turn. chosen_order_id is an explicit tap on an order card (no guessing needed)."""
+    """Handle one customer turn.
+
+    chosen_order_id is an explicit tap on an order card (no guessing needed). detected_language is speech
+    recognition's guess for a spoken turn (None for typed text); it only matters with multilingual calls on.
+    """
     chosen = next((o for o in session.orders if o["order_id"] == chosen_order_id), None) if chosen_order_id else None
-    text = f"I would like help with my {chosen['title']}." if chosen else clean_utterance(utterance)
+    text = _t(session, "ORDER_TAP", title=chosen["title"]) if chosen else clean_utterance(utterance)
     if not text:
-        yield _agent(session, cfg.DIDNT_CATCH)
+        yield _agent(session, _t(session, "DIDNT_CATCH"))
         yield _state(session)
         return
+
+    multilingual = cfg.multilingual_enabled() and not chosen
+    requested = explicit_language_request(text) if multilingual else None
 
     session.add("customer", text)
     _trace(session, "voice_turn", "Customer spoke", role="customer", text=text)
     yield {"type": "customer_text", "text": text}
 
+    if requested:
+        # "Habla español, por favor": switch and re-ask the current step. Never advances the conversation.
+        yield from change_language(session, requested, source="request")
+        return
+    if multilingual:
+        event = switch_language(
+            session, resolve_language(text, detected_language, session.language), "speech" if detected_language else "text"
+        )
+        if event:
+            yield event
+
     if session.state == STATE_CLOSED:
-        yield _agent(session, cfg.CLOSED_LINE)
+        yield _agent(session, _t(session, "CLOSED_LINE"))
     elif session.state == STATE_SUBMITTED:
-        yield _agent(session, cfg.STILL_WAITING)
+        yield _agent(session, _t(session, "STILL_WAITING"))
     elif session.state == STATE_PICK_ORDER:
         yield from _pick_order(session, text, llm, chosen)
     elif session.state == STATE_DESCRIBE:
@@ -220,12 +279,12 @@ def _pick_order(
         order = next((o for o in session.orders if o["order_id"] == wanted), None)  # never trust the model's ID blindly
     if order is None:
         session.order_misses += 1
-        line = cfg.ASK_ORDER if session.order_misses < cfg.MAX_ORDER_MISSES else cfg.ASK_ORDER_AGAIN
-        yield _agent(session, line.format(options=spoken_options(session.orders)))
+        key = "ASK_ORDER" if session.order_misses < cfg.MAX_ORDER_MISSES else "ASK_ORDER_AGAIN"
+        yield _agent(session, _t(session, key, options=spoken_options(session.orders, _lang(session))))
         return
     session.order_id = order["order_id"]
     session.state = STATE_DESCRIBE
-    yield _agent(session, cfg.ORDER_PICKED.format(title=order["title"]))
+    yield _agent(session, _t(session, "ORDER_PICKED", title=order["title"]))
 
 
 def _first_sentence(llm: DialogueLLM, view: dict[str, Any], text: str) -> str | None:
@@ -254,7 +313,7 @@ def _describe(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Iter
             sentence = _first_sentence(llm, view, text)
         except Exception:  # noqa: BLE001
             sentence = None
-    yield _agent(session, speakable(sentence or "") or cfg.EMPATHY_FALLBACK)
+    yield _agent(session, safe_empathy(speakable(sentence or "")) or _t(session, "EMPATHY_FALLBACK"))
 
     data: dict[str, Any] = {}
     if understanding is not None:
@@ -267,21 +326,20 @@ def _describe(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Iter
     case_type = said if said in cfg.CASE_TYPES else keyword_case_type(" ".join(session.complaint_parts))
     if case_type is None and (said == "OTHER" or data.get("off_topic") is True):
         session.state = STATE_CLOSED
-        yield _agent(session, cfg.OUT_OF_SCOPE)
+        yield _agent(session, _t(session, "OUT_OF_SCOPE"))
         return
     if case_type is None:
         if session.clarifications < cfg.MAX_CLARIFICATIONS:
             session.clarifications += 1
-            yield _agent(session, cfg.ASK_DETAIL)
+            yield _agent(session, _t(session, "ASK_DETAIL"))
         else:
             session.state = STATE_CLOSED
-            yield _agent(session, cfg.OUT_OF_SCOPE)
+            yield _agent(session, _t(session, "OUT_OF_SCOPE"))
         return
 
     session.case_type = case_type
     session.state = STATE_CONFIRM
-    order = session.selected_order() or {"title": "order"}
-    yield _agent(session, cfg.CONFIRM.format(title=order["title"], issue=cfg.ISSUE_PHRASES[case_type]))
+    yield _agent(session, _confirm_line(session))
 
 
 def _confirm(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Iterator[Event]:
@@ -291,7 +349,7 @@ def _confirm(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Itera
         answer = {"yes": True, "no": False}.get(_safe_extract(llm, _view(session, "CONFIRM"), text).get("confirmation"))
     if answer is None:
         session.yes_no_misses += 1
-        yield _agent(session, cfg.ASK_YES_NO)
+        yield _agent(session, _t(session, "ASK_YES_NO"))
         return
     if not answer:
         session.order_id = None
@@ -299,13 +357,13 @@ def _confirm(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Itera
         session.complaint_parts.clear()
         session.clarifications = 0
         session.state = STATE_PICK_ORDER
-        yield _agent(session, cfg.RESTART.format(options=spoken_options(session.orders)))
+        yield _agent(session, _t(session, "RESTART", options=spoken_options(session.orders, _lang(session))))
         return
 
     order = session.selected_order()
     if order is None or session.case_type is None:  # defensive: confirm is only reachable with both set
         session.state = STATE_PICK_ORDER
-        yield _agent(session, cfg.ASK_ORDER.format(options=spoken_options(session.orders)))
+        yield _agent(session, _t(session, "ASK_ORDER", options=spoken_options(session.orders, _lang(session))))
         return
     case = register_case(
         order_id=order["order_id"],
@@ -317,7 +375,7 @@ def _confirm(session: VoiceSession, text: str, llm: DialogueLLM | None) -> Itera
     session.case_id = case.case_id
     session.state = STATE_SUBMITTED
     session.submitted_at = utc_now()
-    line = _agent(session, cfg.SUBMITTED)
+    line = _agent(session, _t(session, "SUBMITTED"))
     _trace(session, "voice_case_created", "Voice call created a case", transcript=list(session.transcript))
     yield {"type": "case_created", "case_id": case.case_id}
     yield line
@@ -344,22 +402,40 @@ def _case_events(case_id: str, since: str | None) -> list[Any]:
     ]
 
 
-def _amount_phrase(executed: Any) -> str:
+def _amount_phrase(executed: Any, language: str) -> str:
     for action in executed if isinstance(executed, list) else []:
         amount = action.get("amount") if isinstance(action, dict) else None
         if isinstance(amount, (int, float)) and not isinstance(amount, bool):
-            return f" of ${amount:,.2f}"
+            return f" {cfg.text('OF', language)} ${amount:,.2f}"
     return ""
 
 
-def _approved_text(session: VoiceSession, decision: str, executed: list[Any], message: str) -> str:
-    """A concrete opening from the decision that actually ran, then the associate-approved message."""
+def _approved_text(session: VoiceSession, decision: str, executed: list[Any], message: str, language: str) -> str:
+    """A concrete opening from the decision that actually ran, then (in English) the associate-approved message.
+
+    In other languages the approved message is never translated or altered: a localized summary of the verified
+    decision is spoken, and the message itself is shown unchanged on screen (see speak_outcome).
+    """
     if decision == "ESCALATE":
-        return cfg.OUTCOME_ESCALATED
+        return cfg.text("OUTCOME_ESCALATED", language)
     order = session.selected_order()
-    template = cfg.OUTCOME_LEADS.get(decision)
-    lead = template.format(title=order["title"], amount=_amount_phrase(executed)) if template and order else ""
-    return " ".join(part for part in (lead, message) if part) or cfg.OUTCOME_APPROVED_GENERIC
+    template = cfg.outcome_lead(decision, language)
+    lead = template.format(title=order["title"], amount=_amount_phrase(executed, language)) if template and order else ""
+    if language == cfg.DEFAULT_LANGUAGE:
+        return " ".join(part for part in (lead, message) if part) or cfg.text("OUTCOME_APPROVED_GENERIC", language)
+    parts = [lead or cfg.text("OUTCOME_APPROVED_GENERIC", language)]
+    if message:
+        parts.append(cfg.text("SEE_SCREEN", language))
+    return " ".join(parts)
+
+
+def _outcome_text(session: VoiceSession) -> str:
+    """What is said for the decided case, in the call's language at the moment it is spoken."""
+    raw = session.outcome_raw or {}
+    language = _lang(session)
+    if raw.get("status") == "REJECTED":
+        return cfg.text("OUTCOME_REJECTED", language)
+    return _approved_text(session, raw.get("decision", ""), raw.get("executed", []), raw.get("message", ""), language)
 
 
 def check_outcome(session: VoiceSession) -> dict[str, str] | None:
@@ -375,7 +451,8 @@ def check_outcome(session: VoiceSession) -> dict[str, str] | None:
     if not decisions:
         return None
     if not decisions[-1].details.get("approved"):
-        outcome = {"status": "REJECTED", "decision": "", "text": cfg.OUTCOME_REJECTED}
+        session.outcome_raw = {"status": "REJECTED"}
+        outcome = {"status": "REJECTED", "decision": "", "text": ""}
     else:
         message, decision, executed = "", "", []
         for event in events:
@@ -386,17 +463,23 @@ def check_outcome(session: VoiceSession) -> dict[str, str] | None:
             elif event.event_type == "actions_executed":
                 decision = str(event.details.get("decision") or "")
                 executed = event.details.get("actions") or []
-        outcome = {"status": "APPROVED", "decision": decision, "text": _approved_text(session, decision, executed, message)}
+        session.outcome_raw = {"status": "APPROVED", "decision": decision, "executed": executed, "message": message}
+        outcome = {"status": "APPROVED", "decision": decision, "text": ""}
+    outcome["text"] = _outcome_text(session)
     session.outcome = outcome
     session.state = STATE_CLOSED
     return outcome
 
 
 def speak_outcome(session: VoiceSession) -> Iterator[Event]:
-    """Say the outcome once it is known."""
+    """Say the outcome once it is known, in the call's current language."""
     outcome = check_outcome(session)
     if outcome is None:
-        yield _agent(session, cfg.STILL_WAITING)
+        yield _agent(session, _t(session, "STILL_WAITING"))
     else:
+        outcome["text"] = _outcome_text(session)  # the customer may have changed language while on hold
         yield _agent(session, outcome["text"])
+        raw = session.outcome_raw or {}
+        if raw.get("message") and raw.get("decision") != "ESCALATE" and _lang(session) != cfg.DEFAULT_LANGUAGE:
+            yield _note(session, raw["message"], cfg.DEFAULT_LANGUAGE)
     yield _state(session)

@@ -6,6 +6,7 @@ ends open calls. Imports are limited to models so tools.get_case can look cases 
 from __future__ import annotations
 
 import itertools
+import os
 import re
 import threading
 import uuid
@@ -52,6 +53,29 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+ENV_CASE_CLOCK = "VOICE_CASE_CLOCK"
+
+
+def case_timestamp() -> str:
+    """The created_at stamped on a new voice case.
+
+    The rule engine counts policy windows (10 days late, 30 days to return) from the case's own date, never from
+    today, so a case always gets the same answer. The synthetic orders and fixture cases are frozen in early November,
+    so a case stamped with the real clock slides out of those windows as days pass: the demo's lost smart plug
+    stopped being a replacement and became an escalation one day later. By default a voice case therefore takes the
+    dataset's own date (the newest fixture case). Set VOICE_CASE_CLOCK=real to stamp the real time instead.
+    """
+    if os.environ.get(ENV_CASE_CLOCK, "dataset").strip().lower() == "real":
+        return utc_now()
+    try:
+        from ..tools import _load_json_list  # local import: tools imports this module lazily too
+
+        stamps = [c["created_at"] for c in _load_json_list("cases.json") if c.get("created_at")]
+    except Exception:  # noqa: BLE001 - without fixtures there is no dataset date; use the real clock
+        stamps = []
+    return max(stamps) if stamps else utc_now()
+
+
 @dataclass
 class VoiceSession:
     session_id: str
@@ -66,13 +90,16 @@ class VoiceSession:
     case_id: str | None = None
     submitted_at: str | None = None
     outcome: dict[str, str] | None = None
+    outcome_raw: dict[str, Any] | None = None  # the verified facts behind the outcome, kept server-side for localizing
+    language: str = "en"
     created_at: str = field(default_factory=utc_now)
     order_misses: int = 0
     clarifications: int = 0
     yes_no_misses: int = 0
 
-    def add(self, role: str, text: str) -> None:
-        self.transcript.append({"role": role, "text": text, "at": utc_now()})
+    def add(self, role: str, text: str, note: bool = False) -> None:
+        """note marks a line that is shown but not spoken (the associate's approved message in its original wording)."""
+        self.transcript.append({"role": role, "text": text, "at": utc_now(), **({"note": True} if note else {})})
 
     def selected_order(self) -> dict[str, Any] | None:
         return next((o for o in self.orders if o["order_id"] == self.order_id), None)
@@ -88,6 +115,7 @@ class VoiceSession:
             "case_id": self.case_id,
             "transcript": list(self.transcript),
             "outcome": self.outcome,
+            "language": self.language,
         }
 
 
@@ -125,7 +153,7 @@ def register_case(
             category="GADGETS",
             complaint_text=complaint_text,
             channel="VOICE",
-            created_at=utc_now(),
+            created_at=case_timestamp(),
         )
         CASES[case_id] = case
     return case

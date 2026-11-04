@@ -63,7 +63,7 @@ class BedrockDialogueLLM:
     def speak(self, view: dict[str, Any], utterance: str) -> Iterator[str]:
         response = self._client.converse_stream(
             modelId=self.model_id,
-            system=[{"text": cfg.SPEECH_SYSTEM}],
+            system=[{"text": cfg.speech_system(view.get("language", cfg.DEFAULT_LANGUAGE))}],
             messages=[{"role": "user", "content": [{"text": _untrusted_block(utterance)}]}],
             inferenceConfig={"maxTokens": cfg.SPEAK_MAX_TOKENS},
         )
@@ -75,13 +75,13 @@ class BedrockDialogueLLM:
     # -- understanding ----------------------------------------------------------------------------------------------
     def extract(self, view: dict[str, Any], utterance: str) -> dict[str, Any]:
         order_ids = [o["order_id"] for o in view.get("orders", [])]
-        facts = json.dumps(
-            {"expecting": view.get("expecting"), "orders": view.get("orders"), "selected_order": view.get("selected_order")},
-            indent=2,
-        )
+        known = {"expecting": view.get("expecting"), "orders": view.get("orders"), "selected_order": view.get("selected_order")}
+        if "language" in view:  # present only with multilingual calls on
+            known["conversation_language"] = view["language"]
+        facts = json.dumps(known, indent=2)
         body = {
             "modelId": self.model_id,
-            "system": [{"text": cfg.EXTRACT_SYSTEM}],
+            "system": [{"text": cfg.extract_system(cfg.multilingual_enabled())}],
             "messages": [
                 {"role": "user", "content": [{"text": f"Facts (trusted system data):\n{facts}\n\n{_untrusted_block(utterance)}"}]}
             ],
