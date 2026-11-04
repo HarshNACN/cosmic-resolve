@@ -8,7 +8,7 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "fastapi>=0.115.0",
   "uvicorn>=0.30.0",
-  "boto3>=1.35.0",  # live Bedrock provider; the deployed API imports it when COSMIC_RESOLVE_LIVE is set
+  "boto3>=1.35.0",  # deployed Bedrock runtime: the API imports it when MODEL_PROVIDER=bedrock (credentials come from the standard chain)
 ]
 
 [project.optional-dependencies]
