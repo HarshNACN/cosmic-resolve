@@ -10,6 +10,7 @@ below is in-process only; durable replay protection requires shared storage and 
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import threading
@@ -27,7 +28,7 @@ from .models import (
 )
 from .tools import get_case
 from .validators import validate_proposal
-from .workflow import AWAITING_APPROVAL, apply_approval, propose_resolution
+from .workflow import AWAITING_APPROVAL, CaseRun, apply_approval, propose_resolution
 
 DISABLED_MESSAGE = "Checkpoint decisions are disabled in this environment. The recommendation is read-only here."
 MESSAGE_SENT_ONLY_FOR_NON_ESCALATIONS = (
@@ -38,6 +39,8 @@ MESSAGE_SENT_ONLY_FOR_NON_ESCALATIONS = (
 # serverless instances or restarts; see the module docstring.
 _decided: set[str] = set()
 _decided_lock = threading.Lock()
+# Runs awaiting a human decision under the live provider, keyed by (case_id, fingerprint). Guarded by _decided_lock.
+_runs: dict[tuple[str, str], CaseRun] = {}
 
 
 class CheckpointError(Exception):
@@ -79,6 +82,27 @@ def _mark_decided(key: str) -> None:
 def reset_decided_for_tests() -> None:
     with _decided_lock:
         _decided.clear()
+        _runs.clear()
+
+
+def remember_run(run: CaseRun) -> None:
+    """Keep the server-generated run a human is about to decide on (live provider only).
+
+    A live model may word the same case differently on a second call, so /decision cannot rebuild and compare.
+    It looks up this run by (case, fingerprint) instead. The client still sends only a fingerprint; the server
+    only ever acts on a proposal it generated and validated itself. In-process only, like the replay set.
+    """
+    if run.status != AWAITING_APPROVAL or run.proposal is None:
+        return
+    key = (run.case.case_id, proposal_fingerprint(run.proposal))
+    with _decided_lock:
+        _runs[key] = copy.deepcopy(run)
+
+
+def _recall_run(case_id: str, fingerprint: str) -> CaseRun | None:
+    with _decided_lock:
+        run = _runs.get((case_id, fingerprint))
+    return copy.deepcopy(run) if run is not None else None
 
 
 def decide(case_id: str, request: DecisionRequest) -> DecisionResult:
@@ -97,8 +121,14 @@ def decide(case_id: str, request: DecisionRequest) -> DecisionResult:
         if key in _decided:
             raise CheckpointError(409, "This proposal has already been decided in this process. Regenerate the recommendation.")
 
-    # Never trust a proposal from the client: rebuild the deterministic offline proposal from the case.
-    run = propose_resolution(case_id, RuleBasedModelProvider())
+    # Never trust a proposal from the client. Offline: rebuild the deterministic proposal from the case.
+    # Live: a model is not repeatable, so use the run this server generated and remembered at /propose.
+    if config.live_provider_enabled():
+        run = _recall_run(case_id, request.proposal_fingerprint)
+        if run is None:
+            raise CheckpointError(409, "No matching recommendation is pending for this case. Regenerate the recommendation before deciding.")
+    else:
+        run = propose_resolution(case_id, RuleBasedModelProvider())
     if run.status != AWAITING_APPROVAL or run.proposal is None:
         raise CheckpointError(409, f"No proposal is awaiting a decision for this case (status {run.status}).")
 

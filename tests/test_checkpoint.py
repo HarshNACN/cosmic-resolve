@@ -359,3 +359,67 @@ def test_over_threshold_remains_escalated_after_approval(enabled):
 def test_response_never_exposes_the_approval_token(enabled):
     text = json.dumps(_decide("C-1002").json())
     assert "approval_token" not in text
+
+
+# --- Live provider: the server remembers the proposal the human saw -----------------------------------------------
+
+class _InvestigatingStub:
+    """Stands in for the agent loop: has `investigate`, and words its message differently on every call."""
+
+    def __init__(self):
+        self.calls = 0
+
+    def investigate(self, case, policy):
+        from cosmic_resolve.workflow import gather_context
+
+        self.calls += 1
+        proposal = RuleBasedModelProvider().generate_resolution(case, gather_context(case), policy)
+        return proposal.model_copy(update={"customer_message_draft": f"{proposal.customer_message_draft} (take {self.calls})"})
+
+
+@pytest.fixture
+def live(monkeypatch, enabled):
+    stub = _InvestigatingStub()
+    monkeypatch.setenv("COSMIC_RESOLVE_LIVE", "true")
+    monkeypatch.setattr("api.select_provider", lambda live_flag: stub)
+    return stub
+
+
+def test_live_provider_is_off_by_default():
+    assert config.live_provider_enabled({}) is False
+    assert config.live_provider_enabled({"COSMIC_RESOLVE_LIVE": "true"}) is True
+
+
+def test_live_propose_uses_the_provider_and_reports_the_pipeline(live):
+    body = client.post("/api/cases/C-1002/propose").json()
+    assert live.calls == 1
+    assert body["status"] == "AWAITING_APPROVAL"
+    assert body["pipeline"] == "bedrock"  # a plain stub is not the agent class; the real one reports "agent"
+
+
+def test_live_approval_acts_on_the_remembered_proposal_even_though_the_model_is_not_repeatable(live, isolated_state):
+    fingerprint = client.post("/api/cases/C-1002/propose").json()["proposal_fingerprint"]
+    response = client.post(
+        "/api/cases/C-1002/decision",
+        json={"reviewer": "Jordan", "proposal_fingerprint": fingerprint, "action": "APPROVE"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "EXECUTED"
+    assert live.calls == 1  # the decision did not call the model again
+    assert _mock_actions(isolated_state)
+
+
+def test_live_decision_without_a_remembered_proposal_is_refused(live, isolated_state):
+    response = client.post(
+        "/api/cases/C-1002/decision",
+        json={"reviewer": "Jordan", "proposal_fingerprint": "0" * 64, "action": "APPROVE"},
+    )
+    assert response.status_code == 409
+    assert not _mock_actions(isolated_state)
+
+
+def test_live_decision_cannot_be_replayed(live):
+    fingerprint = client.post("/api/cases/C-1002/propose").json()["proposal_fingerprint"]
+    body = {"reviewer": "Jordan", "proposal_fingerprint": fingerprint, "action": "APPROVE"}
+    assert client.post("/api/cases/C-1002/decision", json=body).status_code == 200
+    assert client.post("/api/cases/C-1002/decision", json=body).status_code == 409

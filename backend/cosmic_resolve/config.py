@@ -46,6 +46,15 @@ def checkpoint_writes_enabled(environ: Mapping[str, str] = os.environ) -> bool:
     """
     return environ.get("CHECKPOINT_WRITES_ENABLED", "").strip().lower() in _TRUE_VALUES
 
+
+def live_provider_enabled(environ: Mapping[str, str] = os.environ) -> bool:
+    """Whether the API uses the live Bedrock provider instead of the offline rule-based one.
+
+    Off unless COSMIC_RESOLVE_LIVE is explicitly set to a true value; read on every call. Local demo only:
+    vercel.json must never set it. COSMIC_RESOLVE_PIPELINE=agent additionally selects the investigation loop.
+    """
+    return environ.get("COSMIC_RESOLVE_LIVE", "").strip().lower() in _TRUE_VALUES
+
 # Flat human-approval threshold for all loyalty tiers (PRD decision #1).
 ESCALATION_THRESHOLD_USD = 200.0
 

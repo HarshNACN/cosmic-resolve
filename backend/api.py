@@ -1,7 +1,7 @@
 """Minimal FastAPI app (T05 skeleton). Read-only: lists cases and produces proposals.
 
 Run from backend/:  uvicorn api:app --reload --port 8000
-The approval endpoint is added in T25. Uses the offline provider; no AWS calls.
+The approval endpoint is added in T25. Offline provider by default (no AWS calls); COSMIC_RESOLVE_LIVE=true selects Bedrock for local demos.
 """
 from __future__ import annotations
 
@@ -9,12 +9,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from cosmic_resolve.model_provider import RuleBasedModelProvider
+from cosmic_resolve.bedrock_agent import BedrockAgentProvider, select_provider
+from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider
 from cosmic_resolve.tracing import read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
 from cosmic_resolve import config, customer
 from cosmic_resolve.customer import CustomerOrderSummary, CustomerSupportReceipt, SupportIntakeRequest
-from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint
+from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint, remember_run
 from cosmic_resolve.models import DecisionRequest, DecisionResult
 from cosmic_resolve.voice import store as voice_store
 from cosmic_resolve.voice.routes import register as register_voice_routes
@@ -90,18 +91,33 @@ def read_case(case_id: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+def _pipeline_name(provider: object) -> str:
+    if isinstance(provider, BedrockAgentProvider):
+        return "agent"
+    return "offline" if isinstance(provider, RuleBasedModelProvider) else "bedrock"
+
+
 @app.post("/cases/{case_id}/propose")
 def propose(case_id: str) -> dict:
     """Read-only: returns a validated proposal awaiting a human decision. Never writes."""
+    live = config.live_provider_enabled()
     try:
-        run = propose_resolution(case_id, RuleBasedModelProvider())
+        provider = select_provider(live)
+    except ProviderError as exc:  # live requested but Bedrock is not configured
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    try:
+        run = propose_resolution(case_id, provider)
     except DomainLookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if live:
+        remember_run(run)  # /decision acts only on the proposal this server generated and the human saw
     awaiting = run.status == AWAITING_APPROVAL and run.proposal is not None
     return {
         "case_id": case_id,
         "status": run.status,
         "error": run.error,
+        # Which path produced the proposal: "offline", "bedrock" (fixed pipeline) or "agent" (model-chosen tools).
+        "pipeline": _pipeline_name(provider),
         "proposal": run.proposal.model_dump(mode="json") if run.proposal else None,
         # Integrity identifier for the decision endpoint; not a credential.
         "proposal_fingerprint": proposal_fingerprint(run.proposal) if run.proposal else None,

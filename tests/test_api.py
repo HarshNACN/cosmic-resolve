@@ -63,6 +63,7 @@ def test_api_propose_reaches_the_offline_endpoint():
         "case_id",
         "status",
         "error",
+        "pipeline",
         "proposal",
         "proposal_fingerprint",
         "recommended_action",
@@ -70,6 +71,7 @@ def test_api_propose_reaches_the_offline_endpoint():
     }
     assert body["case_id"] == "C-1001"
     assert body["status"] == "AWAITING_APPROVAL"
+    assert body["pipeline"] == "offline"
     assert body["proposal"]["policy_clause_ids"]
 
 

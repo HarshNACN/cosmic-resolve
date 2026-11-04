@@ -155,3 +155,21 @@ The exit code is 1 when policy-citation validity is below 100%. Accuracy is repo
 - API is read-only for now (health, cases, propose, traces); no approval endpoint or real UI yet (T25, T21).
 
 Trace API: `GET /traces?case_id=C-1001&limit=50` and `GET /cases/C-1001/trace` return events oldest first. With the Bedrock provider each run also logs a `model_exchange` event holding the full system prompt, user message and model reply.
+
+## 5. Agent loop in the web app (local, needs AWS)
+
+Run the case workbench against the live model. Without `COSMIC_RESOLVE_LIVE` the API stays offline.
+
+```powershell
+aws login --profile bootcamp --region us-east-2
+cd backend
+$env:AWS_PROFILE = "bootcamp"; $env:AWS_REGION = "us-east-2"
+$env:COSMIC_RESOLVE_LIVE = "true"; $env:COSMIC_RESOLVE_PIPELINE = "agent"; $env:CHECKPOINT_WRITES_ENABLED = "true"
+python -m uvicorn api:app --port 8000
+# second terminal
+cd frontend; npm run dev          # http://localhost:5173
+```
+
+**Expected:** `POST /cases/{id}/propose` returns `"pipeline": "agent"`, and the case trace shows `tool_call` / `tool_result`
+events between `provider_request` and `proposal_generated`. Approve uses the proposal the server remembered at propose time
+(the model is not repeatable, so the decision does not regenerate it). A restart loses pending proposals; regenerate.
