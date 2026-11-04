@@ -12,23 +12,25 @@ Status: **agreed** (T06), 2026-11-03. Signed off by the Architect, builders and 
 - **Write tools (6)** are gated. Each takes a trailing `approval: ApprovalDecision | None` argument.
   - If approval is missing, not an `ApprovalDecision`, not approved, or has no token, the call raises `MockWriteError` and nothing is recorded.
   - On success, the call appends a `mock_action` trace event (`backend/cosmic_resolve/tracing.py`) and returns a plain `dict`.
-- No tool calls the LLM. Tools are mock-only: no live AWS, no real OMS or carrier calls.
+- The model can call the **read tools** only, through the agent loop (`bedrock_agent.py`, via `tool_registry.py`). Results are returned to the model as JSON; `get_customer` hides the customer `name`.
+- **Write tools are not model-callable.** They are only reachable from `workflow.apply_approval` after a human approves. The model never sees their schemas.
+- Tools are mock-only: no live AWS, no real OMS or carrier calls.
 
 ## Read tools
 
-| Tool | Signature | Returns | Notes |
-|---|---|---|---|
-| `get_case` | `get_case(case_id: str)` | `SupportCase` | `data/cases.json` |
-| `get_order` | `get_order(order_id: str)` | `Order` | `data/orders.json` |
-| `get_customer` | `get_customer(customer_id: str)` | `Customer` | `data/customers.json` |
-| `get_shipment` | `get_shipment(tracking_id: str)` | `Shipment` | `data/shipments.json` |
-| `check_inventory` | `check_inventory(sku: str, region: str)` | `InventoryRecord` | Raises if no matching sku + region |
-| `get_policy` | `get_policy(market: str, category: str, case_type: str)` | `list[PolicyClause]` | `data/policies.json`; raises `DomainLookupError` if no clause matches |
-| `get_product_listing` | `get_product_listing(sku: str)` | `Product` | `data/products.json`; listing claims for root-cause tagging |
+| Tool | Model-callable | Signature | Returns | Notes |
+|---|---|---|---|---|
+| `get_case` | Yes | `get_case(case_id: str)` | `SupportCase` | `data/cases.json` |
+| `get_order` | Yes | `get_order(order_id: str)` | `Order` | `data/orders.json` |
+| `get_customer` | Yes (name hidden) | `get_customer(customer_id: str)` | `Customer` | `data/customers.json` |
+| `get_shipment` | Yes | `get_shipment(tracking_id: str)` | `Shipment` | `data/shipments.json` |
+| `check_inventory` | Yes | `check_inventory(sku: str, region: str)` | `InventoryRecord` | Raises if no matching sku + region |
+| `get_policy` | Yes | `get_policy(market: str, category: str, case_type: str)` | `list[PolicyClause]` | `data/policies.json`; raises `DomainLookupError` if no clause matches |
+| `get_product_listing` | Yes | `get_product_listing(sku: str)` | `Product` | `data/products.json`; listing claims for root-cause tagging |
 
-## Write tools (approval-gated)
+## Write tools (approval-gated, not model-callable)
 
-All write tools share the signature pattern `(..., approval: ApprovalDecision | None)`.
+All write tools share the signature pattern `(..., approval: ApprovalDecision | None)`. None of them is in the model's tool list.
 
 | Tool | Signature | Returned dict keys |
 |---|---|---|

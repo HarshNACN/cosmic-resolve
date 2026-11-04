@@ -14,7 +14,7 @@ import json
 import sys
 
 from cosmic_resolve.config import SETTINGS
-from cosmic_resolve.model_provider import RuleBasedModelProvider
+from cosmic_resolve.bedrock_agent import select_provider
 from cosmic_resolve.models import ApprovalDecision
 from cosmic_resolve.workflow import AWAITING_APPROVAL, apply_approval, propose_resolution
 
@@ -26,14 +26,9 @@ def main(argv: list[str]) -> int:
         return 2
     case_id = case_ids[0]
 
-    if "--bedrock" in argv:
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
-
-        provider = BedrockModelProvider()
-        print(f"Provider: Bedrock ({provider.model_id})")
-    else:
-        provider = RuleBasedModelProvider()
-        print("Provider: offline rule-based")
+    live = "--bedrock" in argv
+    provider = select_provider(live)
+    print(f"Provider: Bedrock ({provider.model_id})" if live else "Provider: offline rule-based")
 
     run = propose_resolution(case_id, provider)
     print(f"\nStatus: {run.status}")

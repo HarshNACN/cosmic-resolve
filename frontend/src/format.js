@@ -44,6 +44,8 @@ export function asText(value) {
 const EVENTS = {
   case_loaded: { category: "case", label: "Case and context" },
   context_gathered: { category: "tools", label: "Tool calls" },
+  tool_call: { category: "tools", label: "Tool call" },
+  tool_result: { category: "tools", label: "Tool result" },
   provider_request: { category: "provider", label: "Provider" },
   model_exchange: { category: "provider", label: "Provider" },
   proposal_generated: { category: "provider", label: "Provider" },

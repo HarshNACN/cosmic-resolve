@@ -10,7 +10,6 @@ Exit code 1 when policy-citation validity is below 100% (PRD target). Accuracy i
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -27,7 +26,8 @@ from cosmic_resolve.evaluation import (  # noqa: E402
     load_history,
     run_evaluation,
 )
-from cosmic_resolve.model_provider import ProviderError, RuleBasedModelProvider  # noqa: E402
+from cosmic_resolve.bedrock_agent import select_provider  # noqa: E402
+from cosmic_resolve.model_provider import ProviderError  # noqa: E402
 
 DEFAULT_OUT = EVALS_DIR / "scorecard.json"
 
@@ -53,20 +53,15 @@ def main(argv: list[str]) -> int:
         print(f"{exc} Nothing was run and nothing was written.", file=sys.stderr)
         return 2
 
-    model_id = None
-    if provider_name == "bedrock":
-        from cosmic_resolve.bedrock_provider import BedrockModelProvider
-
-        try:
-            provider = BedrockModelProvider()
-        except ProviderError as exc:
-            print(f"Cannot start Bedrock provider: {exc}", file=sys.stderr)
-            return 2
-        model_id = provider.model_id
-        label = "bedrock"
-    else:
-        provider = RuleBasedModelProvider()
-        label = "offline rule-based"
+    live = provider_name == "bedrock"
+    try:
+        provider = select_provider(live)
+    except ProviderError as exc:
+        print(f"Cannot start Bedrock provider: {exc}", file=sys.stderr)
+        return 2
+    model_id = provider.model_id if live else None
+    # These labels are stored in the scorecard history; do not rename them.
+    label = "bedrock" if live else "offline rule-based"
 
     scorecard = run_evaluation(provider, provider_label=label, model_id=model_id, entries=entries)
 

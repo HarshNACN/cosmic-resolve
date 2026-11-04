@@ -4,7 +4,7 @@ import pytest
 
 from cosmic_resolve import workflow
 from cosmic_resolve.config import SETTINGS
-from cosmic_resolve.model_provider import NoopModelProvider, RuleBasedModelProvider
+from cosmic_resolve.model_provider import RuleBasedModelProvider
 from cosmic_resolve.models import ApprovalDecision, Decision
 
 PROVIDER = RuleBasedModelProvider()
@@ -102,8 +102,3 @@ def test_trace_covers_the_loop(trace_file):
     for expected in ["case_loaded", "context_gathered", "provider_request", "proposal_generated",
                      "validation_passed", "human_decision", "mock_action"]:
         assert expected in types
-
-
-def test_noop_provider_still_raises():
-    with pytest.raises(NotImplementedError):
-        workflow.propose_resolution("C-1002", NoopModelProvider())

@@ -34,20 +34,7 @@ policy lookup, the loop (`tests/test_workflow.py`), and the Bedrock provider wit
 
 ## 2. Offline demo (no AWS)
 
-Proposals for the three sample cases:
-
-```powershell
-python backend/app.py
-```
-
-**Expected:**
-```
-C-1001: AWAITING_APPROVAL - ESCALATE $649.00 [...]
-C-1002: AWAITING_APPROVAL - STORE_CREDIT $45.00 [...]
-C-1003: AWAITING_APPROVAL - ESCALATE $299.00 [...]
-```
-
-Walk one case through the human checkpoint:
+Walk one sample case through the proposal and the human checkpoint:
 
 ```powershell
 python backend/demo.py C-1002                # prompts: Approve this proposal? [y/N]
@@ -80,7 +67,6 @@ aws sts get-caller-identity                          # should print the bootcamp
 Run:
 
 ```powershell
-python backend/app.py --bedrock                      # 3 live calls, nothing executed
 python backend/demo.py C-1001 --bedrock              # live proposal + approval step
 ```
 
@@ -117,11 +103,18 @@ Every run appends JSON lines to `traces/mock_actions.jsonl` (git-ignored). Delet
 Get-Content traces/mock_actions.jsonl | ForEach-Object { ($_ | ConvertFrom-Json) | Select-Object timestamp, event_type, message }
 ```
 
-**Expected event order for one approved case:**
+**Expected event order for one approved case (fixed pipeline: offline provider, or Bedrock by default):**
 `case_loaded`, `context_gathered`, `provider_request`, `proposal_generated`, `validation_passed`,
 `human_decision`, then one `mock_action` per write tool. A rejected case stops after `human_decision`.
 A `validation_failed` or `provider_error` event ends the run with no `mock_action` events at all.
 `mock_action` events keep the case ID inside their `payload`.
+
+**Expected event order for one approved case with the agent loop** (`COSMIC_RESOLVE_PIPELINE=agent`, Bedrock only):
+`case_loaded`, `provider_request`, then for each model turn one `tool_call` followed by its `tool_result`
+(each carries `turn`, `tool` and `status`; `status` is `error` for an unknown tool, bad arguments or a missing record),
+then `model_exchange`, `context_gathered` (the validator's fetch, after the investigation), `proposal_generated`,
+`validation_passed`, `human_decision`, and the `mock_action` events. A plain-text reply or running out of turns
+ends the run with `provider_error`. Write tools are never offered to the model, so no write event can come from the loop.
 
 ## Recording results
 

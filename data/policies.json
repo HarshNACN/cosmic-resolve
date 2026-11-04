@@ -32,14 +32,14 @@
     "market": "US",
     "category": "GADGETS",
     "case_type": "LATE_DELIVERY",
-    "text": "Lost or late delivery cases may receive a replacement or goodwill credit within 10 days of the expected delivery date if the carrier confirms disruption."
+    "text": "Late delivery: if the carrier confirms a delay and the package is still in transit (not lost or returned to sender) within 10 days of the expected delivery date, offer a goodwill credit (see US-GAD-LD-04), not a replacement. A replacement would not arrive sooner than the package already on its way. Lost in transit or returned to sender within 10 days of the expected delivery date: a replacement or goodwill credit may be offered."
   },
   {
     "clause_id": "US-GAD-LD-02",
     "market": "US",
     "category": "GADGETS",
     "case_type": "LATE_DELIVERY",
-    "text": "A refund or replacement for a missing package requires a carrier status of lost, delayed or returned to sender. If the carrier shows the package as delivered, especially with a signature, no refund or replacement may be proposed and the case must be escalated for investigation."
+    "text": "A replacement for a missing package requires a carrier status of lost or returned to sender. A delayed package still in transit is not eligible for a replacement; see US-GAD-LD-01. A refund or replacement for a missing package requires that status. If the carrier shows the package as delivered, especially with a signature, no refund or replacement may be proposed and the case must be escalated for investigation."
   },
   {
     "clause_id": "US-GAD-LD-03",

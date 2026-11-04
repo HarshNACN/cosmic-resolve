@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .model_provider import DEFAULT_PROVIDER, ModelProvider, ProviderError
+from .model_provider import ModelProvider, ProviderError
 from .models import ApprovalDecision, Decision, ResolutionProposal, SupportCase
 from .tools import (
     DomainLookupError,
@@ -27,7 +27,7 @@ from .tools import (
     send_customer_message,
     tag_root_cause,
 )
-from .tracing import append_trace_event
+from .tracing import append_case_event
 from .validators import validate_proposal
 
 AWAITING_APPROVAL = "AWAITING_APPROVAL"
@@ -49,15 +49,11 @@ class CaseRun:
     actions: list[dict[str, Any]] = field(default_factory=list)
 
 
-def _trace(case_id: str, event_type: str, message: str, **details: Any) -> None:
-    append_trace_event(event_type, message, {"case_id": case_id, **details})
-
-
 def _trace_exchange(case_id: str, provider: Any) -> None:
     """Record the full prompt and model reply when the provider exposes them (Bedrock does; offline does not)."""
     exchange = getattr(provider, "last_exchange", None)
     if exchange:
-        _trace(case_id, "model_exchange", "Full prompt and model response", **exchange)
+        append_case_event(case_id, "model_exchange", "Full prompt and model response", **exchange)
 
 
 def gather_context(case: SupportCase) -> dict[str, Any]:
@@ -81,38 +77,54 @@ def gather_context(case: SupportCase) -> dict[str, Any]:
     return context
 
 
-def propose_resolution(case_id: str, provider: ModelProvider = DEFAULT_PROVIDER) -> CaseRun:
-    """Read-only half of the loop. Produces a validated proposal awaiting a human decision."""
-    case = get_case(case_id)
-    _trace(case_id, "case_loaded", "Case loaded", case_type=case.case_type)
+def propose_resolution(case_id: str, provider: ModelProvider) -> CaseRun:
+    """Read-only half of the loop. Produces a validated proposal awaiting a human decision.
 
-    context = gather_context(case)
-    _trace(case_id, "context_gathered", "Read tools complete", loaded=[k for k, v in context.items() if v is not None])
+    Providers with an `investigate` method (the agent loop) choose their own read tools, so the code does not
+    pre-fetch the case records for them. Everything else (policy, validator inputs) is still fetched by code.
+    """
+    case = get_case(case_id)
+    append_case_event(case_id, "case_loaded", "Case loaded", case_type=case.case_type)
+
+    investigates = callable(getattr(provider, "investigate", None))
+    context: dict[str, Any] = {}
+    if not investigates:
+        context = gather_context(case)
+        append_case_event(case_id, "context_gathered", "Read tools complete", loaded=[k for k, v in context.items() if v is not None])
 
     try:
         policy = get_policy(case.market, case.category, case.case_type)
     except DomainLookupError as exc:
         # PRD 6.1 fallback: no applicable clause means a human must handle it. No proposal can cite a clause.
-        _trace(case_id, "no_policy", "No applicable policy clause; needs manual handling", error=str(exc))
+        append_case_event(case_id, "no_policy", "No applicable policy clause; needs manual handling", error=str(exc))
         return CaseRun(case=case, status=NO_POLICY, context=context, error=str(exc))
 
-    _trace(case_id, "provider_request", "Requesting resolution", clause_ids=[c.clause_id for c in policy])
+    append_case_event(case_id, "provider_request", "Requesting resolution", clause_ids=[c.clause_id for c in policy])
     try:
-        proposal = provider.generate_resolution(case, context, policy)
+        if investigates:
+            proposal = provider.investigate(case, policy)
+        else:
+            proposal = provider.generate_resolution(case, context, policy)
     except ProviderError as exc:
         _trace_exchange(case_id, provider)
-        _trace(case_id, "provider_error", "Provider failed to produce a proposal", error=str(exc))
+        append_case_event(case_id, "provider_error", "Provider failed to produce a proposal", error=str(exc))
         return CaseRun(case=case, status=PROVIDER_ERROR, context=context, policy=policy, error=str(exc))
     _trace_exchange(case_id, provider)
-    _trace(case_id, "proposal_generated", "Proposal generated", proposal=proposal.model_dump(mode="json"))
+
+    if investigates:
+        # Deterministic fetch for the validator and the approval view, after the model's investigation.
+        context = gather_context(case)
+        append_case_event(case_id, "context_gathered", "Validator records fetched", loaded=[k for k, v in context.items() if v is not None])
+
+    append_case_event(case_id, "proposal_generated", "Proposal generated", proposal=proposal.model_dump(mode="json"))
 
     try:
         validate_proposal(proposal, case, policy, context["customer"])
     except ValueError as exc:
-        _trace(case_id, "validation_failed", "Proposal rejected by validator", error=str(exc))
+        append_case_event(case_id, "validation_failed", "Proposal rejected by validator", error=str(exc))
         return CaseRun(case=case, status=VALIDATION_FAILED, context=context, policy=policy, proposal=proposal, error=str(exc))
 
-    _trace(case_id, "validation_passed", "Proposal passed validation; awaiting human approval")
+    append_case_event(case_id, "validation_passed", "Proposal passed validation; awaiting human approval")
     return CaseRun(case=case, status=AWAITING_APPROVAL, context=context, policy=policy, proposal=proposal)
 
 
@@ -139,7 +151,7 @@ def apply_approval(run: CaseRun, approval: ApprovalDecision | None, action: str 
     if approval.approved and approval.decision is not None and approval.decision != proposal.decision:
         raise ValueError(f"Approval is for {approval.decision.value} but the proposal is {proposal.decision.value}.")
 
-    _trace(
+    append_case_event(
         case_id,
         "human_decision",
         "Approved" if approval.approved else "Rejected",
@@ -169,7 +181,7 @@ def apply_approval(run: CaseRun, approval: ApprovalDecision | None, action: str 
     run.actions.append(tag_root_cause(case_id, proposal.root_cause.category, proposal.root_cause.detail, approval))
 
     # One summary event per approval: action names and amounts only. No customer text, reviewer data, or tokens.
-    _trace(
+    append_case_event(
         case_id,
         "actions_executed",
         "Gated write actions executed",

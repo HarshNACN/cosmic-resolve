@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupTraceRuns } from "../format.js";
+import { classifyEvent, groupTraceRuns } from "../format.js";
 
 const ev = (event_type, timestamp = "2026-11-02T10:00:00+00:00") => ({ event_type, timestamp, message: event_type, details: {} });
 
@@ -54,5 +54,16 @@ describe("groupTraceRuns", () => {
     const before = structuredClone(input);
     groupTraceRuns(input);
     expect(input).toEqual(before);
+  });
+});
+
+describe("classifyEvent", () => {
+  it("shows agent tool calls and results under the tools category, not Other", () => {
+    expect(classifyEvent("tool_call")).toEqual({ category: "tools", label: "Tool call" });
+    expect(classifyEvent("tool_result")).toEqual({ category: "tools", label: "Tool result" });
+  });
+
+  it("keeps unknown event types as Other", () => {
+    expect(classifyEvent("something_new")).toEqual({ category: "other", label: "Other" });
   });
 });
