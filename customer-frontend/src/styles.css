@@ -1,0 +1,485 @@
+/* Cosmic Mart Support. Calm, spacious and guided: one task per screen in a single column.
+   Shared with the employee app: navy, violet accent and the orbital mark. Everything else is its own.
+   No shadows, gradients or decorative motion. Radii are 8px for controls and choices. */
+
+:root {
+  --navy: #0b0f1a;
+  --navy-line: #1f2740;
+  --brand: #7f2ad6;
+  --brand-hover: #6d22bf;
+  --brand-tint: #f5effd;
+  --on-brand: #ffffff;
+
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+  --line: #d9dce3;
+  --line-strong: #b9bfcc;
+
+  --text: #161a24;
+  --text-2: #4b5365;
+  --text-3: #6b7385;
+
+  --error: #b42318;
+  --error-soft: #fdecea;
+  --error-line: #e8b4ae;
+
+  --focus: #6d4bd0;
+  --radius: 8px;
+
+  --font-ui: system-ui, -apple-system, "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 600;
+}
+p {
+  margin: 0 0 12px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 0 24px;
+  background: var(--navy);
+  color: #f2f3f8;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-mark {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #8f2de0;
+  border-radius: 50%;
+}
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f2f3f8;
+}
+.brand-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.brand-section {
+  color: #aab1c6;
+  font-size: 15px;
+}
+
+/* ---------- Layout ---------- */
+
+.support-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 56px;
+}
+
+.step {
+  display: block;
+}
+.step-title {
+  margin: 28px 0 20px;
+  font-size: 26px;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+/* ---------- Progress ---------- */
+
+.progress {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.progress-item::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--line);
+  margin-left: 4px;
+}
+.progress-item:last-child::after {
+  display: none;
+}
+.progress-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface);
+}
+.progress-item.is-completed .progress-marker {
+  background: var(--brand-tint);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.progress-item.is-current .progress-marker {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+.progress-item.is-current .progress-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---------- Choices (radio rows) ---------- */
+
+.choice-list {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 10px;
+}
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 44px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.choice:hover {
+  border-color: var(--line-strong);
+}
+.choice:has(input:checked) {
+  border-color: var(--brand);
+  background: var(--brand-tint);
+}
+.choice input[type="radio"] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  accent-color: var(--brand);
+}
+.choice-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.choice-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.choice-meta {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* ---------- Form ---------- */
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+.field-help {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.textarea:hover {
+  border-color: var(--text-3);
+}
+.textarea[aria-invalid="true"] {
+  border-color: var(--error);
+}
+.field-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 22px;
+  font-size: 14px;
+}
+.field-error {
+  margin: 0;
+  color: var(--error);
+}
+.field-count {
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+/* ---------- Buttons ---------- */
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.button {
+  min-height: 44px;
+  padding: 10px 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.button:hover:not(:disabled) {
+  border-color: var(--text-3);
+}
+.button-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+.button-primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+.button-quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.button-quiet:hover:not(:disabled) {
+  color: var(--text);
+  border-color: transparent;
+  text-decoration: underline;
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-left: 12px;
+  color: var(--brand);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Notices ---------- */
+
+.notice {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--error-line);
+  border-radius: var(--radius);
+  background: var(--error-soft);
+  color: var(--text);
+}
+.notice p {
+  margin: 0;
+}
+.notice .button {
+  justify-self: start;
+}
+
+/* ---------- Review and result ---------- */
+
+.review-list {
+  margin: 8px 0 0;
+  border-top: 1px solid var(--line);
+}
+.review-row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.review-row dt {
+  color: var(--text-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+.review-row dd {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.review-strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.review-sub {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.quoted {
+  margin: 0;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--line-strong);
+  white-space: pre-wrap;
+  max-width: 64ch;
+  color: var(--text);
+}
+
+.result .step-title {
+  margin-top: 16px;
+}
+/* Demo disclosure: readable, but clearly secondary to the receipt. */
+.demo-note {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 14px;
+}
+.demo-note p {
+  margin: 0;
+}
+.result .step-actions {
+  margin-top: 28px;
+}
+.result-message {
+  font-size: 18px;
+  color: var(--text);
+}
+.reference {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 640px) {
+  .support-main {
+    padding: 20px 16px 40px;
+  }
+  .step-title {
+    font-size: 23px;
+  }
+  .progress {
+    font-size: 12px;
+    gap: 4px;
+  }
+  .progress-item {
+    gap: 6px;
+  }
+  .progress-item::after {
+    display: none;
+  }
+  .progress-marker {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+  .review-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .site-header {
+    padding: 0 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
