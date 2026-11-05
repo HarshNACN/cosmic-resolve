@@ -158,16 +158,18 @@ Trace API: `GET /traces?case_id=C-1001&limit=50` and `GET /cases/C-1001/trace` r
 
 ## 5. Agent loop in the web app (local, needs AWS)
 
-Run the case workbench against the live model. Without `COSMIC_RESOLVE_LIVE` the API stays offline.
+Run the case workbench against the live model. `MODEL_PROVIDER=bedrock` selects the agent loop; `offline` (the default) uses the rules.
 
 ```powershell
 aws login --profile bootcamp --region us-east-2
 cd backend
 $env:AWS_PROFILE = "bootcamp"; $env:AWS_REGION = "us-east-2"
-$env:COSMIC_RESOLVE_LIVE = "true"; $env:COSMIC_RESOLVE_PIPELINE = "agent"; $env:CHECKPOINT_WRITES_ENABLED = "true"
+$env:MODEL_PROVIDER = "bedrock"; $env:CHECKPOINT_WRITES_ENABLED = "true"
 python -m uvicorn api:app --port 8000
 # second terminal
-cd frontend; npm run dev          # http://localhost:5173
+cd frontend; npm run dev          # case workbench, dev port 5175
+# plus the landing page (port 5173) and customer portal (port 5174); easiest is: cmd /c start-dev.cmd live
+# then open http://localhost:5173/internal/
 ```
 
 **Expected:** `POST /cases/{id}/propose` returns `"pipeline": "agent"`, and the case trace shows `tool_call` / `tool_result`

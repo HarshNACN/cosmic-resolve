@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import CaseDetails from "./components/CaseDetails.jsx";
 import CaseQueue from "./components/CaseQueue.jsx";
+import EvalScorecard from "./components/EvalScorecard.jsx";
 import PolicyBasis from "./components/PolicyBasis.jsx";
 import ProposalPanel from "./components/ProposalPanel.jsx";
 import TraceViewer from "./components/TraceViewer.jsx";
@@ -14,6 +15,7 @@ import CallPanel from "./voice/CallPanel.jsx";
 export default function App() {
   const queue = useCases();
   const [selectedId, setSelectedId] = useState(null);
+  const [tab, setTab] = useState("cases");
   const workbench = useCaseWorkbench(selectedId);
   const { reload: reloadQueue } = queue;
   // A confirmed voice call becomes a case: refresh the queue and open it, so the checkpoint is right below the call.
@@ -35,8 +37,31 @@ export default function App() {
             <p className="brand-sub">Cosmic Mart · Post-purchase resolution</p>
           </div>
         </div>
-        <ViewSwitch current="internal" />
+        <div className="header-switches">
+          <nav className="view-switch" aria-label="Workbench tabs">
+            {[
+              ["cases", "Cases"],
+              ["eval", "Eval"],
+            ].map(([id, name]) => (
+              <button
+                key={id}
+                type="button"
+                className={id === tab ? "view-switch-link is-current" : "view-switch-link"}
+                aria-current={id === tab ? "page" : undefined}
+                onClick={() => setTab(id)}
+              >
+                {name}
+              </button>
+            ))}
+          </nav>
+          <ViewSwitch current="internal" />
+        </div>
       </header>
+      {tab === "eval" ? (
+        <main className="eval-page">
+          <EvalScorecard />
+        </main>
+      ) : (
       <div className="workbench">
         <CaseQueue
           status={queue.status}
@@ -66,6 +91,7 @@ export default function App() {
           ) : null}
         </main>
       </div>
+      )}
     </div>
   );
 }

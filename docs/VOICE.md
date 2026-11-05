@@ -69,7 +69,8 @@ npm.cmd run dev
 (`npm.cmd` rather than `npm` because PowerShell's default policy blocks `npm.ps1`. Running
 `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` first, then `npm run dev`, also works.)
 
-Then open http://localhost:5173. If the page loads but the call panel says it cannot reach the voice service, the backend
+Then open http://localhost:5175/internal/ (running only the workbench). To use the landing page at http://localhost:5173/
+as the single address, start everything with `start-dev.cmd` instead. If the page loads but the call panel says it cannot reach the voice service, the backend
 in terminal 1 is not running.
 
 Open the page about a minute early. The first request after the backend starts loads the voice and opens the model

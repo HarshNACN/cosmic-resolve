@@ -82,6 +82,14 @@ export async function fetchTrace(caseId, signal) {
   return body.map((event) => ({ ...event, details: isObject(event.details) ? event.details : {} }));
 }
 
+export async function fetchScorecard(signal) {
+  const body = await request("/scorecard", { signal });
+  if (!isObject(body) || !Array.isArray(body.runs) || !body.runs.every((run) => isObject(run) && isObject(run.metrics))) {
+    throw new ApiError(UNEXPECTED);
+  }
+  return body.runs;
+}
+
 // Asks the backend for a recommendation. The backend runs the provider its configuration selects (offline rules or
 // Amazon Bedrock), validates the result and returns it, with the provider labels, for a human decision.
 // It does not execute anything.

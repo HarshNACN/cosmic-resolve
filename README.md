@@ -10,7 +10,9 @@ cosmic-resolve/
 │   ├── cosmic_resolve/   # Main Python package
 │   ├── api.py           # FastAPI application entry point (uvicorn api:app)
 │   └── pyproject.toml   # Python project configuration
-├── frontend/            # React + Vite frontend skeleton (cd frontend; npm install; npm run dev)
+├── landing/             # Landing page at "/" (React + Vite, dev port 5173; the single local address)
+├── frontend/            # Internal case workbench at /internal/ (dev port 5175)
+├── customer-frontend/   # Customer support portal at /support/ (dev port 5174)
 ├── data/                # Synthetic/mocked Cosmic Mart data fixtures
 ├── evals/               # Evaluation assets and test cases
 ├── tests/               # Integration and unit tests

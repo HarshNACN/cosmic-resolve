@@ -1,11 +1,10 @@
-// Switches between the two Cosmic Resolve views: the internal case workbench and the customer support portal.
-// They are separate apps. Deployed, they share one origin (/ and /support/). In local development they run on
-// different ports, so the dev links point at the other dev server.
-const DEV = import.meta.env.DEV;
-
+// Switches between the two Cosmic Resolve views: the internal case workbench (/internal/) and the customer
+// support portal (/support/). They are separate apps that share one origin with the landing page at "/":
+// Vercel routes the paths when deployed, and the landing dev server forwards them locally (landing/vite.config.js).
+// Open http://localhost:5173 so both links resolve.
 export const VIEW_URLS = {
-  internal: DEV ? "http://localhost:5173/" : "/",
-  customer: DEV ? "http://localhost:5174/support/" : "/support/",
+  internal: "/internal/",
+  customer: "/support/",
 };
 
 const VIEWS = [

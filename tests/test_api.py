@@ -201,3 +201,17 @@ def test_api_tests_write_traces_only_to_the_temporary_path(isolated_trace):
     client.post("/api/cases/C-1003/propose")
     assert SETTINGS.trace_path == isolated_trace
     assert isolated_trace.exists()
+
+
+# --- scorecard ---------------------------------------------------------------------------------------------------
+
+def test_scorecard_returns_run_history():
+    response = client.get("/api/scorecard")
+    assert response.status_code == 200
+    runs = response.json()["runs"]
+    assert runs and "metrics" in runs[-1] and "meta" in runs[-1]
+
+
+def test_scorecard_missing_file_is_404(tmp_path, monkeypatch):
+    monkeypatch.setattr(SETTINGS, "evals_dir", tmp_path)
+    assert client.get("/scorecard").status_code == 404

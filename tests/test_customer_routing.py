@@ -45,9 +45,9 @@ def test_existing_services_are_unchanged_in_location():
     assert services["frontend"]["framework"] == "vite"
 
 
-def test_api_is_matched_first_then_support_then_employee_catch_all_last():
+def test_api_is_matched_first_then_support_then_internal_then_landing_catch_all_last():
     sources = [rewrite["source"] for rewrite in _vercel()["rewrites"]]
-    assert sources == ["/api/(.*)", "/support(/.*)?", "/(.*)"]
+    assert sources == ["/api/(.*)", "/support(/.*)?", "/internal(/.*)?", "/(.*)"]
 
 
 def test_public_api_paths_reach_the_backend():
@@ -60,19 +60,20 @@ def test_customer_paths_reach_the_customer_service():
         assert _first_match(path) == "customer", path
 
 
-def test_the_employee_catch_all_cannot_intercept_support_paths():
-    for path in ["/support", "/support/", "/support/assets/x.js", "/support/anything/else"]:
-        assert _first_match(path) != "frontend", path
+def test_the_landing_catch_all_cannot_intercept_support_or_internal_paths():
+    for path in ["/support", "/support/", "/support/assets/x.js", "/internal", "/internal/", "/internal/assets/x.js"]:
+        assert _first_match(path) != "landing", path
 
 
-def test_similar_prefixes_are_not_routed_to_the_customer_service():
-    for path in ["/supportive", "/support-x", "/supporters"]:
+def test_similar_prefixes_are_not_routed_to_the_customer_or_workbench_services():
+    for path in ["/supportive", "/support-x", "/supporters", "/internals", "/internal-x"]:
+        assert _first_match(path) == "landing", path
+
+
+def test_the_root_reaches_the_landing_page_and_internal_paths_reach_the_workbench():
+    assert _first_match("/") == "landing"
+    for path in ["/internal", "/internal/", "/internal/assets/index-abc.js"]:
         assert _first_match(path) == "frontend", path
-
-
-def test_employee_root_still_reaches_the_employee_frontend():
-    assert _first_match("/") == "frontend"
-    assert _first_match("/cases/C-1001") == "frontend"
 
 
 def test_no_bindings_or_environment_secrets_were_added():
@@ -140,7 +141,7 @@ def test_built_artifact_matches_the_declared_output_when_present():
     assert not (dist / "index.html").exists(), "root-level index.html would mean the build is not under support/"
 
 
-def test_redirects_contain_only_the_support_redirect():
+def test_redirects_contain_only_the_support_and_internal_trailing_slash_redirects():
     redirects = _vercel().get("redirects", [])
-    assert [r["source"] for r in redirects] == ["/support"]
+    assert [(r["source"], r["destination"]) for r in redirects] == [("/support", "/support/"), ("/internal", "/internal/")]
     assert all(set(r) <= {"source", "destination", "permanent"} for r in redirects)
