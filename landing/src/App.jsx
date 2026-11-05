@@ -110,7 +110,7 @@ export default function App() {
       <div className="cursor-glow" ref={glowRef} aria-hidden="true" />
 
       <header className="nav">
-        <a className="brand" href="#top">
+        <a className="brand" href="/" aria-label="Cosmic Resolve home">
           <span className="brand-mark" aria-hidden="true" />
           <span className="brand-name">Cosmic Resolve</span>
         </a>

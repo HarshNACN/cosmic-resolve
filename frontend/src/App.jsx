@@ -24,13 +24,13 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="brand">
+        <a className="brand" href="/" aria-label="Cosmic Resolve home">
           <span className="brand-mark" aria-hidden="true" />
           <div>
             <h1>Cosmic Resolve</h1>
             <p className="brand-sub">Cosmic Mart · Post-purchase resolution</p>
           </div>
-        </div>
+        </a>
         <div className="header-switches">
           <nav className="view-switch" aria-label="Workbench tabs">
             {[

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import ViewSwitch from "./components/ViewSwitch.jsx";
 import Progress from "./components/Progress.jsx";
 import IdentifyStep from "./components/IdentifyStep.jsx";
@@ -69,6 +70,20 @@ export function SupportApp({ initialSession = null, initialView = null }) {
     resetForm();
   }
 
+  // The brand is a real link to the Cosmic Resolve landing page ("/"), a separate app, so this is a full page load and the
+  // in-memory demo sign-in does not survive it (cases and backend data do). Before leaving: an unfinished form asks first,
+  // and an open call is closed (the view is unmounted, which stops the microphone, the audio and the stream) so nothing
+  // keeps recording. Modified clicks (new tab) are left to the browser.
+  function goToLanding(event) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const unfinished = view === "form" && step !== "result" && Boolean(orderReference || issueType || statement.trim());
+    if (unfinished && !window.confirm(t("brand.leave"))) return;
+    controllerRef.current?.abort();
+    flushSync(() => setView("home"));
+    window.location.assign("/");
+  }
+
   function signOut() {
     controllerRef.current?.abort();
     resetForm();
@@ -117,12 +132,10 @@ export function SupportApp({ initialSession = null, initialView = null }) {
   return (
     <div className="support-app">
       <header className="site-header">
-        {/* Back to the support options (or the sign-in when nobody is signed in). The session is kept; leaving a call
-            unmounts it, which stops the microphone, and form answers live in this component so they are kept too. */}
-        <button type="button" className="brand brand-link" aria-label={t("brand.home")} onClick={() => setView(session ? "home" : "identify")}>
+        <a className="brand brand-link" href="/" aria-label={t("brand.home")} onClick={goToLanding}>
           <span className="brand-mark" aria-hidden="true" />
           <span className="brand-name">Cosmic Mart</span>
-        </button>
+        </a>
         <div className="header-end">
           <span className="brand-section">{t("brand.section")}</span>
           {session ? (

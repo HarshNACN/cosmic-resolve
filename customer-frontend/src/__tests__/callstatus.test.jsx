@@ -305,37 +305,56 @@ describe("the verified resolution, in the customer's language", () => {
 });
 
 describe("the Cosmic Mart brand", () => {
-  const brand = () => screen.getByRole("button", { name: en["brand.home"] });
-
-  it("is a labelled, keyboard-operable control that returns a signed-in customer to the support options and keeps the session", async () => {
-    const user = userEvent.setup();
-    installFetch();
-    render(<App />);
-    await screen.findByRole("heading", { name: en["voice.title"] });
-    expect(brand()).toHaveTextContent("Cosmic Mart");
-    brand().focus();
-    await user.keyboard("{Enter}");
-    expect(await screen.findByRole("heading", { name: /Jon/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: new RegExp(en["home.voice.title"]) })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: new RegExp(en["home.form.title"]) })).toBeInTheDocument();
-    expect(screen.getByText(en["account.signedInAs"].replace("{name}", "Jon"))).toBeInTheDocument(); // still signed in
-    expect(brand().closest("a")).toBeNull(); // not a link to anywhere else, and never the employee dashboard
-    expect(window.location.pathname).not.toMatch(/internal/);
-    brand().focus();
-    await user.keyboard(" "); // Space also activates it, from the home page as well
-    expect(await screen.findByRole("heading", { name: /Jon/ })).toBeInTheDocument();
+  // A real link to the Cosmic Resolve landing page ("/"), which is a separate app: a full page load, so the click handler
+  // closes the call first and asks before dropping an unfinished form. Navigation itself is observed through location.assign.
+  const brand = () => screen.getByRole("link", { name: en["brand.home"] });
+  let assign;
+  let realLocation;
+  beforeEach(() => {
+    assign = vi.fn();
+    realLocation = window.location;
+    Object.defineProperty(window, "location", { configurable: true, value: { ...realLocation, assign, pathname: "/support/" } });
+  });
+  afterEach(() => {
+    Object.defineProperty(window, "location", { configurable: true, value: realLocation });
+    vi.restoreAllMocks();
   });
 
-  it("goes to the sign-in screen when nobody is signed in", async () => {
+  it("is a real, labelled link to / that works with the mouse and the keyboard, from the support home screen", async () => {
+    const user = userEvent.setup();
+    installFetch();
+    render(<App initialView="home" />);
+    expect(brand()).toHaveAttribute("href", "/");
+    expect(brand()).toHaveTextContent("Cosmic Mart");
+    await user.click(brand());
+    expect(assign).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledWith("/"); // not /#top, /support/ or /internal/
+    brand().focus();
+    await user.keyboard("{Enter}");
+    expect(assign).toHaveBeenCalledTimes(2);
+    expect(assign).toHaveBeenLastCalledWith("/");
+  });
+
+  it("goes to / from the sign-in screen as well", async () => {
     const user = userEvent.setup();
     installFetch();
     render(<SupportPage />);
     await screen.findByLabelText(en["identify.name"]);
     await user.click(brand());
-    expect(screen.getByLabelText(en["identify.name"])).toBeInTheDocument();
+    expect(assign).toHaveBeenCalledWith("/");
   });
 
-  it("stops a recording in progress instead of navigating away while it continues", async () => {
+  it("leaves a modified click (open in a new tab) to the browser", async () => {
+    const user = userEvent.setup();
+    installFetch();
+    render(<App initialView="home" />);
+    await user.keyboard("{Control>}");
+    await user.click(brand());
+    await user.keyboard("{/Control}");
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it("closes an active call and stops a recording in progress before leaving", async () => {
     const user = userEvent.setup();
     installFetch();
     render(<App />);
@@ -345,12 +364,12 @@ describe("the Cosmic Mart brand", () => {
     await waitFor(() => expect(statusLine()).toHaveTextContent("Listening"));
     expect(tracks[0].stop).not.toHaveBeenCalled();
     await user.click(brand());
-    await screen.findByRole("heading", { name: /Jon/ });
-    expect(tracks[0].stop).toHaveBeenCalled();
+    expect(tracks[0].stop).toHaveBeenCalled(); // the microphone is released
+    expect(document.querySelector(".call-panel")).toBeNull(); // the call is torn down
+    expect(assign).toHaveBeenCalledWith("/");
   });
 
-  it("keeps what was typed in the support form when the customer goes home and comes back", async () => {
-    const user = userEvent.setup();
+  async function typeIntoTheForm(user) {
     installFetch({
       routes: {
         "GET /api/support/my/orders": () =>
@@ -362,11 +381,37 @@ describe("the Cosmic Mart brand", () => {
     await user.click(screen.getByRole("button", { name: en["actions.continue"] }));
     await user.click(await screen.findByRole("radio", { name: new RegExp(en["issue.LATE_OR_MISSING.label"]) }));
     await user.click(screen.getByRole("button", { name: en["actions.continue"] }));
-    const box = await screen.findByRole("textbox");
-    await user.type(box, "My plug never arrived");
+    await user.type(await screen.findByRole("textbox"), "My plug never arrived");
+  }
+
+  it("asks before leaving an unfinished form, stays if the customer declines, and never submits anything", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    await typeIntoTheForm(user);
     await user.click(brand());
-    await screen.findByRole("heading", { name: /Jon/ });
-    await user.click(screen.getByRole("button", { name: new RegExp(en["home.form.title"]) }));
-    expect(await screen.findByRole("textbox")).toHaveValue("My plug never arrived");
+    expect(confirm).toHaveBeenCalledWith(en["brand.leave"]);
+    expect(assign).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox")).toHaveValue("My plug never arrived"); // nothing was lost
+    expect(calls.some((call) => call.key.startsWith("POST /api/support"))).toBe(false);
+  });
+
+  it("goes to / from the middle of the form once the customer agrees", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    await typeIntoTheForm(user);
+    await user.click(brand());
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledWith("/");
+    expect(calls.some((call) => call.key.startsWith("POST /api/support"))).toBe(false); // no case was created
+  });
+
+  it("does not ask when there is nothing to lose", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    installFetch();
+    render(<App initialView="home" />);
+    await user.click(brand());
+    expect(confirm).not.toHaveBeenCalled();
+    expect(assign).toHaveBeenCalledWith("/");
   });
 });

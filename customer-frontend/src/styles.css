@@ -89,11 +89,8 @@ p {
   gap: 12px;
 }
 .brand-link {
-  padding: 0;
-  border: 0;
-  background: none;
   color: inherit;
-  font: inherit;
+  text-decoration: none;
   cursor: pointer;
 }
 .brand-link:focus-visible {

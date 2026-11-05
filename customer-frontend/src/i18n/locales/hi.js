@@ -180,5 +180,6 @@ export default {
   "track.summaryLabel": "आपके समाधान का सारांश",
   "track.original": "हमारी टीम का मूल संदेश (जैसा लिखा गया, अनुवाद नहीं किया गया)",
   "voice.who.summary": "Cosmo (सारांश)",
-  "brand.home": "Cosmic Mart: सहायता विकल्पों पर वापस जाएँ",
+  "brand.home": "Cosmic Mart: Cosmic Resolve के मुख्य पेज पर जाएँ",
+  "brand.leave": "आपका अनुरोध अधूरा है। इस पेज को छोड़ने पर वह खो जाएगा। क्या छोड़ें?",
 };

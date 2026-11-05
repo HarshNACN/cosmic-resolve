@@ -180,5 +180,6 @@ export default {
   "track.summaryLabel": "Resumo da sua resolução",
   "track.original": "Mensagem original da nossa equipe (como foi escrita, sem tradução)",
   "voice.who.summary": "Cosmo (resumo)",
-  "brand.home": "Cosmic Mart: voltar às opções de suporte",
+  "brand.home": "Cosmic Mart: ir para a página inicial do Cosmic Resolve",
+  "brand.leave": "Você tem uma solicitação inacabada. Sair desta página e perdê-la?",
 };

@@ -158,6 +158,8 @@ pre {
   display: flex;
   align-items: center;
   gap: 12px;
+  color: inherit;
+  text-decoration: none;
 }
 .brand-sub {
   margin: 0;
