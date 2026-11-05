@@ -988,6 +988,17 @@ input[type="text"]:focus {
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
+  /* Lets the same class style both <a> links and <button> tabs. */
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+.header-switches {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .view-switch-link:hover {
   color: var(--chrome-text);
@@ -1000,3 +1011,16 @@ input[type="text"]:focus {
   outline: 2px solid var(--chrome-text);
   outline-offset: 2px;
 }
+
+/* Eval tab */
+.eval-page { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+.eval-note { color: var(--text-muted, #5b6275); margin: 4px 0 16px; }
+.eval-tiles { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.eval-tile { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-left-width: 4px; border-radius: 8px; }
+.eval-tile.is-good { border-left-color: var(--ok); }
+.eval-tile.is-watch { border-left-color: var(--review-line); }
+.eval-tile-value { font-size: 1.6rem; font-weight: 600; }
+.eval-tile-label { color: var(--text-muted, #5b6275); font-size: 0.85rem; }
+.eval-history { width: 100%; border-collapse: collapse; background: var(--surface); }
+.eval-history th, .eval-history td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.eval-mismatches { padding-left: 18px; }

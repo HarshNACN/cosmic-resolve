@@ -5,6 +5,7 @@ The approval endpoint is added in T25. Offline provider by default (no AWS calls
 """
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
@@ -197,6 +198,20 @@ def submit_customer_request(body: SupportIntakeRequest) -> CustomerSupportReceip
         return customer.receive_intake(body)
     except customer.CustomerError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+@app.get("/scorecard")
+def scorecard() -> dict:
+    """Eval scorecard run history (evals/scorecard.json, written by evals/run_evals.py). Read-only, no model calls."""
+    path = config.SETTINGS.evals_dir / "scorecard.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail="No eval scorecard is available. Run evals/run_evals.py.") from exc
+    runs = data.get("runs") if isinstance(data, dict) else None
+    if not isinstance(runs, list):
+        raise HTTPException(status_code=404, detail="The eval scorecard is not in the expected format.")
+    return {"runs": runs}
 
 
 @app.get("/traces")
