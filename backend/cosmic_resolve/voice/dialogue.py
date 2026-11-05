@@ -17,10 +17,9 @@ from __future__ import annotations
 
 import re
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 from typing import Any, Iterable, Iterator, Protocol
 
-from ..tracing import append_trace_event, read_trace_events
+from ..tracing import append_trace_event
 from . import agent_config as cfg
 from .languages import (
     explicit_language_request,
@@ -30,6 +29,7 @@ from .languages import (
     resolve_language,
 )
 from .orders import match_order, spoken_options
+from .outcome import FOLLOW_UP, RESOLVED, case_outcome
 from .store import (
     STATE_CLOSED,
     STATE_CONFIRM,
@@ -389,21 +389,6 @@ def _spoken(text: Any) -> str:
     return clean_utterance(text) if isinstance(text, str) else ""
 
 
-def _case_events(case_id: str, since: str | None) -> list[Any]:
-    """Trace events for the case logged after the call submitted it.
-
-    Write actions (mock_action) keep the case ID inside their payload. The time bound is a second guard against
-    events left in the trace by an earlier run that happened to use the same case ID.
-    """
-    start = datetime.fromisoformat(since) if since else None
-    return [
-        event
-        for event in read_trace_events()
-        if (event.details.get("case_id") == case_id or (event.details.get("payload") or {}).get("case_id") == case_id)
-        and (start is None or datetime.fromisoformat(event.timestamp) >= start)
-    ]
-
-
 def _amount_phrase(executed: Any, language: str) -> str:
     for action in executed if isinstance(executed, list) else []:
         amount = action.get("amount") if isinstance(action, dict) else None
@@ -413,18 +398,16 @@ def _amount_phrase(executed: Any, language: str) -> str:
 
 
 def _approved_text(session: VoiceSession, decision: str, executed: list[Any], message: str, language: str) -> str:
-    """A concrete opening from the decision that actually ran, then (in English) the associate-approved message.
+    """What is spoken for an approved case, in every language: a deterministic summary of the decision that actually ran.
 
-    In other languages the approved message is never translated or altered: a localized summary of the verified
-    decision is spoken, and the message itself is shown unchanged on screen (see speak_outcome).
+    The associate-approved message is never spoken, translated or altered. It was drafted before the decision, so it can
+    talk about the outcome in the future tense; it is shown unchanged on screen instead (see speak_outcome).
     """
     if decision == "ESCALATE":
         return cfg.text("OUTCOME_ESCALATED", language)
     order = session.selected_order()
     template = cfg.outcome_lead(decision, language)
     lead = template.format(title=order["title"], amount=_amount_phrase(executed, language)) if template and order else ""
-    if language == cfg.DEFAULT_LANGUAGE:
-        return " ".join(part for part in (lead, message) if part) or cfg.text("OUTCOME_APPROVED_GENERIC", language)
     parts = [lead or cfg.text("OUTCOME_APPROVED_GENERIC", language)]
     if message:
         parts.append(cfg.text("SEE_SCREEN", language))
@@ -441,32 +424,33 @@ def _outcome_text(session: VoiceSession) -> str:
 
 
 def check_outcome(session: VoiceSession) -> dict[str, str] | None:
-    """Has a human decided this call's case? Read from the trace events the checkpoint already writes.
+    """Has a person decided this call's case AND is the result confirmed? Read from the trace (see voice/outcome.py).
 
-    The text spoken to the customer is the customer message the associate approved (possibly edited), taken from
-    the send_customer_message write. Escalations send no message, so they get a fixed neutral line.
+    Cosmo only announces an outcome that actually happened: a confirmed resolution, a rejection, or an escalation a
+    person made. An approval whose actions are not confirmed done, a case still under review, and a case no policy
+    covers all return None, so the call keeps waiting instead of promising something that did not happen. The text
+    spoken for a resolution is the customer message the associate approved (possibly edited); a rejection and an
+    escalation get fixed neutral lines.
     """
     if session.outcome is not None or session.state != STATE_SUBMITTED or not session.case_id:
         return session.outcome
-    events = _case_events(session.case_id, session.submitted_at)
-    decisions = [e for e in events if e.event_type == "human_decision"]
-    if not decisions:
-        return None
-    if not decisions[-1].details.get("approved"):
+    verified = case_outcome(session.case_id, session.submitted_at)
+    if verified.state == RESOLVED:
+        session.outcome_raw = {
+            "status": "APPROVED",
+            "decision": verified.decision,
+            "executed": list(verified.executed),
+            "message": _spoken(verified.message),
+        }
+        outcome = {"status": "APPROVED", "decision": verified.decision, "text": ""}
+    elif verified.state == FOLLOW_UP and verified.reason == "REJECTED":
         session.outcome_raw = {"status": "REJECTED"}
         outcome = {"status": "REJECTED", "decision": "", "text": ""}
+    elif verified.state == FOLLOW_UP and verified.reason == "ESCALATED":
+        session.outcome_raw = {"status": "APPROVED", "decision": "ESCALATE", "executed": [], "message": ""}
+        outcome = {"status": "APPROVED", "decision": "ESCALATE", "text": ""}
     else:
-        message, decision, executed = "", "", []
-        for event in events:
-            if event.event_type == "mock_action":
-                payload = event.details.get("payload") or {}
-                if payload.get("action") == "send_customer_message":
-                    message = _spoken(payload.get("text"))
-            elif event.event_type == "actions_executed":
-                decision = str(event.details.get("decision") or "")
-                executed = event.details.get("actions") or []
-        session.outcome_raw = {"status": "APPROVED", "decision": decision, "executed": executed, "message": message}
-        outcome = {"status": "APPROVED", "decision": decision, "text": ""}
+        return None
     outcome["text"] = _outcome_text(session)
     session.outcome = outcome
     session.state = STATE_CLOSED
@@ -482,6 +466,6 @@ def speak_outcome(session: VoiceSession) -> Iterator[Event]:
         outcome["text"] = _outcome_text(session)  # the customer may have changed language while on hold
         yield _agent(session, outcome["text"])
         raw = session.outcome_raw or {}
-        if raw.get("message") and raw.get("decision") != "ESCALATE" and _lang(session) != cfg.DEFAULT_LANGUAGE:
+        if raw.get("message") and raw.get("decision") != "ESCALATE":  # shown, never spoken, in every language
             yield _note(session, raw["message"], cfg.DEFAULT_LANGUAGE)
     yield _state(session)

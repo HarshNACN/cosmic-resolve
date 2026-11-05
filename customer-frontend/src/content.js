@@ -7,6 +7,11 @@ export const ISSUES = [{ key: "DAMAGED_ITEM" }, { key: "LATE_OR_MISSING" }, { ke
 
 export const issueFor = (key) => ISSUES.find((issue) => issue.key === key) ?? null;
 
+// The shared demo code and the designated demo profiles, shown on the sign-in page as presenter help. They must match
+// DEMO_ACCESS_CODE and the demo profiles in backend/cosmic_resolve/customer.py. This is a demo convenience, not a secret.
+export const DEMO_ACCESS_CODE = "COSMO-DEMO";
+export const DEMO_NAMES = ["Jon Park", "Maya Rowe", "Anita Lee", "Penelope Coleman"];
+
 export const STATEMENT_MIN = 10;
 export const STATEMENT_MAX = 1000;
 export const STATEMENT_COUNT_FROM = 800;

@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { issueFor } from "../content.js";
+import CaseStatus, { isTrackable } from "./CaseStatus.jsx";
 import { useLanguage } from "../i18n/LanguageProvider.jsx";
 
 // The receipt describes this interaction only. It makes no promise of review, notification, lookup or timing.
 // The demo note comes from the backend receipt, so every client shows the same disclosure: it is translated only when
 // it is exactly the known sentence, and any other note is shown as the server sent it. The reference never changes.
-export default function ResultStep({ receipt, issueType, onStartAnother }) {
+export default function ResultStep({ receipt, issueType, token, onStartAnother }) {
   const { t, serverText } = useLanguage();
   const headingRef = useRef(null);
   const issue = issueFor(issueType);
@@ -21,7 +22,7 @@ export default function ResultStep({ receipt, issueType, onStartAnother }) {
         {t("result.heading")}
       </h2>
 
-      <p className="result-message">{t("result.message")}</p>
+      <p className="result-message">{serverText(receipt.customer_message)}</p>
 
       <dl className="review-list">
         <div className="review-row">
@@ -33,6 +34,8 @@ export default function ResultStep({ receipt, issueType, onStartAnother }) {
           <dd>{issue ? t(`issue.${issue.key}.label`) : receipt.issue_label}</dd>
         </div>
       </dl>
+
+      {token && isTrackable(receipt.reference) ? <CaseStatus token={token} reference={receipt.reference} /> : null}
 
       <div className="step-actions">
         <span />

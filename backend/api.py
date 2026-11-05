@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -24,7 +24,14 @@ from cosmic_resolve.provider_factory import (
 from cosmic_resolve.tracing import append_case_event, read_trace_events
 from cosmic_resolve.tools import DomainLookupError, _load_json_list, get_case
 from cosmic_resolve import config, customer
-from cosmic_resolve.customer import CustomerOrderSummary, CustomerSupportReceipt, SupportIntakeRequest
+from cosmic_resolve.customer import (
+    CustomerOrderSummary,
+    CustomerRequestStatus,
+    CustomerSupportReceipt,
+    SupportIdentifyRequest,
+    SupportIntakeRequest,
+    SupportSession,
+)
 from cosmic_resolve.checkpoint import CheckpointError, decide, proposal_fingerprint, remember_run
 from cosmic_resolve.models import DecisionRequest, DecisionResult
 from cosmic_resolve.voice import store as voice_store
@@ -191,11 +198,52 @@ def demo_orders_for_customers() -> list[CustomerOrderSummary]:
     return customer.demo_orders()
 
 
-@app.post("/support/requests", response_model=CustomerSupportReceipt)
-def submit_customer_request(body: SupportIntakeRequest) -> CustomerSupportReceipt:
-    """Validate and acknowledge one support request. Nothing is persisted, executed or resolved here."""
+# Demo sign-in. SYNTHETIC identification for the showcase, NOT authentication (see customer.py). The session token
+# travels only in the Authorization header; no route returns a customer list.
+@app.post("/support/identify", response_model=SupportSession)
+def identify_customer(body: SupportIdentifyRequest) -> SupportSession:
     try:
-        return customer.receive_intake(body)
+        return customer.identify(body)
+    except customer.CustomerError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+# Under /support/my/ on purpose: /support/orders and /support/cases must stay 404 (tests/test_customer_support.py pins
+# that the customer API cannot list all orders or cases). These routes return only the signed-in customer's own.
+@app.get("/support/my/orders", response_model=list[CustomerOrderSummary])
+def my_orders(authorization: str | None = Header(default=None)) -> list[CustomerOrderSummary]:
+    """The signed-in customer's own recent orders."""
+    try:
+        return customer.orders_for_customer(customer.customer_for_token(authorization))
+    except customer.CustomerError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+# The customer's own requests and where each one really is. Header token only; ownership is checked on every read.
+# /support/cases stays 404 (tests/test_customer_support.py), so these live under /support/my/.
+@app.get("/support/my/requests", response_model=list[CustomerRequestStatus])
+def my_requests(authorization: str | None = Header(default=None)) -> list[CustomerRequestStatus]:
+    try:
+        return customer.requests_for_customer(customer.customer_for_token(authorization))
+    except customer.CustomerError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+@app.get("/support/my/requests/{case_id}", response_model=CustomerRequestStatus)
+def my_request(case_id: str, authorization: str | None = Header(default=None)) -> CustomerRequestStatus:
+    try:
+        return customer.request_for_customer(customer.customer_for_token(authorization), case_id)
+    except customer.CustomerError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+@app.post("/support/requests", response_model=CustomerSupportReceipt)
+def submit_customer_request(body: SupportIntakeRequest, authorization: str | None = Header(default=None)) -> CustomerSupportReceipt:
+    """Acknowledge one support request. Signed in (Authorization header), it creates a case for the support team; the
+    case is then reviewed and decided by a person. Without a header it only validates, as before. Nothing is executed here."""
+    try:
+        customer_id = customer.customer_for_token(authorization) if authorization is not None else None
+        return customer.receive_intake(body, customer_id)
     except customer.CustomerError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 

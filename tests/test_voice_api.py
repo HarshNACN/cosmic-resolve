@@ -301,11 +301,11 @@ def test_a_full_call_from_speech_to_the_spoken_outcome():
     )
     assert decision.status_code == 200, decision.text
 
-    # The call now knows, and speaks exactly the message the associate approved.
+    # The call now knows, and speaks a summary of what ran; the approved message is shown unchanged, never spoken.
     outcome = client.get(f"/voice/sessions/{sid}").json()["outcome"]
     assert outcome["status"] == "APPROVED"
     assert outcome["text"].startswith("Good news: a replacement for your Smart Plug Mini is on its way.")
-    assert outcome["text"].endswith(proposal["proposal"]["customer_message_draft"])
+    assert outcome["text"].endswith("The specialist's full message is on your screen.")
     spoken = events(client.post(f"/voice/sessions/{sid}/speak", json={"kind": "outcome"}))
     assert agent_lines(spoken) == [outcome["text"]] and "audio" in kinds(spoken)
     assert client.get(f"/voice/sessions/{sid}").json()["state"] == store.STATE_CLOSED

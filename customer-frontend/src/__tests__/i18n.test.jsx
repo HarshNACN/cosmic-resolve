@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import App, { SupportApp } from "../App.jsx";
+import SupportPage, { SupportApp as SignedOutSupportApp } from "../App.jsx";
 import { LanguageProvider, useLanguage } from "../i18n/LanguageProvider.jsx";
 import { DEFAULT_LANGUAGE, LANGUAGES } from "../i18n/languages.js";
 import { fetchSupportedLanguageCodes } from "../i18n/supportedLanguages.js";
@@ -22,6 +22,10 @@ const RECEIPT = {
   customer_message: "Your request passed intake validation.",
   next_step: DEMO_NOTE,
 };
+// These tests are about the form and the language, so they start signed in at the form (sign-in has its own tests).
+const SESSION = { token: "test-token", firstName: "Jon" };
+const App = (props) => <SupportPage initialSession={SESSION} initialView="form" {...props} />;
+const SupportApp = (props) => <SignedOutSupportApp initialSession={SESSION} initialView="form" {...props} />;
 const STATEMENT = "The housing arrived cracked, मेरा ऑर्डर टूटा हुआ आया.";
 
 function json(status, body) {
@@ -42,7 +46,7 @@ function installFetch(handlers) {
 }
 
 const standard = (overrides = {}) => ({
-  "GET /api/support/demo/orders": () => json(200, ORDERS),
+  "GET /api/support/my/orders": () => json(200, ORDERS),
   "POST /api/support/requests": () => json(200, RECEIPT),
   ...overrides,
 });
@@ -114,7 +118,7 @@ describe("manual selection translates the whole page", () => {
     await user.click(screen.getByRole("button", { name: hi["review.submit"] }));
 
     expect(await screen.findByRole("heading", { name: hi["result.heading"] })).toBeInTheDocument();
-    expect(screen.getByText(hi["result.message"])).toBeInTheDocument();
+    expect(screen.getByText(hi["server.intakeValidated"])).toBeInTheDocument();
     expect(screen.getByText("CR-1A2B3C")).toBeInTheDocument(); // the reference is never translated
     expect(screen.getByText(hi["issue.DAMAGED_ITEM.label"])).toBeInTheDocument();
     expect(screen.getByText(hi["server.demoNote"])).toBeInTheDocument();
@@ -158,7 +162,7 @@ describe("the customer's progress survives a language change", () => {
     expect(screen.getByRole("radio", { name: /Noise Cancelling/ })).toBeChecked(); // order kept
     await pick(user, "en");
     expect(screen.getByRole("radio", { name: /Noise Cancelling/ })).toBeChecked();
-    expect(calls.filter((call) => call.key === "GET /api/support/demo/orders").length).toBeLessThanOrEqual(2); // only the step's own fetch
+    expect(calls.filter((call) => call.key === "GET /api/support/my/orders").length).toBeLessThanOrEqual(2); // only the step's own fetch
     expect(calls.some((call) => call.key.startsWith("POST"))).toBe(false); // switching never submits anything
   });
 
@@ -220,7 +224,7 @@ describe("messages in the customer's language", () => {
 
   it("shows the order-loading failure in the active language, with a translated retry", async () => {
     const user = userEvent.setup();
-    installFetch({ "GET /api/support/demo/orders": () => json(500, {}) });
+    installFetch({ "GET /api/support/my/orders": () => json(500, {}) });
     render(<App />);
     expect(await screen.findByRole("alert")).toHaveTextContent(en["errors.NETWORK"]);
     await pick(user, "hi");
@@ -232,7 +236,7 @@ describe("messages in the customer's language", () => {
     const user = userEvent.setup();
     const odd = [{ ...ORDERS[0], delivery_summary: "Arriving next Tuesday by drone" }, { ...ORDERS[1], delivery_summary: "On the way" }];
     installFetch(standard({
-      "GET /api/support/demo/orders": () => json(200, odd),
+      "GET /api/support/my/orders": () => json(200, odd),
       "POST /api/support/requests": () => json(200, { ...RECEIPT, next_step: "A brand new server note." }),
     }));
     render(<App />);

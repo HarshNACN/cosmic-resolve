@@ -30,13 +30,15 @@ export function useRecorder({ onAutoStop } = {}) {
 
   const start = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      throw new Error("This browser cannot record audio. Use the typing box instead.");
+      throw Object.assign(new Error("This browser cannot record audio. Use the typing box instead."), { code: "NO_RECORDER" });
     }
     let media;
     try {
       media = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
     } catch {
-      throw new Error("Microphone access was blocked. Allow the microphone for this site, or use the typing box.");
+      throw Object.assign(new Error("Microphone access was blocked. Allow the microphone for this site, or use the typing box."), {
+        code: "MIC_BLOCKED",
+      });
     }
     stream.current = media;
     chunks.current = [];

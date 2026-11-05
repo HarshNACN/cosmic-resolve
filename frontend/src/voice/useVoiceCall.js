@@ -25,16 +25,34 @@ function speakInBrowser(text, language, capabilities) {
   window.speechSynthesis.speak(utterance);
 }
 
-const messageOf = (error) =>
-  error instanceof VoiceApiError || error instanceof Error ? error.message : "Something went wrong. Please try again.";
+// The text to show for an error. With a translator (tr) the errors that have a stable code are translated; without
+// one it is the error's own message. customerSafe hides server-written setup detail from a customer: any server-side
+// failure becomes one plain "voice isn't working" sentence, and a rejected session says the session ended.
+function messageOf(error, tr, customerSafe) {
+  if (!(error instanceof Error)) return tr("voice.errors.GENERIC", "Something went wrong. Please try again.");
+  if (customerSafe && error instanceof VoiceApiError) {
+    if (error.status === 401) return tr("voice.errors.SESSION", error.message);
+    if (error.status !== null && error.status >= 500) return tr("voice.errors.UNAVAILABLE", error.message);
+  }
+  return error.code ? tr(`voice.errors.${error.code}`, error.message) : error.message;
+}
 
 // Phases: idle, connecting, speaking, listening, recording, thinking, waiting (for the specialist), resolved, ended.
 // onLanguageChange(language, source) is told about every `language` event the backend sends (source is "speech", "text",
 // "request" or "manual"), so a host page can keep its own language in step with the call. It is optional.
-export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
+// t(key, fallback, params) translates the hook's own messages and getAuthHeaders() supplies the Authorization header for
+// the request that opens a call (both optional; see CallPanel).
+export function useVoiceCall({ onCaseCreated, onLanguageChange, t, getAuthHeaders } = {}) {
+  const tr = t ?? ((key, fallback) => fallback);
+  const trRef = useRef(tr);
+  trRef.current = tr;
+  const authHeaders = useRef(getAuthHeaders);
+  authHeaders.current = getAuthHeaders;
   const [phase, setPhase] = useState("idle");
   const [session, setSession] = useState(null);
-  const [notice, setNotice] = useState(null);
+  // What the notice is about, not its text: { error }, { key, fallback } or { text } (the server's own words). It is turned
+  // into text on every render, so a notice already showing follows a language change.
+  const [noticeSource, setNotice] = useState(null);
   const [level, setLevel] = useState(0);
   const [capabilities, setCapabilities] = useState(null);
   const [missingVoice, setMissingVoice] = useState(null); // label of a language whose voice is not installed
@@ -143,7 +161,7 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
           keepSession(event.session);
           break;
         case "error":
-          setNotice(event.message);
+          setNotice({ text: event.message });
           break;
         default:
           break;
@@ -164,7 +182,7 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
         await player.current?.whenIdle();
       } catch (error) {
         if (error && error.name === "AbortError") return;
-        setNotice(messageOf(error));
+        setNotice({ error });
       }
       if (!controller.signal.aborted) settle();
     },
@@ -179,11 +197,11 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
       await player.current.unlock(); // inside the click that started the call, so the browser allows sound
       try {
         await prepare();
-        const snapshot = await createVoiceSession(customerId, undefined, languageChoice.current);
+        const snapshot = await createVoiceSession(customerId, undefined, languageChoice.current, authHeaders.current?.());
         keepSession(snapshot);
         await run((onEvent, signal) => speakLine(snapshot.session_id, "greeting", onEvent, signal));
       } catch (error) {
-        setNotice(messageOf(error));
+        setNotice({ error });
         go("idle");
       }
     },
@@ -199,7 +217,7 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
   const finishRecording = useCallback(async () => {
     const blob = await recorder.stop();
     if (!blob || blob.size < MIN_RECORDING_BYTES) {
-      setNotice("That was too short to hear. Tap the microphone and speak again.");
+      setNotice({ key: "voice.errors.TOO_SHORT", fallback: "That was too short to hear. Tap the microphone and speak again." });
       settle();
       return;
     }
@@ -219,7 +237,7 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
       await recorder.start();
       go("recording");
     } catch (error) {
-      setNotice(messageOf(error));
+      setNotice({ error });
       settle();
     }
   }, [finishRecording, go, interrupt, recorder, settle]);
@@ -295,6 +313,15 @@ export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
     },
     [],
   );
+
+  const customerSafe = Boolean(getAuthHeaders);
+  const notice = !noticeSource
+    ? null
+    : noticeSource.error
+      ? messageOf(noticeSource.error, tr, customerSafe)
+      : noticeSource.key
+        ? tr(noticeSource.key, noticeSource.fallback)
+        : noticeSource.text;
 
   return {
     phase,

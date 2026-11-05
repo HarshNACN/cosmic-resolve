@@ -6,10 +6,13 @@
 const BASE = "/api/voice";
 
 export class VoiceApiError extends Error {
-  constructor(message, status = null) {
+  // code is a stable identifier a host page can translate: NETWORK, UNEXPECTED, SERVICE (no server message), or null
+  // when the message is the server's own words.
+  constructor(message, status = null, code = null) {
     super(message);
     this.name = "VoiceApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -28,7 +31,8 @@ async function failure(response) {
   } catch {
     body = null;
   }
-  return new VoiceApiError(detailOf(body) || `The voice service returned an error (${response.status}).`, response.status);
+  const detail = detailOf(body);
+  return new VoiceApiError(detail || `The voice service returned an error (${response.status}).`, response.status, detail ? null : "SERVICE");
 }
 
 async function send(path, init) {
@@ -36,7 +40,7 @@ async function send(path, init) {
     return await fetch(`${BASE}${path}`, init);
   } catch (error) {
     if (error && error.name === "AbortError") throw error;
-    throw new VoiceApiError("Cannot reach the voice service.");
+    throw new VoiceApiError("Cannot reach the voice service.", null, "NETWORK");
   }
 }
 
@@ -44,7 +48,7 @@ async function json(path, init) {
   const response = await send(path, { ...init, headers: { Accept: "application/json", ...(init?.headers || {}) } });
   if (!response.ok) throw await failure(response);
   const body = await response.json().catch(() => null);
-  if (!isObject(body)) throw new VoiceApiError("The voice service returned an unexpected response.");
+  if (!isObject(body)) throw new VoiceApiError("The voice service returned an unexpected response.", null, "UNEXPECTED");
   return body;
 }
 
@@ -86,11 +90,14 @@ export const voiceWarmup = (signal) => json("/warmup", { method: "POST", signal 
 
 export const fetchCallers = (signal) => json("/callers", { signal });
 
-export const createVoiceSession = (customerId, signal, language) =>
+// The internal panel opens a call for a chosen caller (customerId). A signed-in customer passes no id and instead
+// `headers` ({ Authorization: "Bearer ..." }) for this one request: the server finds the customer from the token, and
+// the browser never sends a customer id. The token is an argument, not module state.
+export const createVoiceSession = (customerId, signal, language, headers) =>
   json("/sessions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(language ? { customer_id: customerId, language } : { customer_id: customerId }),
+    headers: { "Content-Type": "application/json", ...(headers || {}) },
+    body: JSON.stringify({ ...(customerId ? { customer_id: customerId } : {}), ...(language ? { language } : {}) }),
     signal,
   });
 

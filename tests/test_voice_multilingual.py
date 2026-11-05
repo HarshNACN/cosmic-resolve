@@ -24,6 +24,7 @@ from cosmic_resolve.voice.languages import explicit_language_request, interpret_
 from cosmic_resolve.voice.orders import customer_first_name, match_order, recent_orders, spoken_options
 from cosmic_resolve.voice.stt import GroqTranscriber, Transcription
 from cosmic_resolve.voice.tts import PiperSpeaker, VoiceUnavailable
+from voice_events import run_actions
 
 CUSTOMER = "C-002"  # Jon: the Smart Plug Mini lost in transit
 PLUG = "Smart Plug Mini"
@@ -368,9 +369,9 @@ def test_a_spoken_injection_is_just_complaint_text_in_every_language(language, i
 # --- Outcomes in the caller's language ------------------------------------------------------------------------------------
 
 def decide_case(session, decision="REPLACE", message="Your replacement ships today.", executed=None):
-    write("human_decision", case_id=session.case_id, approved=True, approved_by="Jordan")
-    write("mock_action", payload={"action": "send_customer_message", "case_id": session.case_id, "text": message})
-    write("actions_executed", case_id=session.case_id, decision=decision, actions=executed or [])
+    """A person approved and the actions really ran: events written exactly as the checkpoint and the tools write them."""
+    amount = next((a["amount"] for a in executed or [] if "amount" in a), None)
+    run_actions(session.case_id, session.order_id, session.customer_id, decision, message, amount)
 
 
 @pytest.mark.parametrize("language", ["es", "pt"])
@@ -394,19 +395,25 @@ def test_the_outcome_language_follows_the_call_even_if_it_changed_while_on_hold(
     assert spoken == cfg.outcome_lead("REPLACE", "pt").format(title=PLUG, amount="") + " " + t("SEE_SCREEN", "pt")
 
 
-def test_english_outcomes_still_speak_the_approved_message_itself():
+def test_english_outcomes_speak_the_verified_summary_and_show_the_approved_message_unchanged():
+    # The approved message was drafted before the decision and can be future tense ("pending final approval"), so in every
+    # language, English included, Cosmo speaks only the deterministic summary of what actually ran and shows the message.
     session = submitted("en", confirm="yes")
     session.language = "en"
-    decide_case(session, "REPLACE", "Your replacement ships today.")
-    assert check_outcome(session)["text"] == "Good news: a replacement for your Smart Plug Mini is on its way. Your replacement ships today."
-    assert "agent_text" not in kinds(list(speak_outcome(session)))
+    message = "We have proposed sending you a replacement, pending final approval."
+    decide_case(session, "REPLACE", message)
+    spoken = check_outcome(session)["text"]
+    assert spoken == "Good news: a replacement for your Smart Plug Mini is on its way. The specialist's full message is on your screen."
+    assert "pending" not in spoken
+    events = list(speak_outcome(session))
+    notes = [e for e in events if e["type"] == "agent_text"]
+    assert [e["text"] for e in notes] == [message]  # byte-identical to what the associate approved
 
 
 @pytest.mark.parametrize("language", ["es", "pt"])
 def test_escalation_and_rejection_have_localized_neutral_lines(language):
     session = submitted(language)
-    write("human_decision", case_id=session.case_id, approved=True)
-    write("actions_executed", case_id=session.case_id, decision="ESCALATE")
+    run_actions(session.case_id, session.order_id, session.customer_id, "ESCALATE")
     assert check_outcome(session)["text"] == t("OUTCOME_ESCALATED", language)
 
     rejected = submitted(language)

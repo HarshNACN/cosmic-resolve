@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import App from "../App.jsx";
+import SupportPage from "../App.jsx";
+
+// The form steps are tested signed in and starting at the form; the sign-in and home screens have their own tests
+// in signin.test.jsx. Everything else in this file is unchanged.
+const App = (props) => <SupportPage initialSession={{ token: "test-token", firstName: "Jon" }} initialView="form" {...props} />;
 
 // Test-only fetch stub. The fixtures mirror the customer-safe response shapes from backend/cosmic_resolve/customer.py.
 const ORDERS = [
@@ -74,7 +78,7 @@ function installFetch(handlers) {
 }
 
 const standard = (overrides = {}) => ({
-  "GET /api/support/demo/orders": () => json(200, ORDERS),
+  "GET /api/support/my/orders": () => json(200, ORDERS),
   "POST /api/support/requests": () => json(200, RECEIPT),
   ...overrides,
 });
@@ -100,7 +104,7 @@ describe("order step", () => {
     render(<App />);
     await screen.findByRole("radio", { name: /Noise Cancelling/ });
     expect(screen.getAllByRole("radio")).toHaveLength(3);
-    expect(calls.map((c) => c.key)).toEqual(["GET /api/support/demo/orders"]);
+    expect(calls.map((c) => c.key)).toEqual(["GET /api/support/my/orders"]);
   });
 
   it("shows only the last four digits of an order reference, never the internal ID", async () => {
@@ -121,7 +125,7 @@ describe("order step", () => {
 
   it("shows a loading state and then a retryable error", async () => {
     let attempt = 0;
-    installFetch(standard({ "GET /api/support/demo/orders": () => (++attempt === 1 ? json(500, {}) : json(200, ORDERS)) }));
+    installFetch(standard({ "GET /api/support/my/orders": () => (++attempt === 1 ? json(500, {}) : json(200, ORDERS)) }));
     render(<App />);
     expect(screen.getByRole("status")).toHaveTextContent("Loading your orders");
     expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't reach support just now");
@@ -130,7 +134,7 @@ describe("order step", () => {
   });
 
   it("treats a malformed order response as a generic failure", async () => {
-    installFetch(standard({ "GET /api/support/demo/orders": () => json(200, [{ product_name: "x" }]) }));
+    installFetch(standard({ "GET /api/support/my/orders": () => json(200, [{ product_name: "x" }]) }));
     render(<App />);
     expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't read the response");
   });

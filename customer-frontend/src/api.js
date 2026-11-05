@@ -6,6 +6,8 @@
 const BASE = "/api/support";
 const GENERIC_FAILURE = "We couldn't reach support just now. Please try again.";
 const UNEXPECTED = "We couldn't read the response. Please try again.";
+const IDENTIFY_FAILURE = "We couldn't find that account. Check the name and the demo code.";
+const SESSION_ENDED = "Your demo session ended. Please sign in again.";
 
 export class SupportApiError extends Error {
   // code is a stable identifier ("NETWORK", "UNEXPECTED", "VALIDATION") the page translates; it is null for the one
@@ -28,8 +30,10 @@ function plainDetail(body, status) {
   return null;
 }
 
-async function request(path, { method = "GET", body, signal } = {}) {
+// token, when given, goes in the Authorization header only. It is never put in a URL or a request body.
+async function request(path, { method = "GET", body, signal, token } = {}) {
   const headers = { Accept: "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
   const init = { method, headers, signal };
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
@@ -52,6 +56,10 @@ async function request(path, { method = "GET", body, signal } = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      const signingIn = path === "/identify";
+      throw new SupportApiError(signingIn ? IDENTIFY_FAILURE : SESSION_ENDED, 401, signingIn ? "IDENTIFY" : "SESSION");
+    }
     const plain = plainDetail(parsed, response.status);
     throw new SupportApiError(
       plain || (response.status === 422 ? "Check your details and try again." : GENERIC_FAILURE),
@@ -65,8 +73,38 @@ async function request(path, { method = "GET", body, signal } = {}) {
 
 const ORDER_FIELDS = ["order_reference", "product_name", "order_date", "delivery_summary"];
 
-export async function fetchDemoOrders(signal) {
-  const body = await request("/demo/orders", { signal });
+// The anonymous demo orders (kept for hosts that do not sign in) and the signed-in customer's own orders.
+export const fetchDemoOrders = async (signal) => parseOrders(await request("/demo/orders", { signal }));
+
+export const fetchMyOrders = async (token, signal) => parseOrders(await request("/my/orders", { token, signal }));
+
+const REQUEST_STATUSES = ["RECEIVED", "UNDER_REVIEW", "APPROVED", "RESOLVED", "FOLLOW_UP"];
+const isRequestStatus = (item) =>
+  isObject(item) &&
+  ["reference", "issue_type", "issue_label", "order_reference", "status"].every((field) => isText(item[field])) &&
+  REQUEST_STATUSES.includes(item.status) &&
+  typeof item.product_name === "string";
+
+// Where the customer's own requests really are. The token goes in the header only; ownership is checked by the server.
+export async function fetchMyRequests(token, signal) {
+  const body = await request("/my/requests", { token, signal });
+  if (!Array.isArray(body) || !body.every(isRequestStatus)) throw new SupportApiError(UNEXPECTED, null, "UNEXPECTED");
+  return body;
+}
+
+export async function fetchRequestStatus(token, reference, signal) {
+  const body = await request(`/my/requests/${encodeURIComponent(reference)}`, { token, signal });
+  if (!isRequestStatus(body)) throw new SupportApiError(UNEXPECTED, null, "UNEXPECTED");
+  return body;
+}
+
+export async function identifyCustomer(name, code, signal) {
+  const body = await request("/identify", { method: "POST", body: { name, code }, signal });
+  if (!isObject(body) || !isText(body.token) || !isText(body.first_name)) throw new SupportApiError(UNEXPECTED, null, "UNEXPECTED");
+  return { token: body.token, first_name: body.first_name };
+}
+
+function parseOrders(body) {
   if (
     !Array.isArray(body) ||
     !body.every(
@@ -90,13 +128,14 @@ export async function fetchDemoOrders(signal) {
 // The only status is intake validation. The demo does not route, store or notify anyone.
 const STATUSES = ["REQUEST_RECEIVED"];
 
-export async function submitSupportRequest(payload, signal) {
+export async function submitSupportRequest(payload, signal, token) {
   // Only the documented intake fields are sent.
   const { order_reference, issue_type, customer_statement, channel } = payload;
   const body = await request("/requests", {
     method: "POST",
     body: { order_reference, issue_type, customer_statement, channel },
     signal,
+    token,
   });
   if (
     !isObject(body) ||

@@ -18,11 +18,13 @@ from cosmic_resolve.voice.dialogue import (
     interpret_yes_no,
     keyword_case_type,
     run_turn,
+    speak_outcome,
     speakable,
     stream_sentences,
 )
 from cosmic_resolve.voice.orders import customer_first_name, match_order, recent_orders
 from cosmic_resolve.workflow import AWAITING_APPROVAL, propose_resolution
+from voice_events import run_actions
 
 CUSTOMER = "C-002"  # Jon, whose orders include the Smart Plug Mini lost in transit (demo case 1)
 REPLACE_LEAD = "Good news: a replacement for your Smart Plug Mini is on its way."
@@ -319,45 +321,40 @@ def test_no_decision_yet_means_no_outcome():
     assert check_outcome(submitted_session()) is None
 
 
-def test_an_approved_case_speaks_the_message_the_associate_approved():
+def test_an_approved_case_speaks_the_verified_summary_not_the_associate_message():
     session = submitted_session()
-    write("human_decision", case_id=session.case_id, approved=True, approved_by="Jordan")
-    write("mock_action", payload={"action": "send_customer_message", "case_id": session.case_id, "text": "Your replacement ships today."})
-    write("actions_executed", case_id=session.case_id, decision="REPLACE")
+    run_actions(session.case_id, session.order_id, session.customer_id, "REPLACE", "Your replacement ships today.")
     outcome = check_outcome(session)
-    assert outcome == {"status": "APPROVED", "decision": "REPLACE", "text": f"{REPLACE_LEAD} Your replacement ships today."}
+    assert outcome == {"status": "APPROVED", "decision": "REPLACE", "text": f"{REPLACE_LEAD} The specialist's full message is on your screen."}
     assert session.state == store.STATE_CLOSED
 
 
 @pytest.mark.parametrize(
-    "decision, executed, expected_lead",
+    "decision, amount, expected_lead",
     [
-        ("REFUND", [{"action": "issue_refund", "amount": 45.0}, {"action": "tag_root_cause"}],
-         "Good news: your refund of $45.00 for the Smart Plug Mini has been approved."),
-        ("STORE_CREDIT", [{"action": "issue_store_credit", "amount": 10}],
-         "Good news: a store credit of $10.00 has been added to your account."),
-        ("GOODWILL_CREDIT", [{"action": "issue_store_credit", "amount": 5.5}],
-         "Good news: a goodwill credit of $5.50 has been added to your account."),
-        ("REFUND", [], "Good news: your refund for the Smart Plug Mini has been approved."),
+        ("REFUND", 45.0, "Good news: your refund of $45.00 for the Smart Plug Mini has been approved."),
+        ("STORE_CREDIT", 10, "Good news: a store credit of $10.00 has been added to your account."),
+        ("GOODWILL_CREDIT", 5.5, "Good news: a goodwill credit of $5.50 has been added to your account."),
     ],
 )
-def test_the_opening_line_comes_from_the_decision_that_actually_ran(decision, executed, expected_lead):
+def test_the_opening_line_comes_from_the_decision_that_actually_ran(decision, amount, expected_lead):
     session = submitted_session()
-    write("human_decision", case_id=session.case_id, approved=True)
-    write("mock_action", payload={"action": "send_customer_message", "case_id": session.case_id, "text": "Thanks for waiting."})
-    write("actions_executed", case_id=session.case_id, decision=decision, actions=executed)
-    assert check_outcome(session)["text"] == f"{expected_lead} Thanks for waiting."
+    run_actions(session.case_id, session.order_id, session.customer_id, decision, "Thanks for waiting.", amount)
+    assert check_outcome(session)["text"] == f"{expected_lead} The specialist's full message is on your screen."
 
 
-def test_an_unknown_decision_falls_back_to_the_message_or_a_generic_line():
-    with_message = submitted_session()
-    write("human_decision", case_id=with_message.case_id, approved=True)
-    write("mock_action", payload={"action": "send_customer_message", "case_id": with_message.case_id, "text": "All sorted."})
-    assert check_outcome(with_message)["text"] == "All sorted."
+def test_an_approval_without_confirmed_actions_is_not_announced():
+    """An approval and a queued message are not a result: the call keeps waiting until the actions are confirmed."""
+    approved_only = submitted_session()
+    write("human_decision", case_id=approved_only.case_id, approved=True)
+    write("mock_action", payload={"action": "send_customer_message", "case_id": approved_only.case_id, "text": "All sorted."})
+    assert check_outcome(approved_only) is None
 
-    bare = submitted_session()
-    write("human_decision", case_id=bare.case_id, approved=True)
-    assert check_outcome(bare)["text"] == cfg.OUTCOME_APPROVED_GENERIC
+    incomplete = submitted_session()
+    write("human_decision", case_id=incomplete.case_id, approved=True)
+    write("actions_executed", case_id=incomplete.case_id, decision="REPLACE", actions=[])
+    assert check_outcome(incomplete) is None
+    assert incomplete.state == store.STATE_SUBMITTED
 
 
 @pytest.mark.parametrize(
@@ -376,8 +373,7 @@ def test_model_text_is_made_natural_to_read_aloud(text, expected):
 
 def test_an_escalation_gets_a_fixed_neutral_line_not_model_text():
     session = submitted_session()
-    write("human_decision", case_id=session.case_id, approved=True)
-    write("actions_executed", case_id=session.case_id, decision="ESCALATE")
+    run_actions(session.case_id, session.order_id, session.customer_id, "ESCALATE")
     assert check_outcome(session)["text"] == cfg.OUTCOME_ESCALATED
 
 
@@ -431,10 +427,12 @@ def test_the_real_checkpoint_resolves_the_call_end_to_end():
     outcome = check_outcome(session)
     assert outcome["status"] == "APPROVED"
     assert outcome["text"].startswith(REPLACE_LEAD)  # what actually ran: a replacement
-    assert outcome["text"].endswith(run.proposal.customer_message_draft)  # then exactly what the associate approved
+    assert outcome["text"].endswith("The specialist's full message is on your screen.")  # the approved message is shown on screen, not spoken
+    notes = [e for e in speak_outcome(session) if e["type"] == "agent_text"]
+    assert [e["text"] for e in notes] == [run.proposal.customer_message_draft]  # exactly what the associate approved
 
 
-def test_the_real_checkpoint_edit_is_what_the_customer_hears():
+def test_the_real_checkpoint_edit_is_what_the_customer_sees():
     session = submitted_session()
     run = propose_resolution(session.case_id, RuleBasedModelProvider())
     request = DecisionRequest(
@@ -444,7 +442,9 @@ def test_the_real_checkpoint_edit_is_what_the_customer_hears():
         edited_message="Hi Jon, your replacement is on its way. Sorry for the trouble.",
     )
     decide(session.case_id, request)
-    assert check_outcome(session)["text"] == f"{REPLACE_LEAD} Hi Jon, your replacement is on its way. Sorry for the trouble."
+    assert check_outcome(session)["text"] == f"{REPLACE_LEAD} The specialist's full message is on your screen."
+    notes = [e["text"] for e in speak_outcome(session) if e["type"] == "agent_text"]
+    assert notes == ["Hi Jon, your replacement is on its way. Sorry for the trouble."]  # the edit, unchanged
 
 
 def test_unknown_voice_case_is_still_an_unknown_case():

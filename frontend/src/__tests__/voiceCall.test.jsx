@@ -169,7 +169,7 @@ describe("starting a call", () => {
     expect(JSON.parse(calls[3].init.body)).toEqual({ kind: "greeting" });
     expect(speaker.instances[0].enqueued).toEqual([["AAAA", 22050]]);
     await waitFor(() => expect(avatar()).toHaveAttribute("data-state", "listening"));
-    expect(screen.getByRole("status")).toHaveTextContent("Listening");
+    expect(screen.getByRole("status")).toHaveTextContent("Ready");
     expect(screen.getByRole("button", { name: "Start speaking" })).toBeEnabled();
   });
 
@@ -418,7 +418,7 @@ describe("ending and the hand-off to a specialist", () => {
     await waitFor(() => expect(onCaseCreated).toHaveBeenCalledWith("V-0001"));
     await waitFor(() => expect(avatar()).toHaveAttribute("data-state", "waiting"));
     expect(screen.getByText("Specialist review")).toHaveAttribute("aria-current", "step");
-    expect(screen.getByRole("status")).toHaveTextContent("On hold while a specialist reviews");
+    expect(screen.getByRole("status")).toHaveTextContent("Waiting for specialist");
 
     // The associate approves (the backend now reports an outcome); the next poll picks it up and the agent speaks.
     await waitFor(() => expect(screen.getByText(OUTCOME_TEXT, { selector: "li" })).toBeInTheDocument(), { timeout: 4000 });
@@ -430,30 +430,32 @@ describe("ending and the hand-off to a specialist", () => {
   }, 15000);
 });
 
-describe("in the workbench", () => {
-  it("opens a voice call's case in the queue as soon as the customer confirms", async () => {
+describe("the employee workbench no longer hosts the call", () => {
+  const fixture = { case_id: "C-1001", order_id: "O-1001", customer_id: "C-001", tracking_id: "T-1001", case_type: "DAMAGED_ON_ARRIVAL", market: "US", category: "GADGETS", complaint_text: "Cracked housing.", channel: "EMAIL", created_at: "2026-11-02T09:00:00Z", status: "OPEN" };
+
+  it("shows cases and approval controls only: no call panel, no caller picker, and no voice requests", async () => {
+    installFetch({ "GET /api/cases": () => json([fixture]) });
+    render(<App />);
+    expect(await screen.findByRole("button", { name: /C-1001/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Customer voice call" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Who is calling?")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start call" })).not.toBeInTheDocument();
+    expect(calls.some((call) => call.key.includes("/api/voice"))).toBe(false);
+  });
+
+  it("the panel still tells its host when a confirmed call has created a case (the customer page uses this)", async () => {
     const user = userEvent.setup();
-    const fixture = { case_id: "C-1001", order_id: "O-1001", customer_id: "C-001", tracking_id: "T-1001", case_type: "DAMAGED_ON_ARRIVAL", market: "US", category: "GADGETS", complaint_text: "Cracked housing.", channel: "EMAIL", created_at: "2026-11-02T09:00:00Z", status: "OPEN" };
-    const voiceCase = { ...fixture, case_id: "V-0001", customer_id: "C-002", order_id: "O-1002", tracking_id: "T-1002", case_type: "LATE_DELIVERY", complaint_text: "It never arrived.", channel: "VOICE" };
-    let listings = 0;
+    const onCaseCreated = vi.fn();
     installFetch({
-      "GET /api/cases": () => json(++listings === 1 ? [fixture] : [voiceCase, fixture]),
-      "GET /api/cases/V-0001": () => json(voiceCase),
-      "GET /api/cases/V-0001/trace": () => json([]),
       "POST /api/voice/sessions/s1/turn": () =>
         stream([{ type: "case_created", case_id: "V-0001" }, agentLine("Thank you."), { type: "state", session: snapshot({ state: "SUBMITTED", case_id: "V-0001" }) }, { type: "done" }]),
     });
-    render(<App />);
-    expect(await screen.findByRole("button", { name: /C-1001/ })).toBeInTheDocument();
+    render(<CallPanel onCaseCreated={onCaseCreated} />);
     await user.click(await screen.findByRole("button", { name: "Start call" }));
     await screen.findByText(GREETING, { selector: "li" });
     await waitFor(() => expect(avatar()).toHaveAttribute("data-state", "listening"));
     await user.type(screen.getByRole("textbox", { name: "Type a reply to the agent" }), "yes");
     await user.click(screen.getByRole("button", { name: "Send" }));
-
-    const voiceItem = await screen.findByRole("button", { name: /V-0001/ });
-    expect(within(voiceItem).getByText("Voice call")).toBeInTheDocument();
-    await waitFor(() => expect(voiceItem).toHaveAttribute("aria-current", "true"));
-    expect(await screen.findByText("It never arrived.", { selector: "p" })).toBeInTheDocument();
+    await waitFor(() => expect(onCaseCreated).toHaveBeenCalledWith("V-0001"));
   });
 });

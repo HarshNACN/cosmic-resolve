@@ -88,6 +88,27 @@ p {
   align-items: center;
   gap: 12px;
 }
+.brand-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.brand-link:focus-visible {
+  outline: 2px solid #c9a6f5;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.original-message {
+  margin-top: 8px;
+  font-size: 14px;
+}
+.original-message summary {
+  cursor: pointer;
+  color: var(--muted, #5b6075);
+}
 .brand-mark {
   position: relative;
   width: 22px;
@@ -540,4 +561,201 @@ p {
 .language-selector select:focus-visible {
   outline: 2px solid #f2f3f8;
   outline-offset: 2px;
+}
+
+/* ---------- Sign-in, home and account ---------- */
+
+.input {
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  min-height: 132px;
+  padding: 20px;
+  text-align: start;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.home-card:hover:not(:disabled) {
+  border-color: var(--brand);
+}
+.home-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.home-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.home-card-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.home-card-text {
+  color: var(--text-2);
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aab1c6;
+  font-size: 14px;
+}
+.account-signout {
+  color: #f2f3f8;
+}
+.back-to-options {
+  margin-bottom: 12px;
+}
+@media (max-width: 640px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+  .account-name {
+    display: none;
+  }
+}
+
+/* ---------- The shared voice panel (frontend/src/voice) ---------- */
+/* voice.css was written for the internal app's variables and base classes. These few rules give it the same values here,
+   scoped to the panel, so the voice code itself needs no copy. */
+
+.call-panel {
+  --brand-line: var(--brand);
+  --brand-soft: var(--brand-tint);
+  --chrome-800: var(--navy);
+  --ok: #1f7a43;
+  --fail: var(--error);
+  --border: var(--line);
+  --border-strong: var(--line-strong);
+  --surface-sunk: var(--canvas);
+  --radius-control: 4px;
+}
+.call-panel .tag {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.call-panel .muted {
+  color: var(--text-3);
+  font-size: 13px;
+}
+.call-panel .button-negative {
+  color: var(--error);
+  border-color: var(--error-line);
+}
+.call-panel .button-negative:hover:not(:disabled) {
+  background: var(--error-soft);
+  border-color: var(--error);
+}
+.call-panel .button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.call-panel .notice-title {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+.call-panel .notice-detail {
+  margin: 0;
+}
+
+/* ---------- Request status ---------- */
+
+.tracker {
+  margin: 20px 0 0;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tracker-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.tracker-status {
+  margin: 0 0 8px;
+}
+.tracker-decision {
+  font-weight: 600;
+}
+.tracker-message {
+  margin: 12px 0 0;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid var(--line-strong);
+}
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  color: var(--text-2);
+  background: var(--canvas);
+  border: 1px solid var(--line-strong);
+}
+.status-badge.is-under-review,
+.status-badge.is-approved {
+  color: var(--brand-hover);
+  background: var(--brand-tint);
+  border-color: var(--brand);
+}
+.status-badge.is-resolved {
+  color: #1f7a43;
+  background: #e8f5ec;
+  border-color: #1f7a43;
+}
+.status-badge.is-follow-up {
+  color: #8a5a00;
+  background: #fff4dc;
+  border-color: #c58b1b;
+}
+.your-requests {
+  margin-top: 28px;
+}
+.request-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.request-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.request-main {
+  display: flex;
+  flex-direction: column;
+}
+.request-title {
+  font-weight: 600;
 }

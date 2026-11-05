@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import ErrorNotice from "../components/ErrorNotice.jsx";
-import { formatUsd, humanize } from "../format.js";
 import HeadsetAvatar, { PHASE_LABELS } from "./HeadsetAvatar.jsx";
 import { useVoiceCall } from "./useVoiceCall.js";
 import { fetchCallers } from "./voiceApi.js";
+import { VoiceNotice, defaultFormat, defaultT } from "./voiceUi.jsx";
 import "./voice.css";
 
-const STEPS = ["Gather details", "Confirm", "Specialist review", "Resolved"];
+// Step labels: [translation key, English text].
+const STEPS = [
+  ["voice.step.gather", "Gather details"],
+  ["voice.step.confirm", "Confirm"],
+  ["voice.step.review", "Specialist review"],
+  ["voice.step.resolved", "Resolved"],
+];
 const TALKING_PHASES = new Set(["listening", "speaking", "waiting", "recording"]);
 const LANGUAGE_PHASES = new Set(["listening", "speaking", "waiting"]); // the phases in which the call can take a language change
 const LIVE_PHASES = new Set(["connecting", "listening", "recording", "thinking", "speaking", "waiting"]);
@@ -27,6 +32,16 @@ function currentStep(session) {
   }
 }
 
+// The one phase shown to the customer. The call's phases are already mutually exclusive (ended, resolved, recording,
+// speaking, thinking, waiting, ready, in that order of priority); this only stops "Ready" from showing when the
+// session itself says the call is waiting on a specialist or is finished.
+function displayPhase(phase, session) {
+  if (phase !== "listening") return phase;
+  if (session?.state === "SUBMITTED") return "waiting";
+  if (session?.state === "CLOSED") return session.outcome ? "resolved" : "ended";
+  return phase;
+}
+
 function MicIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -35,13 +50,14 @@ function MicIcon() {
   );
 }
 
-// Says plainly what is missing when speech to text, the model, or the voice is not set up.
-function SetupNote({ capabilities }) {
+// Says plainly what is missing when speech to text, the model, or the voice is not set up. The setup details are
+// configuration messages for the person running the demo, so a customer-facing panel shows only the plain sentence.
+function SetupNote({ capabilities, tr, showDetail }) {
   if (!capabilities || (capabilities.stt && capabilities.tts && capabilities.llm)) return null;
   return (
     <p className="muted">
-      Voice is only partly set up
-      {capabilities.problems?.length ? `: ${capabilities.problems.join(" ")}` : "."}
+      {tr("voice.setupPartial", "Voice is only partly set up")}
+      {showDetail ? (capabilities.problems?.length ? `: ${capabilities.problems.join(" ")}` : ".") : null}
     </p>
   );
 }
@@ -50,7 +66,7 @@ const LANGUAGE_LABELS = { en: "English", es: "Español", pt: "Português (Brasil
 
 // Shows which language the call is in, with a compact manual selector. Rendered only when multilingual calls are on,
 // so with the feature off the panel looks exactly as before.
-function LanguageControl({ capabilities, session, selected, onChange, disabled }) {
+function LanguageControl({ capabilities, session, selected, onChange, disabled, tr }) {
   if (!capabilities?.multilingual) return null;
   const labels = { ...LANGUAGE_LABELS, ...(capabilities.language_labels || {}) };
   const current = session?.language || selected;
@@ -60,7 +76,7 @@ function LanguageControl({ capabilities, session, selected, onChange, disabled }
         {labels[current] || labels.en}
       </span>
       <label className="visually-hidden" htmlFor="language-select">
-        Call language
+        {tr("voice.languageLabel", "Call language")}
       </label>
       <select id="language-select" value={current} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
         {Object.keys(LANGUAGE_LABELS).map((code) => (
@@ -74,20 +90,32 @@ function LanguageControl({ capabilities, session, selected, onChange, disabled }
   );
 }
 
-function micLabel(phase) {
-  if (phase === "recording") return "Stop recording and send";
-  if (phase === "speaking") return "Interrupt and speak";
-  if (TALKING_PHASES.has(phase)) return "Start speaking";
-  return "Microphone unavailable right now";
+function micLabel(phase, tr) {
+  if (phase === "recording") return tr("voice.mic.stop", "Stop recording and send");
+  if (phase === "speaking") return tr("voice.mic.interrupt", "Interrupt and speak");
+  if (TALKING_PHASES.has(phase)) return tr("voice.mic.start", "Start speaking");
+  return tr("voice.mic.unavailable", "Microphone unavailable right now");
 }
 
-// The customer side of the demo, shown above the case being worked: pick who is calling, tap the microphone, and
-// talk with the intake agent. When the customer confirms, the call becomes an ordinary case in the queue.
-// A host page can follow and drive the call's language (both optional): onLanguageChange(language, source) reports every
-// language the call changes to, and `language` asks the call to switch to that language. Without them the panel works
-// exactly as before.
-export default function CallPanel({ onCaseCreated, language, onLanguageChange }) {
-  const call = useVoiceCall({ onCaseCreated, onLanguageChange });
+// The call panel: tap the microphone (or type) and talk with the intake agent. When the customer confirms, the call
+// becomes an ordinary case in the queue. Everything below the first block of props is optional; without it the panel is
+// the internal one, with a "Who is calling?" picker and English text.
+//
+// A host page can mount it for a signed-in customer:
+//   customer           { firstName, getAuthHeaders }  no caller picker and no callers list; the call starts from the
+//                      customer's own session token, sent in a header on the one request that opens the call (the
+//                      token is only ever passed in here, never stored globally, and no customer id is sent)
+//   t(key, fallback, params)  translates the panel's text; format { orderRef, price, status } writes order cards
+//   language           asks the call to switch to that language; onLanguageChange(language, source) reports every
+//                      language the call changes to, so the host's own language stays in step
+//   hideLanguageSelector  the host has its own single selector
+//   onCallReset()      a call ended or a new one is starting, so anything the host keeps about the last call is stale
+//   renderNote(line)   how the host shows the approved-message line; return null to use the default
+export default function CallPanel({ onCaseCreated, onCallReset, renderNote, language, onLanguageChange, customer, t, format, hideLanguageSelector = false }) {
+  const tr = t ?? defaultT;
+  const fmt = { ...defaultFormat, ...(format || {}) };
+  const customerMode = Boolean(customer);
+  const call = useVoiceCall({ onCaseCreated, onLanguageChange, t: tr, getAuthHeaders: customer?.getAuthHeaders });
   const { phase, session } = call;
   const [callers, setCallers] = useState({ status: "loading", items: [], error: null });
   const [callerId, setCallerId] = useState("");
@@ -104,13 +132,20 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
       })
       .catch((error) => setCallers({ status: "error", items: [], error: error.message }));
   }, []);
-  useEffect(loadCallers, [loadCallers]);
+  // A signed-in customer never loads the list of callers: there is nobody to pick.
+  useEffect(() => {
+    if (!customerMode) loadCallers();
+  }, [customerMode, loadCallers]);
 
   // The host's language, pushed to the call once. It is not pushed again while the call is catching up, so the call's
-  // own `language` event (which the host also hears) cannot start a second request.
+  // own `language` event (which the host also hears) cannot start a second request. Before a call exists it only sets
+  // the language the call will start in.
   const requestedLanguage = useRef(null);
   const sessionLanguage = session?.language;
   const changeLanguage = call.changeLanguage;
+  useEffect(() => {
+    if (language && !session) changeLanguage(language);
+  }, [language, session, changeLanguage]);
   useEffect(() => {
     if (!language || !sessionLanguage) return;
     if (sessionLanguage === language) {
@@ -131,6 +166,15 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
   const finished = phase === "resolved" || phase === "ended";
   const canTalk = TALKING_PHASES.has(phase);
   const step = currentStep(session);
+  const shown = displayPhase(phase, session);
+  const startCall = (id) => {
+    onCallReset?.();
+    call.startCall(id);
+  };
+  const resetCall = () => {
+    onCallReset?.();
+    call.resetCall();
+  };
 
   const submitTyped = (event) => {
     event.preventDefault();
@@ -143,23 +187,32 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
   return (
     <section className="panel call-panel" aria-labelledby="call-heading">
       <div className="call-head">
-        <h2 id="call-heading">Customer voice call</h2>
-        {session ? <span className="tag">Caller: {session.customer.first_name}</span> : null}
-        <LanguageControl
-          capabilities={call.capabilities}
-          session={session}
-          selected={preferred}
-          disabled={phase === "connecting" || phase === "recording" || phase === "thinking" || finished}
-          onChange={(language) => {
-            setPreferred(language);
-            call.changeLanguage(language);
-          }}
-        />
+        <h2 id="call-heading">{tr("voice.title", "Customer voice call")}</h2>
+        {session && !customerMode ? <span className="tag">{tr("voice.caller", "Caller: {name}", { name: session.customer.first_name })}</span> : null}
+        {hideLanguageSelector ? null : (
+          <LanguageControl
+            capabilities={call.capabilities}
+            session={session}
+            selected={preferred}
+            tr={tr}
+            disabled={phase === "connecting" || phase === "recording" || phase === "thinking" || finished}
+            onChange={(next) => {
+              setPreferred(next);
+              call.changeLanguage(next);
+            }}
+          />
+        )}
       </div>
 
       {phase === "idle" ? (
         <>
-          {callers.status === "error" ? (
+          {customerMode ? (
+            <div className="caller-picker">
+              <button type="button" className="button button-primary" onClick={() => startCall(null)}>
+                {tr("voice.start", "Start call")}
+              </button>
+            </div>
+          ) : callers.status === "error" ? (
             <div className="caller-picker">
               <p className="muted" role="status">
                 Voice callers could not be loaded. {callers.error}
@@ -180,46 +233,46 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
                 >
                   {callers.items.map((caller) => (
                     <option key={caller.customer_id} value={caller.customer_id}>
-                      {caller.name} ({humanize(caller.tier)}, {caller.orders} orders)
+                      {caller.name} ({defaultFormat.status(caller.tier)}, {caller.orders} orders)
                     </option>
                   ))}
                 </select>
               </div>
-              <button type="button" className="button button-primary" disabled={!callerId} onClick={() => call.startCall(callerId)}>
-                Start call
+              <button type="button" className="button button-primary" disabled={!callerId} onClick={() => startCall(callerId)}>
+                {tr("voice.start", "Start call")}
               </button>
             </div>
           )}
-          <p className="muted">Press Start call, then tap the microphone and speak, or type if you prefer.</p>
-          <SetupNote capabilities={call.capabilities} />
-          {call.notice ? <ErrorNotice title="The call could not start." detail={call.notice} /> : null}
+          <p className="muted">{tr("voice.startHint", "Press Start call, then tap the microphone and speak, or type if you prefer.")}</p>
+          <SetupNote capabilities={call.capabilities} tr={tr} showDetail={!customerMode} />
+          {call.notice ? <VoiceNotice title={tr("voice.startFailed", "The call could not start.")} detail={call.notice} /> : null}
         </>
       ) : (
         <div className="call-body">
           <div className="call-agent">
-            <HeadsetAvatar phase={phase} level={call.level} />
+            <HeadsetAvatar phase={shown} level={call.level} t={tr} />
             <p className="call-status" role="status" aria-live="polite">
-              {PHASE_LABELS[phase]}
+              {tr(`voice.phase.${shown}`, PHASE_LABELS[shown])}
             </p>
           </div>
 
           <div className="call-main">
-            <ol className="call-stepper" aria-label="Call progress">
-              {STEPS.map((label, index) => (
-                <li key={label} aria-current={index === step ? "step" : undefined} data-done={index < step ? "true" : undefined}>
-                  {label}
+            <ol className="call-stepper" aria-label={tr("voice.progress", "Call progress")}>
+              {STEPS.map(([key, label], index) => (
+                <li key={key} aria-current={index === step ? "step" : undefined} data-done={index < step ? "true" : undefined}>
+                  {tr(key, label)}
                 </li>
               ))}
             </ol>
 
             {session?.state === "PICK_ORDER" && session.orders?.length ? (
-              <ul className="order-cards" aria-label="Recent orders. Tap one to choose it.">
+              <ul className="order-cards" aria-label={tr("voice.orders", "Recent orders. Tap one to choose it.")}>
                 {session.orders.map((order) => (
                   <li key={order.order_id}>
                     <button type="button" className="order-card" disabled={!canTalk || phase === "recording"} onClick={() => call.chooseOrder(order.order_id)}>
                       <span>{order.title}</span>
                       <span className="meta">
-                        {order.order_id} · {formatUsd(order.price)} · {humanize(order.delivery_status)}
+                        {fmt.orderRef(order.order_id)} · {fmt.price(order.price)} · {fmt.status(order.delivery_status)}
                       </span>
                     </button>
                   </li>
@@ -227,31 +280,41 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
               </ul>
             ) : null}
 
-            <ol className="call-transcript" aria-label="Call transcript">
-              {(session?.transcript || []).map((line, index) => (
+            <ol className="call-transcript" aria-label={tr("voice.transcript", "Call transcript")}>
+              {(session?.transcript || []).map((line, index) => {
+                const custom = line.note && renderNote ? renderNote(line) : null;
+                if (custom) return <li key={`${index}-${line.role}`}>{custom}</li>;
+                return (
                 <li key={`${index}-${line.role}`}>
                   <span className={line.role === "agent" ? "who who-agent" : "who"}>
-                    {line.role === "agent" ? (line.note ? "Cosmo (approved message)" : "Cosmo") : "Customer"}
+                    {line.role === "agent"
+                      ? line.note
+                        ? tr("voice.who.note", "Cosmo (approved message)")
+                        : tr("voice.who.agent", "Cosmo")
+                      : tr("voice.who.customer", "Customer")}
                   </span>
                   {line.text}
                 </li>
-              ))}
+                );
+              })}
               <li ref={transcriptEnd} aria-hidden="true" />
             </ol>
 
-            <SetupNote capabilities={call.capabilities} />
+            <SetupNote capabilities={call.capabilities} tr={tr} showDetail={!customerMode} />
             {call.missingVoice ? (
               <p className="muted" role="status">
-                No {call.missingVoice} voice is installed, so Cosmo is replying in text only. See docs/VOICE.md to add it.
+                {customerMode
+                  ? tr("voice.missingVoice", "Cosmo is replying in text because no {language} voice is available.", { language: call.missingVoice })
+                  : `No ${call.missingVoice} voice is installed, so Cosmo is replying in text only. See docs/VOICE.md to add it.`}
               </p>
             ) : null}
-            {call.notice ? <ErrorNotice title="Call problem" detail={call.notice} /> : null}
+            {call.notice ? <VoiceNotice title={tr("voice.problem", "Call problem")} detail={call.notice} /> : null}
 
             <div className="call-controls">
               <button
                 type="button"
                 className="mic-button"
-                aria-label={micLabel(phase)}
+                aria-label={micLabel(phase, tr)}
                 aria-pressed={phase === "recording"}
                 disabled={!canTalk}
                 onClick={call.toggleMic}
@@ -261,24 +324,24 @@ export default function CallPanel({ onCaseCreated, language, onLanguageChange })
               <form className="call-text-form" onSubmit={submitTyped}>
                 <input
                   type="text"
-                  aria-label="Type a reply to the agent"
-                  placeholder="Or type your reply"
+                  aria-label={tr("voice.type.label", "Type a reply to the agent")}
+                  placeholder={tr("voice.type.placeholder", "Or type your reply")}
                   value={typed}
                   maxLength={500}
                   onChange={(event) => setTyped(event.target.value)}
                   disabled={!canTalk || phase === "recording"}
                 />
                 <button type="submit" className="button" disabled={!typed.trim() || !canTalk || phase === "recording"}>
-                  Send
+                  {tr("voice.send", "Send")}
                 </button>
               </form>
               {finished ? (
-                <button type="button" className="button button-primary" onClick={call.resetCall}>
-                  New call
+                <button type="button" className="button button-primary" onClick={resetCall}>
+                  {tr("voice.newCall", "New call")}
                 </button>
               ) : (
                 <button type="button" className="button button-negative" disabled={!live} onClick={call.endCall}>
-                  End call
+                  {tr("voice.endCall", "End call")}
                 </button>
               )}
             </div>

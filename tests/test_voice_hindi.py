@@ -37,6 +37,7 @@ from cosmic_resolve.voice.languages import (
 from cosmic_resolve.voice.orders import customer_first_name, match_order, recent_orders, spoken_options
 from cosmic_resolve.voice.stt import GroqTranscriber, Transcription, is_probably_noise
 from cosmic_resolve.voice.tts import PiperSpeaker, VoiceUnavailable
+from voice_events import run_actions
 
 CUSTOMER = "C-002"
 PLUG = "Smart Plug Mini"
@@ -441,9 +442,9 @@ def test_sentences_are_split_at_the_hindi_danda_so_speech_can_start_early():
 # --- Outcomes after the human decides ----------------------------------------------------------------------------------------
 
 def decide(session, decision="REPLACE", message="Your replacement ships today.", executed=None):
-    write("human_decision", case_id=session.case_id, approved=True, approved_by="Jordan")
-    write("mock_action", payload={"action": "send_customer_message", "case_id": session.case_id, "text": message})
-    write("actions_executed", case_id=session.case_id, decision=decision, actions=executed or [])
+    """A person approved and the actions really ran: events written exactly as the checkpoint and the tools write them."""
+    amount = next((a["amount"] for a in executed or [] if "amount" in a), None)
+    run_actions(session.case_id, session.order_id, session.customer_id, decision, message, amount)
 
 
 def test_an_approved_refund_is_spoken_in_hindi_and_the_associates_message_is_shown_unaltered():
@@ -462,7 +463,7 @@ def test_an_approved_refund_is_spoken_in_hindi_and_the_associates_message_is_sho
 
 @pytest.mark.parametrize("decision, executed, amount", [
     ("REPLACE", [], ""),
-    ("REFUND", [], ""),
+    ("REFUND", [{"action": "issue_refund", "amount": 45.0}], " 45 डॉलर का"),
     ("STORE_CREDIT", [{"action": "issue_store_credit", "amount": 10}], " 10 डॉलर का"),
     ("GOODWILL_CREDIT", [{"action": "issue_store_credit", "amount": 5.5}], " 5.50 डॉलर का"),
 ])
@@ -476,8 +477,7 @@ def test_every_approved_decision_has_a_hindi_opening_built_from_trusted_data(dec
 def test_escalation_and_rejection_have_hindi_neutral_lines_and_approval_is_still_required():
     session = submitted_in_hindi()
     assert check_outcome(session) is None  # nothing is spoken as decided until a human decides
-    write("human_decision", case_id=session.case_id, approved=True)
-    write("actions_executed", case_id=session.case_id, decision="ESCALATE")
+    run_actions(session.case_id, session.order_id, session.customer_id, "ESCALATE")
     assert check_outcome(session)["text"] == t("OUTCOME_ESCALATED")
 
     rejected = submitted_in_hindi()

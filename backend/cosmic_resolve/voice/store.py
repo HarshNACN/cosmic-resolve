@@ -1,4 +1,4 @@
-"""In-memory voice sessions and the runtime cases they create.
+"""In-memory voice sessions and the runtime cases created at runtime (by a voice call or by the signed-in support form).
 
 Voice is local-only (the Vercel build never imports Piper or Groq), so process memory is enough: a backend restart
 ends open calls. Imports are limited to models so tools.get_case can look cases up here without a cycle.
@@ -18,7 +18,9 @@ from ..models import SupportCase
 
 _lock = threading.RLock()
 _case_numbers: Iterator[int] | None = None
-_VOICE_CASE_ID = re.compile(r"^V-(\d+)$")
+# Voice cases are V-nnnn and web-form cases are W-nnnn. Both share one counter, so an id is never reused across channels.
+_RUNTIME_CASE_ID = re.compile(r"^[VW]-(\d+)$")
+_CHANNEL_PREFIX = {"VOICE": "V", "WEB": "W"}
 
 
 def _next_case_number() -> int:
@@ -34,7 +36,7 @@ def _next_case_number() -> int:
         highest = 0
         try:
             for event in read_trace_events():
-                found = _VOICE_CASE_ID.match(str(event.details.get("case_id", "")))
+                found = _RUNTIME_CASE_ID.match(str(event.details.get("case_id", "")))
                 if found:
                     highest = max(highest, int(found.group(1)))
         except Exception:  # noqa: BLE001 - an unreadable trace just means numbering starts at 1
@@ -138,11 +140,12 @@ def get_session(session_id: str) -> VoiceSession | None:
 
 
 def register_case(
-    *, order_id: str, customer_id: str, tracking_id: str, case_type: str, complaint_text: str
+    *, order_id: str, customer_id: str, tracking_id: str, case_type: str, complaint_text: str, channel: str = "VOICE"
 ) -> SupportCase:
-    """Create a voice case. It becomes visible to get_case, GET /cases and the whole checkpoint flow."""
+    """Create a runtime case for a channel (VOICE or WEB). It becomes visible to get_case, GET /cases and the whole
+    checkpoint flow, exactly like a fixture case."""
     with _lock:
-        case_id = f"V-{_next_case_number():04d}"
+        case_id = f"{_CHANNEL_PREFIX.get(channel, 'V')}-{_next_case_number():04d}"
         case = SupportCase(
             case_id=case_id,
             order_id=order_id,
@@ -152,7 +155,7 @@ def register_case(
             market="US",
             category="GADGETS",
             complaint_text=complaint_text,
-            channel="VOICE",
+            channel=channel,
             created_at=case_timestamp(),
         )
         CASES[case_id] = case

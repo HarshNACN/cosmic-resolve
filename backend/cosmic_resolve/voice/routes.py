@@ -13,11 +13,12 @@ import json
 import threading
 from typing import Any, Iterator
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.datastructures import UploadFile
 
+from .. import customer
 from ..tools import DomainLookupError, get_customer
 from . import agent_config as cfg
 from . import debug
@@ -152,7 +153,9 @@ def _ndjson(chunks: Iterator[bytes]) -> StreamingResponse:
 class CreateSession(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    customer_id: str = Field(min_length=1, max_length=20)
+    # The internal workbench opens a call for a chosen caller (customer_id). The customer page sends no id at all: it signs
+    # in with the demo sign-in and opens the call with its session token in the Authorization header.
+    customer_id: str | None = Field(default=None, min_length=1, max_length=20)
     language: str | None = Field(default=None, pattern="^(en|es|pt|hi)$")
 
 
@@ -215,15 +218,27 @@ def callers() -> dict[str, list[dict[str, Any]]]:
     return {"callers": cast}
 
 
-def create_session(body: CreateSession) -> dict[str, Any]:
+def create_session(body: CreateSession, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    if authorization is not None:
+        # A signed-in customer: who they are comes from the session token, never from the request body.
+        if body.customer_id is not None:
+            raise HTTPException(status_code=422, detail="Send a session token or a caller, not both.")
+        try:
+            customer_id = customer.customer_for_token(authorization)
+        except customer.CustomerError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    elif body.customer_id is not None:
+        customer_id = body.customer_id  # the internal workbench's caller picker (and the existing tests)
+    else:
+        raise HTTPException(status_code=422, detail="Send a session token or a caller.")
     try:
-        first_name = customer_first_name(body.customer_id)
+        first_name = customer_first_name(customer_id)
     except DomainLookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    orders = recent_orders(body.customer_id)
+    orders = recent_orders(customer_id)
     if not orders:
         raise HTTPException(status_code=409, detail="This customer has no orders to talk about.")
-    session = new_session(body.customer_id, first_name, orders)
+    session = new_session(customer_id, first_name, orders)
     if body.language and cfg.multilingual_enabled():
         session.language = body.language  # the page's language for this call; speech can still change it later
     return session.snapshot()

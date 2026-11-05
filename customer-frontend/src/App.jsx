@@ -1,21 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import ViewSwitch from "./components/ViewSwitch.jsx";
 import Progress from "./components/Progress.jsx";
+import IdentifyStep from "./components/IdentifyStep.jsx";
+import HomeStep from "./components/HomeStep.jsx";
 import OrderStep from "./components/OrderStep.jsx";
 import ProblemStep from "./components/ProblemStep.jsx";
 import DetailsStep from "./components/DetailsStep.jsx";
 import ReviewStep from "./components/ReviewStep.jsx";
 import ResultStep from "./components/ResultStep.jsx";
+import VoiceStep from "./components/VoiceStep.jsx";
+import { voiceWarmup } from "@cosmo-voice/voiceApi.js";
 import { submitSupportRequest } from "./api.js";
 import { LanguageProvider, useLanguage } from "./i18n/LanguageProvider.jsx";
 import LanguageSelector from "./i18n/LanguageSelector.jsx";
 
-// One task per screen, in one application state. The address stays /support/ for every step, so the
-// app does not need a router or any deep-link handling. Answers are kept while the customer moves
-// backwards, so Back never discards work. Every answer lives here, above the language: changing the language only changes
-// the words on the page, so the order, the issue, the typed details and the step are all kept.
-export function SupportApp() {
+// The customer flow: a demo sign-in, a home page with two ways to get help, and the four-step form. The address stays
+// /support/ throughout, so the app needs no router. The form keeps one task per screen in one application state, and
+// answers are kept while the customer moves backwards, so Back never discards work. Every answer lives here, above the
+// language: changing the language only changes the words on the page, so the order, the issue, the typed details and
+// the step are all kept.
+//
+// initialSession and initialView let a host (or a test) start signed in, for example at the form.
+export function SupportApp({ initialSession = null, initialView = null }) {
   const { t } = useLanguage();
+  // After the demo sign-in: { token, firstName }. The token is the only credential, it is held in memory only (a page
+  // refresh signs out) and it is sent in a header, never in a URL. The page never holds a customer id.
+  const [session, setSession] = useState(initialSession);
+  const [view, setView] = useState(initialView ?? (initialSession ? "home" : "identify"));
+  // Whether the voice service answered: "idle" before sign-in, "checking" while the warm-up runs, then "ready" or "unavailable".
+  // The voice card is only disabled once the service has failed to answer; while it is still starting it stays usable.
+  const [voice, setVoice] = useState(initialSession ? "ready" : "idle");
   const [step, setStep] = useState("order");
   const [orderReference, setOrderReference] = useState(null);
   const [orderSummary, setOrderSummary] = useState(null);
@@ -31,17 +45,17 @@ export function SupportApp() {
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  // Moving between steps (including Back) puts focus on the new step's heading, so keyboard and screen reader
-  // users land on the task instead of the top of the page. The first render is left alone.
+  // Moving between steps or screens (including Back) puts focus on the new heading, so keyboard and screen reader users
+  // land on the task instead of the top of the page. The first render is left alone.
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
       return;
     }
     document.querySelector(".support-main .step-title")?.focus();
-  }, [step]);
+  }, [step, view]);
 
-  function startAnother() {
+  function resetForm() {
     setStep("order");
     setOrderReference(null);
     setOrderSummary(null);
@@ -49,6 +63,28 @@ export function SupportApp() {
     setStatement("");
     setSubmitError(null);
     setReceipt(null);
+  }
+
+  function startAnother() {
+    resetForm();
+  }
+
+  function signOut() {
+    controllerRef.current?.abort();
+    resetForm();
+    setSession(null);
+    setVoice("idle");
+    setView("identify");
+  }
+
+  // Right after sign-in, start loading the voice (the first load takes several seconds) so it is ready when the customer
+  // chooses "Talk to Cosmo". A failure only disables that one card; the form keeps working.
+  function warmUpVoice() {
+    setVoice("checking");
+    voiceWarmup().then(
+      () => setVoice("ready"),
+      () => setVoice("unavailable"),
+    );
   }
 
   function submit() {
@@ -62,6 +98,7 @@ export function SupportApp() {
     submitSupportRequest(
       { order_reference: orderReference, issue_type: issueType, customer_statement: statement.trim(), channel: "WEB" },
       controller.signal,
+      session?.token,
     )
       .then((result) => {
         setReceipt(result);
@@ -80,12 +117,22 @@ export function SupportApp() {
   return (
     <div className="support-app">
       <header className="site-header">
-        <div className="brand">
+        {/* Back to the support options (or the sign-in when nobody is signed in). The session is kept; leaving a call
+            unmounts it, which stops the microphone, and form answers live in this component so they are kept too. */}
+        <button type="button" className="brand brand-link" aria-label={t("brand.home")} onClick={() => setView(session ? "home" : "identify")}>
           <span className="brand-mark" aria-hidden="true" />
           <span className="brand-name">Cosmic Mart</span>
-        </div>
+        </button>
         <div className="header-end">
           <span className="brand-section">{t("brand.section")}</span>
+          {session ? (
+            <div className="account">
+              <span className="account-name">{t("account.signedInAs", { name: session.firstName })}</span>
+              <button type="button" className="link-button account-signout" onClick={signOut}>
+                {t("account.signOut")}
+              </button>
+            </div>
+          ) : null}
           <LanguageSelector />
           <ViewSwitch current="customer" />
         </div>
@@ -96,52 +143,89 @@ export function SupportApp() {
           {t("page.title")}
         </h1>
 
-        {step !== "result" ? <Progress current={step} /> : null}
-
-        {step === "order" ? (
-          <OrderStep
-            selected={orderReference}
-            onSelect={(order) => {
-              setOrderReference(order.order_reference);
-              setOrderSummary(order);
+        {view === "identify" ? (
+          <IdentifyStep
+            onIdentified={(next) => {
+              setSession(next);
+              setView("home");
+              warmUpVoice();
             }}
-            onContinue={() => setStep("problem")}
           />
         ) : null}
 
-        {step === "problem" ? (
-          <ProblemStep
-            selected={issueType}
-            onSelect={setIssueType}
-            onBack={() => setStep("order")}
-            onContinue={() => setStep("details")}
+        {view === "home" ? (
+          <HomeStep
+            firstName={session?.firstName ?? ""}
+            token={session?.token}
+            voiceAvailable={voice !== "unavailable"}
+            onVoice={() => setView("voice")}
+            onForm={() => {
+              setView("form");
+            }}
           />
         ) : null}
 
-        {step === "details" ? (
-          <DetailsStep
-            issueType={issueType}
-            statement={statement}
-            onChange={setStatement}
-            onBack={() => setStep("problem")}
-            onContinue={() => setStep("review")}
-          />
-        ) : null}
+        {view === "voice" && session ? <VoiceStep session={session} onBack={() => setView("home")} /> : null}
 
-        {step === "review" ? (
-          <ReviewStep
-            order={orderSummary}
-            issueType={issueType}
-            statement={statement.trim()}
-            submitting={submitting}
-            submitError={submitError}
-            onEdit={setStep}
-            onBack={() => setStep("details")}
-            onSubmit={submit}
-          />
-        ) : null}
+        {view === "form" ? (
+          <>
+            {step !== "result" ? (
+              <button type="button" className="link-button back-to-options" onClick={() => setView("home")}>
+                {t("home.back")}
+              </button>
+            ) : null}
 
-        {step === "result" && receipt ? <ResultStep receipt={receipt} issueType={issueType} onStartAnother={startAnother} /> : null}
+            {step !== "result" ? <Progress current={step} /> : null}
+
+            {step === "order" ? (
+              <OrderStep
+                token={session?.token}
+                selected={orderReference}
+                onSelect={(order) => {
+                  setOrderReference(order.order_reference);
+                  setOrderSummary(order);
+                }}
+                onContinue={() => setStep("problem")}
+              />
+            ) : null}
+
+            {step === "problem" ? (
+              <ProblemStep
+                selected={issueType}
+                onSelect={setIssueType}
+                onBack={() => setStep("order")}
+                onContinue={() => setStep("details")}
+              />
+            ) : null}
+
+            {step === "details" ? (
+              <DetailsStep
+                issueType={issueType}
+                statement={statement}
+                onChange={setStatement}
+                onBack={() => setStep("problem")}
+                onContinue={() => setStep("review")}
+              />
+            ) : null}
+
+            {step === "review" ? (
+              <ReviewStep
+                order={orderSummary}
+                issueType={issueType}
+                statement={statement.trim()}
+                submitting={submitting}
+                submitError={submitError}
+                onEdit={setStep}
+                onBack={() => setStep("details")}
+                onSubmit={submit}
+              />
+            ) : null}
+
+            {step === "result" && receipt ? (
+              <ResultStep receipt={receipt} issueType={issueType} token={session?.token} onStartAnother={startAnother} />
+            ) : null}
+          </>
+        ) : null}
       </main>
     </div>
   );
@@ -150,10 +234,10 @@ export function SupportApp() {
 // The customer app. supportedLanguages is the list the running voice system reports (null offers every language the
 // page has text for). onLanguageChange is told about a language the customer picks, so a voice call mounted inside
 // this page can follow it; a language reported by the voice backend goes the other way through useLanguage().onVoiceEvent.
-export default function App({ supportedLanguages = null, onLanguageChange, initialLanguage }) {
+export default function App({ supportedLanguages = null, onLanguageChange, initialLanguage, ...appProps }) {
   return (
     <LanguageProvider supported={supportedLanguages} onManualChange={onLanguageChange} initial={initialLanguage}>
-      <SupportApp />
+      <SupportApp {...appProps} />
     </LanguageProvider>
   );
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import StepActions from "./StepActions.jsx";
-import { fetchDemoOrders } from "../api.js";
+import { fetchDemoOrders, fetchMyOrders } from "../api.js";
 import { orderEnding } from "../content.js";
 import { useLanguage } from "../i18n/LanguageProvider.jsx";
 
-export default function OrderStep({ selected, onSelect, onContinue }) {
+export default function OrderStep({ token, selected, onSelect, onContinue }) {
   const { t, errorText, serverText, formatPrice, formatDate } = useLanguage();
   const [state, setState] = useState({ status: "loading", orders: [], error: null });
   const [attempt, setAttempt] = useState(0);
@@ -14,14 +14,14 @@ export default function OrderStep({ selected, onSelect, onContinue }) {
   useEffect(() => {
     const controller = new AbortController();
     setState({ status: "loading", orders: [], error: null });
-    fetchDemoOrders(controller.signal)
+    (token ? fetchMyOrders(token, controller.signal) : fetchDemoOrders(controller.signal))
       .then((orders) => setState({ status: "ready", orders, error: null }))
       .catch((error) => {
         if (controller.signal.aborted) return;
         setState({ status: "error", orders: [], error });
       });
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, token]);
 
   return (
     <section className="step" aria-labelledby="order-heading">

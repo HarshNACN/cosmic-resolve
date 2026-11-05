@@ -5,11 +5,11 @@ import "./voice.css";
 export const PHASE_LABELS = {
   idle: "Ready to start a call",
   connecting: "Connecting",
-  listening: "Listening",
-  recording: "Listening to you",
-  thinking: "Thinking",
+  listening: "Ready", // the call is open and push-to-talk is available; the microphone is NOT recording
+  recording: "Listening", // the microphone is capturing
+  thinking: "Processing",
   speaking: "Speaking",
-  waiting: "On hold while a specialist reviews",
+  waiting: "Waiting for specialist",
   resolved: "Resolved",
   ended: "Call ended",
 };
@@ -19,8 +19,10 @@ const BARS = [0, 1, 2, 3, 4];
 // A calm illustrated agent wearing a headset. Pure SVG with CSS animation (see voice.css): slow ripples while
 // listening, drifting dots while thinking, soft level bars while speaking, a breathing glow while on hold, and a
 // quiet check mark once resolved. Everything stops under prefers-reduced-motion.
-export default function HeadsetAvatar({ phase = "idle", level = 0, name = "Cosmo", size = 132 }) {
-  const label = PHASE_LABELS[phase] || PHASE_LABELS.idle;
+// t(key, fallback, params) is optional: a host page can translate the label.
+export default function HeadsetAvatar({ phase = "idle", level = 0, name = "Cosmo", size = 132, t }) {
+  const known = PHASE_LABELS[phase] ? phase : "idle";
+  const label = t ? t(`voice.phase.${known}`, PHASE_LABELS[known]) : PHASE_LABELS[known];
   return (
     <svg
       className="headset"
@@ -28,7 +30,7 @@ export default function HeadsetAvatar({ phase = "idle", level = 0, name = "Cosmo
       style={{ "--level": Number(level.toFixed(2)), width: size, height: size }}
       viewBox="0 0 160 160"
       role="img"
-      aria-label={`${name}, the voice assistant. ${label}.`}
+      aria-label={t ? t("voice.avatar", "{name}, the voice assistant. {label}.", { name, label }) : `${name}, the voice assistant. ${label}.`}
     >
       <circle className="hs-bg" cx="80" cy="80" r="74" />
       <g className="hs-rings" aria-hidden="true">
