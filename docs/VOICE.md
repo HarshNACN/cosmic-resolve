@@ -137,13 +137,16 @@ All three voices load once at startup, in parallel, and are reused for every sen
   change the language, because Whisper often mis-hears them (measured: "Sí" came back as English, Danish or "See you").
   A short clip that disagrees with a Spanish or Portuguese call is transcribed again with the call's language as a hint.
 - **Asking** also works: "habla español", "fale português", "please speak English", "do you speak Hindi?".
-- **A language the customer chose is kept.** Asking for a language, or picking it in the selector (or before the call),
-  makes it the call's language until they ask for another one: detection no longer overrides it, and speech recognition
-  is held to it. Whisper's own guess is still read first, because that is how a spoken "please speak English" is heard;
-  if the guess disagrees and the clip is not such a request, the clip is transcribed again in the chosen language (one
-  extra call, about 0.15 s, only on disagreement). This matters because decoding Hindi speech as English *invents*
-  English: forced to English, Whisper turned a Hindi sentence about earbuds into "I said, I have to go on my own
-  wireless earbuds". Before anything is chosen, detection switches the language automatically as described above.
+- **Detection decides, and a shaky guess is checked.** A clear sentence in another language switches the call, with
+  nothing chosen first and even after a manual choice: choosing a language sets the call's language, it does not freeze it.
+  One or two words, product names and order numbers never switch it. What detection must not do is trust a bad guess:
+  decoding Hindi audio as English *invents* English (forced to English, Whisper turned a Hindi sentence about earbuds
+  into "I said, I have to go on my own wireless earbuds"). Such a decode is far less confident than real speech
+  (measured `avg_logprob` -0.89 to -1.27 against -0.06 to -0.15), so when the guess disagrees with the call's language
+  and scores below -0.6, the clip is decoded once more in the call's language and the more confident decode wins. A
+  confident decode is used as it is, with no second call (measured live: one Groq call, about 0.2 s). The -0.6 line was
+  tuned on clean synthetic speech; real microphones are noisier, so if real calls trigger the second decode too often,
+  `LOW_CONFIDENCE` in `stt.py` is the one number to adjust.
 - **Debugging.** `VOICE_DEBUG=true` (off by default) prints `[voice-debug]` JSON lines to the backend's stderr: the session
   language before the turn, the fields sent to Groq (including the language hint), what Groq reported (language and raw
   text), the final transcript sent to the page, and the language afterwards. Never the API key or audio. Transcripts are
@@ -236,6 +239,30 @@ target is **not yet shown** for Hindi: run the benchmark after `aws login` with 
 Limits: the Hindi wording has not been reviewed by a native speaker; the voice has not been listened to by a person yet (check pronunciation by ear before the showcase);
 the Piper voice's licence is unverified (table above); and a Hindi caller whose first sentence is only one or two
 words stays in the current language until they say more or use the selector.
+
+### The customer page and the call share one language
+
+The customer app (`customer-frontend`, served at `/support/`) keeps a single language for the whole page: its text, the
+selector, the document `lang` and `dir`, and number and date formats all follow it, and all of its translations are
+local, so a switch is instant and calls no service. To add a language there, add `locales/<code>.js` with the same keys as
+`en.js` and one entry in `i18n/languages.js`; no component changes.
+
+- The selector lists what `GET /api/voice/languages` reports (read-only: it never loads a speech service), each by its
+  own name. If that route is unreachable it lists every language the page has text for.
+- A manual choice reaches the call through `POST /voice/sessions/{id}/language`. A `language` event from the call changes
+  the page. A change that came from the call is never sent back, and setting the language it already has does nothing, so
+  the two cannot echo. Changing language never reloads the page, resets the form or the call, or creates a case.
+- Server text is translated only when it is one of the fixed sentences the server is known to send (the delivery states
+  and the demo note); any other server text is shown exactly as received. Order references, amounts, product names and
+  the customer's own words are never translated.
+
+**Integration status.** The customer app does not host the call yet, and the voice panel (`frontend/src/voice`) lives in
+the internal app. Mounting it on `/support/` is a product decision and a cross-app change, so it was not done silently.
+It needs: the panel's components (it imports `ErrorNotice` and `format.js` from the internal app) available to the
+customer app, a decision on exposing the voice session routes to the public page (a call creates a case in the internal
+queue), and then one line to connect them: render `<CallPanel language={language} onLanguageChange={...} />` inside
+`SupportApp`, where `onLanguageChange` calls `useLanguage().onVoiceEvent({ type: "language", language })`. The panel
+already accepts those two optional props, and the customer side is tested against that hand-off.
 
 ### Date note for voice cases
 

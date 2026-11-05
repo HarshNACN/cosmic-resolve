@@ -1,0 +1,88 @@
+// English customer-facing text. This is the source of truth: every other language must define exactly these keys
+// (a test enforces it), and a missing key falls back to the English text here.
+// {name} marks a value filled in at display time. Keys are stable; never reuse a key for a different meaning.
+export default {
+  "page.title": "Cosmic Mart support",
+  "brand.section": "Support",
+  "language.label": "Language",
+
+  "progress.label": "Progress",
+  "progress.order": "Order",
+  "progress.problem": "Problem",
+  "progress.details": "Details",
+  "progress.review": "Review",
+  "progress.completed": "completed",
+  "progress.current": "current step",
+  "progress.upcoming": "not started",
+
+  "actions.back": "Back",
+  "actions.continue": "Continue",
+
+  "order.heading": "Which order do you need help with?",
+  "order.loading": "Loading your orders...",
+  "order.empty": "No orders are available right now.",
+  "order.retry": "Try again",
+  "order.legend": "Orders",
+  "order.ending": "Order ending in {digits}",
+  "order.generic": "Order",
+
+  "problem.heading": "What happened?",
+  "issue.DAMAGED_ITEM.label": "Item arrived damaged",
+  "issue.DAMAGED_ITEM.description": "Something is broken, cracked or unusable.",
+  "issue.DAMAGED_ITEM.detailHeading": "Tell us about the damage",
+  "issue.DAMAGED_ITEM.detailQuestion": "What happened?",
+  "issue.DAMAGED_ITEM.detailHelp": "Describe what you saw.",
+  "issue.LATE_OR_MISSING.label": "Order is late or missing",
+  "issue.LATE_OR_MISSING.description": "The delivery date has passed, or the package didn't arrive.",
+  "issue.LATE_OR_MISSING.detailHeading": "Tell us about the delivery",
+  "issue.LATE_OR_MISSING.detailQuestion": "Anything we should know about the delivery?",
+  "issue.LATE_OR_MISSING.detailHelp": "Add anything that would help us understand the delay.",
+  "issue.RETURN_ITEM.label": "Return an item",
+  "issue.RETURN_ITEM.description": "Send an eligible item back.",
+  "issue.RETURN_ITEM.detailHeading": "Tell us about the return",
+  "issue.RETURN_ITEM.detailQuestion": "Why are you returning it?",
+  "issue.RETURN_ITEM.detailHelp": "A short reason is enough.",
+  "issue.OTHER.label": "Something else",
+  "issue.OTHER.description": "Get help with another issue.",
+  "issue.OTHER.detailHeading": "How can we help?",
+  "issue.OTHER.detailQuestion": "Tell us what you need.",
+  "issue.OTHER.detailHelp": "Describe what you need in a sentence or two.",
+
+  "details.chooseFirst": "Choose an issue first",
+  "details.tooShort": "Add a few more details so we can help.",
+  "details.tooLong": "Keep your details to {max} characters or fewer.",
+  "details.count": "{count} of {max}",
+
+  "review.heading": "Review your request",
+  "review.order": "Order",
+  "review.issue": "Issue",
+  "review.details": "Details",
+  "review.edit": "Edit",
+  "review.editOrder": "order",
+  "review.editIssue": "issue",
+  "review.editDetails": "details",
+  "review.notSelected": "Not selected",
+  "review.back": "Back",
+  "review.submit": "Submit request",
+  "review.sending": "Sending...",
+  "review.sendingStatus": "Sending your request",
+
+  "result.heading": "Request received",
+  "result.message": "Your request passed intake validation.",
+  "result.reference": "Reference",
+  "result.issue": "Issue",
+  "result.startAnother": "Start another request",
+  "result.demoLabel": "Demo note",
+
+  "errors.NETWORK": "We couldn't reach support just now. Please try again.",
+  "errors.UNEXPECTED": "We couldn't read the response. Please try again.",
+  "errors.VALIDATION": "Check your details and try again.",
+
+  // Fixed sentences the server sends. They are shown translated only when they match one of these exactly; any other
+  // server text is shown exactly as received.
+  "server.delivered": "Delivered",
+  "server.onTheWay": "On the way",
+  "server.notDelivered": "Not delivered yet",
+  "server.statusUnavailable": "Delivery status unavailable",
+  "server.demoNote": "Demo prototype. Submitted requests are not retained in this prototype.",
+};

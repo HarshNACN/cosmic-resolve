@@ -32,6 +32,10 @@ _NOISE_PHRASES = {
     "धन्यवाद", "शुक्रिया", "देखने के लिए धन्यवाद", "वीडियो देखने के लिए धन्यवाद",
 }
 SHORT_CLIP_WORDS = 2
+# Whisper's mean avg_logprob over a decode. Measured on Piper-generated speech: genuine speech in the right language
+# scored -0.06 to -0.15; Hindi audio decoded as English (invented English) scored -0.89 to -1.27. Below this the
+# decode is checked against the call's current language instead of being trusted as a language switch.
+LOW_CONFIDENCE = -0.6
 
 
 class TranscriptionError(RuntimeError):
@@ -43,6 +47,12 @@ class Transcription:
     text: str
     language: str | None  # en, es or pt; None when unknown or unsupported (and always None with multilingual off)
     hinted: bool = False  # True when the text came from the retry that forced the call's current language
+
+
+def _confidence(body: dict[str, Any]) -> float | None:
+    """The mean avg_logprob of the decode's segments, or None when Whisper reported none."""
+    values = [s["avg_logprob"] for s in body.get("segments") or [] if isinstance(s, dict) and isinstance(s.get("avg_logprob"), (int, float))]
+    return sum(values) / len(values) if values else None
 
 
 def is_probably_noise(text: str) -> bool:
@@ -85,7 +95,7 @@ class GroqTranscriber:
         except ValueError as exc:
             raise TranscriptionError("The speech service returned an unreadable reply.") from exc
         body = body if isinstance(body, dict) else {}
-        debug.log("groq_response", language=body.get("language"), text=body.get("text"))
+        debug.log("groq_response", language=body.get("language"), text=body.get("text"), confidence=_confidence(body))
         return body
 
     def transcribe_detailed(
@@ -94,13 +104,15 @@ class GroqTranscriber:
         filename: str = "speech.webm",
         content_type: str = "audio/webm",
         hint: str | None = None,
-        locked: bool = False,
     ) -> Transcription:
         """The text and, with multilingual calls on, the detected language. hint is the call's current language.
 
-        locked means the customer chose that language (asked for it or picked it). Whisper's own guess is then not
-        trusted over that choice: measured, Hindi speech with English product words can be guessed as English, and
-        decoding Hindi audio as English invents English ("I said, I have to go on my own wireless earbuds").
+        Detection comes first, so a customer who clearly speaks another language switches the call without choosing
+        anything. The one thing it must not do is trust a shaky guess: measured, Hindi speech with English product words
+        can be guessed as English, and decoding Hindi audio as English *invents* English ("I said, I have to go on my own
+        wireless earbuds"). Such a decode is far less confident than real speech, so when the guess disagrees with the
+        call's language and is below LOW_CONFIDENCE the clip is decoded once more in the call's language and the more
+        confident decode wins. A confident decode is used as it is, with no second call.
         """
         if not cfg.multilingual_enabled():
             body = self._post(audio, filename, content_type, {"response_format": "json", "language": "en"})
@@ -109,11 +121,6 @@ class GroqTranscriber:
         body = self._post(audio, filename, content_type, {"response_format": "verbose_json"})
         text = str(body.get("text", "")).strip()
         detected = normalize_language(body.get("language"))
-        if locked and hint in cfg.LANGUAGES and detected != hint:
-            if explicit_language_request(text) is not None:
-                return Transcription(text, detected)  # "please speak English": a request to change, heard as spoken
-            retry = self._post(audio, filename, content_type, {"response_format": "json", "language": hint})
-            return Transcription(str(retry.get("text", "")).strip(), hint, hinted=True)
         # Measured: spoken Hindi is reported as "Urdu" (and the text comes back in Arabic script) for short answers
         # such as "हाँ, यह सही है" and "नहीं". Hindi is the supported language, so ask again for Hindi (Devanagari).
         if str(body.get("language", "")).strip().lower() == "urdu":
@@ -126,6 +133,18 @@ class GroqTranscriber:
         if hint in cfg.LANGUAGES and (detected is None or (short and detected != hint and hint != cfg.DEFAULT_LANGUAGE)):
             retry = self._post(audio, filename, content_type, {"response_format": "json", "language": hint})
             return Transcription(str(retry.get("text", "")).strip(), hint, hinted=True)
+        confidence = _confidence(body)
+        if (
+            hint in cfg.LANGUAGES
+            and detected != hint
+            and confidence is not None
+            and confidence < LOW_CONFIDENCE
+            and explicit_language_request(text) is None  # "please speak English" is heard as spoken, in its own language
+        ):
+            retry = self._post(audio, filename, content_type, {"response_format": "verbose_json", "language": hint})
+            retry_confidence = _confidence(retry)
+            if retry_confidence is not None and retry_confidence > confidence:
+                return Transcription(str(retry.get("text", "")).strip(), hint, hinted=True)
         return Transcription(text, detected)
 
     def transcribe(self, audio: bytes, filename: str = "speech.webm", content_type: str = "audio/webm") -> str:

@@ -7,11 +7,15 @@ import DetailsStep from "./components/DetailsStep.jsx";
 import ReviewStep from "./components/ReviewStep.jsx";
 import ResultStep from "./components/ResultStep.jsx";
 import { submitSupportRequest } from "./api.js";
+import { LanguageProvider, useLanguage } from "./i18n/LanguageProvider.jsx";
+import LanguageSelector from "./i18n/LanguageSelector.jsx";
 
 // One task per screen, in one application state. The address stays /support/ for every step, so the
 // app does not need a router or any deep-link handling. Answers are kept while the customer moves
-// backwards, so Back never discards work.
-export default function App() {
+// backwards, so Back never discards work. Every answer lives here, above the language: changing the language only changes
+// the words on the page, so the order, the issue, the typed details and the step are all kept.
+export function SupportApp() {
+  const { t } = useLanguage();
   const [step, setStep] = useState("order");
   const [orderReference, setOrderReference] = useState(null);
   const [orderSummary, setOrderSummary] = useState(null);
@@ -65,7 +69,7 @@ export default function App() {
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
-        setSubmitError(error.message);
+        setSubmitError(error); // the error itself, so its text can be shown in whichever language is active
       })
       .finally(() => {
         submittingRef.current = false;
@@ -81,14 +85,15 @@ export default function App() {
           <span className="brand-name">Cosmic Mart</span>
         </div>
         <div className="header-end">
-          <span className="brand-section">Support</span>
+          <span className="brand-section">{t("brand.section")}</span>
+          <LanguageSelector />
           <ViewSwitch current="customer" />
         </div>
       </header>
 
       <main className="support-main" aria-labelledby="page-title">
         <h1 id="page-title" className="visually-hidden">
-          Cosmic Mart support
+          {t("page.title")}
         </h1>
 
         {step !== "result" ? <Progress current={step} /> : null}
@@ -136,8 +141,19 @@ export default function App() {
           />
         ) : null}
 
-        {step === "result" && receipt ? <ResultStep receipt={receipt} onStartAnother={startAnother} /> : null}
+        {step === "result" && receipt ? <ResultStep receipt={receipt} issueType={issueType} onStartAnother={startAnother} /> : null}
       </main>
     </div>
+  );
+}
+
+// The customer app. supportedLanguages is the list the running voice system reports (null offers every language the
+// page has text for). onLanguageChange is told about a language the customer picks, so a voice call mounted inside
+// this page can follow it; a language reported by the voice backend goes the other way through useLanguage().onVoiceEvent.
+export default function App({ supportedLanguages = null, onLanguageChange, initialLanguage }) {
+  return (
+    <LanguageProvider supported={supportedLanguages} onManualChange={onLanguageChange} initial={initialLanguage}>
+      <SupportApp />
+    </LanguageProvider>
   );
 }

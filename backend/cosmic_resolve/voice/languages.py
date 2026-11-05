@@ -142,13 +142,15 @@ def resolve_language(text: str, detected: str | None, current: str) -> str:
     if count < MIN_WORDS_TO_SWITCH:
         return current
 
+    # Order numbers ("O-1002") and single letters say nothing about the language, so they do not count towards length.
+    meaningful = sum(1 for word in words(text) if len(word) > 1 and not any(ch.isdigit() for ch in word))
     winner, score = detect_text_language(text)
     candidate = None
     if detected is not None:
         if winner is None or winner == detected:
-            candidate = detected if (count >= CONFIDENT_WORDS or score >= 2) else None
+            candidate = detected if (meaningful >= CONFIDENT_WORDS or score >= 2) else None
     elif winner is not None:
-        candidate = winner if (count >= CONFIDENT_WORDS or score >= 2) else None
+        candidate = winner if (meaningful >= CONFIDENT_WORDS or score >= 2) else None
     return candidate if candidate in LANGUAGES else current
 
 

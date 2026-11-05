@@ -177,6 +177,25 @@ def warmup() -> dict[str, Any]:
     return status
 
 
+def languages() -> dict[str, Any]:
+    """The languages the running voice system supports, for the pages that show a language selector.
+
+    Read-only and cheap: it never builds the speech services. `voice` says whether a Piper voice is already loaded for
+    the language (None when the voices have not been loaded yet), and text works in every listed language regardless.
+    """
+    enabled = cfg.multilingual_enabled()
+    codes = cfg.LANGUAGES if enabled else (cfg.DEFAULT_LANGUAGE,)
+    tts = _services.get("tts")
+    voices = _voice_languages(tts) if tts is not None else {}
+    return {
+        "multilingual": enabled,
+        "languages": [
+            {"code": code, "label": cfg.LANGUAGE_LABELS[code], "locale": cfg.BROWSER_LOCALES[code], "voice": voices.get(code)}
+            for code in codes
+        ],
+    }
+
+
 def callers() -> dict[str, list[dict[str, Any]]]:
     """The demo cast the presenter can call as. Names are synthetic."""
     cast = []
@@ -206,8 +225,7 @@ def create_session(body: CreateSession) -> dict[str, Any]:
         raise HTTPException(status_code=409, detail="This customer has no orders to talk about.")
     session = new_session(body.customer_id, first_name, orders)
     if body.language and cfg.multilingual_enabled():
-        session.language = body.language
-        session.language_locked = True  # chosen on the page before the call: detection will not override it
+        session.language = body.language  # the page's language for this call; speech can still change it later
     return session.snapshot()
 
 
@@ -241,7 +259,7 @@ def _transcribe(audio: bytes, filename: str, content_type: str, session: VoiceSe
     """(text, detected language). Detection only happens with multilingual calls on; otherwise the call is English."""
     stt = _service("stt")
     if cfg.multilingual_enabled() and hasattr(stt, "transcribe_detailed"):
-        result = stt.transcribe_detailed(audio, filename, content_type, hint=session.language, locked=session.language_locked)
+        result = stt.transcribe_detailed(audio, filename, content_type, hint=session.language)
         return result.text, result.language
     return stt.transcribe(audio, filename, content_type), None
 
@@ -279,7 +297,7 @@ async def turn(session_id: str, request: Request) -> StreamingResponse:
         if audio_bytes is not None:
             yield {"type": "stage", "stage": "transcribing"}
             try:
-                debug.log("turn_start", session=session.session_id, language=session.language, locked=session.language_locked)
+                debug.log("turn_start", session=session.session_id, language=session.language)
                 heard, detected = _transcribe(audio_bytes, filename, content_type, session)
                 debug.log("transcript", text=heard, detected=detected)
             except TranscriptionError as exc:
@@ -289,7 +307,7 @@ async def turn(session_id: str, request: Request) -> StreamingResponse:
                 yield from didnt_catch(session)
                 return
         yield from run_turn(session, heard, llm, chosen_order_id=chosen, detected_language=detected)
-        debug.log("turn_end", session=session.session_id, language=session.language, locked=session.language_locked)
+        debug.log("turn_end", session=session.session_id, language=session.language)
 
     return _ndjson(_stream(session, events()))
 
@@ -298,6 +316,7 @@ def register(app: FastAPI) -> None:
     """Mount the voice endpoints directly on the app as flat routes (no router wrapper), so app.routes stays a plain list."""
     app.add_api_route("/voice/warmup", warmup, methods=["POST"], tags=["voice"])
     app.add_api_route("/voice/callers", callers, methods=["GET"], tags=["voice"])
+    app.add_api_route("/voice/languages", languages, methods=["GET"], tags=["voice"])
     app.add_api_route("/voice/sessions", create_session, methods=["POST"], tags=["voice"])
     app.add_api_route("/voice/sessions/{session_id}", read_session, methods=["GET"], tags=["voice"])
     app.add_api_route("/voice/sessions/{session_id}/speak", speak, methods=["POST"], tags=["voice"])

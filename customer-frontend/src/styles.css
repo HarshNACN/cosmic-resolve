@@ -521,3 +521,23 @@ p {
     display: none;
   }
 }
+
+/* ---------- Language selector ---------- */
+
+.language-selector select {
+  font: inherit;
+  font-size: 14px;
+  color: #f2f3f8;
+  background: transparent;
+  border: 1px solid rgba(242, 243, 248, 0.25);
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+.language-selector select option {
+  color: #1c2033;
+  background: #ffffff;
+}
+.language-selector select:focus-visible {
+  outline: 2px solid #f2f3f8;
+  outline-offset: 2px;
+}

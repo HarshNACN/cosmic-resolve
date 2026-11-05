@@ -617,7 +617,9 @@ def test_hindi_gets_a_higher_token_ceiling_and_every_other_language_keeps_the_or
     assert "Devanagari" in cfg.speech_system("hi") and "never romanised" in cfg.speech_system("hi")
 
 
-# --- Regression: an explicit Hindi request must stick (the "Do you speak Hindi?" call) -----------------------------------------
+# --- Regression: Hindi speech must not flip the call to invented English ---------------------------------------------------------
+# Policy: detection decides the language, so a confident sentence in another language switches the call (even after a
+# manual choice). What it must not do is trust a shaky guess: Hindi audio decoded as English invents English.
 
 class UrlHttp(Http):
     """Records every URL, so a test can prove nothing is sent to the translation endpoint."""
@@ -631,10 +633,12 @@ class UrlHttp(Http):
         return super().post(url, headers=headers, files=files, data=data)
 
 
-WHISPER_ENGLISH_GUESS = {
-    "text": "I have to return wireless earbuds here. They were very long ago. I don't have any change.",
-    "language": "English",
-}
+def whisper(text, language, logprob):
+    """A Groq verbose_json reply: the text, the language it names, and the decode's confidence."""
+    return {"text": text, "language": language, "segments": [{"avg_logprob": logprob}]}
+
+
+INVENTED_ENGLISH = "I have to return wireless earbuds here. They were very long ago. I don't have any change."
 HI_RETURN_EARBUDS = "मुझे अपने wireless earbuds वापस करने हैं, वो बहुत पहले आए थे।"
 AUDIO = {"audio": ("s.webm", b"x" * 3000, "audio/webm")}
 
@@ -645,30 +649,30 @@ def hindi_turn(sid, **form):
 
 def test_regression_hindi_is_kept_when_whisper_guesses_english_for_hindi_speech():
     http = UrlHttp(
-        WHISPER_ENGLISH_GUESS, {"text": HI_RETURN_EARBUDS},  # turn 2: the wrong guess, then the forced-Hindi decode
-        {"text": "मुझे यह वापस करना है, यह मेरे साइज़ का नहीं है।", "language": "Hindi"},  # turn 3
-        {"text": "हाँ", "language": "Hindi"},  # turn 4
+        whisper(INVENTED_ENGLISH, "English", -1.2), whisper(HI_RETURN_EARBUDS, "Hindi", -0.15),  # the wrong guess, then Hindi
+        whisper("मुझे यह वापस करना है, यह मेरे साइज़ का नहीं है।", "Hindi", -0.1),
+        whisper("हाँ", "Hindi", -0.1),
     )
     speaker = FakeSpeaker()
     routes.configure_services(llm=FakeLLM(extract={"case_type": "RETURN_REQUEST"}), stt=groq(http), tts=speaker)
     sid = client.post("/voice/sessions", json={"customer_id": CUSTOMER}).json()["session_id"]
     session = store.get_session(sid)
-    assert session.language == "en" and not session.language_locked  # 1. an English session
+    assert session.language == "en"  # 1. an English session
 
     asked = stream(client.post(f"/voice/sessions/{sid}/turn", data={"text": "Do you speak Hindi?"}))  # 2.
     assert [e["language"] for e in asked if e["type"] == "language"] == ["hi"]  # 3. Cosmo switches to Hindi
-    assert lines(asked)[0] == t("LANGUAGE_SWITCHED") and session.language == "hi" and session.language_locked
+    assert lines(asked)[0] == t("LANGUAGE_SWITCHED") and session.language == "hi"
 
-    heard = hindi_turn(sid)  # 4. and 5. the customer returns the earbuds in Hindi; Whisper first guesses English
+    heard = hindi_turn(sid)  # 4. and 5. the customer returns the earbuds in Hindi; Whisper first guesses English, unsure
     shown = next(e for e in heard if e["type"] == "customer_text")["text"]
     assert shown == HI_RETURN_EARBUDS and "I have to return" not in shown  # the visible transcript is the Hindi one
-    assert http.sent[0]["response_format"] == "verbose_json" and "language" not in http.sent[0]
-    assert http.sent[1]["language"] == "hi"  # asked again, forced to Hindi, never English
+    assert "language" not in http.sent[0] and http.sent[0]["response_format"] == "verbose_json"
+    assert http.sent[1]["language"] == "hi"  # decoded again in the call's language, never as English
     assert session.order_id and session.selected_order()["title"] == "Wireless Earbuds Air"  # 6. the order is selected
     assert lines(heard) == [t("ORDER_PICKED", title="Wireless Earbuds Air")]  # 7. and Cosmo answers in Hindi
     assert "language" not in kinds(heard) and session.language == "hi"  # 8. the language never flipped back
 
-    described = hindi_turn(sid)  # a Hindi return request, detected as Hindi: one call, no retry
+    described = hindi_turn(sid)  # a confident Hindi return request: one call, no second decode
     assert session.state == store.STATE_CONFIRM and session.case_type == "RETURN_REQUEST" and len(http.sent) == 3
     assert lines(described)[-1] == t("CONFIRM", issue=cfg.issue_phrase("RETURN_REQUEST", "hi").format(title="Wireless Earbuds Air"))
 
@@ -679,92 +683,115 @@ def test_regression_hindi_is_kept_when_whisper_guesses_english_for_hindi_speech(
     assert all(language == "hi" for _, language in speaker.calls)  # every spoken line used the Hindi voice
 
 
-def test_explicit_hindi_survives_an_english_detection_and_english_product_names():
+def test_a_clear_english_sentence_after_choosing_hindi_switches_back_automatically():
+    """A manual choice does not disable automatic switching."""
     session = make_session()
-    say(session, "Do you speak Hindi?", None)
-    assert session.language == "hi" and session.language_locked
-    for text in ("Wireless Earbuds Air", "I want to return my wireless earbuds because they are too big for me"):
-        say(session, text, None, detected_language="en")
+    list(change_language(session, "hi", source="manual"))
+    assert session.language == "hi"
+    events = say(session, "I want to return my wireless earbuds because they are too big for me", None, detected_language="en")
+    assert session.language == "en" and [e["language"] for e in events if e["type"] == "language"] == ["en"]
+    assert lines(events) == [t("ORDER_PICKED", "en", title="Wireless Earbuds Air")]
+    say(session, ES_SENTENCE, None, detected_language="es")  # and it keeps working for the next language
+    assert session.language == "es"
+
+
+def test_english_product_names_and_short_answers_do_not_change_a_hindi_call():
+    session = make_session()
+    list(change_language(session, "hi", source="manual"))
+    for text, detected in (("Wireless Earbuds Air", "en"), ("Smart Plug Mini O-1002", "en"), ("yes", "en"), ("हाँ", "hi"), ("ok", "en")):
+        say(session, text, None, detected_language=detected)
         assert session.language == "hi", text
-    assert resolve_language(HI_RETURN_EARBUDS, "en", "hi") == "hi"  # Latin product names do not make a sentence English
+    # a Hindi sentence full of Latin product names stays Hindi even if recognition guessed English
+    assert resolve_language(HI_RETURN_EARBUDS, "en", "hi") == "hi"
+    assert resolve_language("मेरा Smart Plug Mini अभी तक नहीं आया", "en", "hi") == "hi"
 
 
-def test_the_customer_can_ask_for_english_again_and_that_choice_sticks_too():
+def test_a_spoken_request_to_change_language_switches_at_once_and_nothing_is_reset():
     session = make_session()
     say(session, "Do you speak Hindi?", None)
     say(session, "मुझे अपने wireless earbuds वापस करने हैं", None, detected_language="hi")
     order_id, state = session.order_id, session.state
     back = say(session, "Please speak English", None)
-    assert session.language == "en" and session.language_locked and lines(back)[0] == cfg.text("LANGUAGE_SWITCHED", "en")
+    assert session.language == "en" and lines(back)[0] == cfg.text("LANGUAGE_SWITCHED", "en")
     assert session.order_id == order_id and session.state == state and not cases_created()  # nothing was reset
-    say(session, HI_LATE, None, detected_language="hi")  # English was asked for: a Hindi guess does not undo it
-    assert session.language == "en"
 
 
-def test_the_manual_selector_and_a_language_chosen_at_the_start_are_explicit_choices_too():
-    manual = make_session()
-    list(change_language(manual, "hi", source="manual"))
-    assert manual.language_locked
-    say(manual, "Wireless Earbuds Air, I want to return them please", None, detected_language="en")
-    assert manual.language == "hi"
+def test_a_language_chosen_before_the_call_is_the_starting_language_and_speech_can_still_change_it():
     sid = client.post("/voice/sessions", json={"customer_id": CUSTOMER, "language": "hi"}).json()["session_id"]
-    assert store.get_session(sid).language_locked
-
-
-def test_without_an_explicit_choice_detection_still_switches_both_ways():
-    session = make_session()
-    say(session, HI_OPENER, None, detected_language="hi")
-    assert session.language == "hi" and not session.language_locked  # an automatic switch is not a choice
+    session = store.get_session(sid)
+    assert session.language == "hi"
     say(session, ES_SENTENCE, None, detected_language="es")
-    assert session.language == "es" and not session.language_locked
+    assert session.language == "es"
 
 
-def test_a_spoken_explicit_choice_is_asked_again_only_when_whisper_disagrees():
-    # locked Hindi, Whisper agrees: one call
-    agree = UrlHttp({"text": HI_LATE, "language": "Hindi"})
-    assert groq(agree).transcribe_detailed(b"a", hint="hi", locked=True).text == HI_LATE and len(agree.sent) == 1
-    # locked Hindi, Whisper guesses English: the Hindi decode is used, with the Hindi hint
-    wrong = UrlHttp(WHISPER_ENGLISH_GUESS, {"text": HI_RETURN_EARBUDS})
-    result = groq(wrong).transcribe_detailed(b"a", hint="hi", locked=True)
-    assert (result.text, result.language, result.hinted) == (HI_RETURN_EARBUDS, "hi", True) and wrong.sent[1]["language"] == "hi"
-    # a request to change language is heard as spoken, not forced back into Hindi
-    request = UrlHttp({"text": "Please speak English", "language": "English"})
-    asked = groq(request).transcribe_detailed(b"a", hint="hi", locked=True)
+# --- Speech recognition: a confident switch is trusted, a shaky one is checked ---------------------------------------------------
+
+def test_a_confident_decode_in_another_language_is_a_real_switch_with_no_extra_call():
+    http = UrlHttp(whisper(ES_SENTENCE, "Spanish", -0.15))
+    result = groq(http).transcribe_detailed(b"a", hint="en")
+    assert (result.text, result.language) == (ES_SENTENCE, "es") and len(http.sent) == 1
+    same = UrlHttp(whisper(HI_LATE, "Hindi", -1.4))  # a poor decode in the call's own language is not second-guessed
+    assert groq(same).transcribe_detailed(b"a", hint="hi").language == "hi" and len(same.sent) == 1
+
+
+def test_a_shaky_guess_that_disagrees_with_the_call_is_decoded_again_and_the_more_confident_decode_wins():
+    wrong = UrlHttp(whisper(INVENTED_ENGLISH, "English", -1.2), whisper(HI_RETURN_EARBUDS, "Hindi", -0.15))
+    result = groq(wrong).transcribe_detailed(b"a", hint="hi")
+    assert (result.text, result.language, result.hinted) == (HI_RETURN_EARBUDS, "hi", True)
+    assert wrong.sent[1]["language"] == "hi" and all(url.endswith("/audio/transcriptions") for url in wrong.urls)
+
+    # genuine English, a little noisy, in a Hindi call: the Hindi decode of English audio is worse, so English stays
+    real = UrlHttp(whisper("I want to return my wireless earbuds please", "English", -0.7), whisper("यद अजन आजो प्लावजी", "Hindi", -1.3))
+    kept = groq(real).transcribe_detailed(b"a", hint="hi")
+    assert (kept.text, kept.language) == ("I want to return my wireless earbuds please", "en") and len(real.sent) == 2
+
+
+def test_a_spoken_request_and_replies_without_confidence_data_are_never_decoded_twice():
+    request = UrlHttp(whisper("Please speak English", "English", -1.0))
+    asked = groq(request).transcribe_detailed(b"a", hint="hi")
     assert (asked.text, asked.language) == ("Please speak English", "en") and len(request.sent) == 1
-    # not locked (automatic mode): unchanged, one call and the detected language
-    auto = UrlHttp({"text": "Hello, I need help with my order", "language": "English"})
-    assert groq(auto).transcribe_detailed(b"a", hint="hi").language == "en" and len(auto.sent) == 1
+    bare = UrlHttp({"text": "Hello, I need help with my order", "language": "English"})  # no segments: nothing to judge by
+    assert groq(bare).transcribe_detailed(b"a", hint="hi").language == "en" and len(bare.sent) == 1
 
 
-def test_a_locked_english_call_and_a_locked_spanish_call_keep_their_language_too():
-    http = UrlHttp({"text": "Hola, necesito ayuda con mi pedido", "language": "Spanish"}, {"text": "hello i need help"})
-    assert groq(http).transcribe_detailed(b"a", hint="en", locked=True).text == "hello i need help"
-    assert http.sent[1]["language"] == "en"
-    session = make_session()
-    say(session, "Habla español, por favor", None)
-    say(session, "I would like to return my wireless earbuds please", None, detected_language="en")
-    assert session.language == "es" and session.language_locked
-
-
-def test_the_choice_reaches_the_recogniser_through_the_http_route():
-    seen = {}
+def test_the_hint_is_the_calls_current_language_on_every_spoken_turn():
+    seen = []
 
     class Recording(FakeSTT):
-        def transcribe_detailed(self, audio, filename="speech.webm", content_type="audio/webm", hint=None, locked=False):
-            seen.update(hint=hint, locked=locked)
-            return super().transcribe_detailed(audio, filename, content_type, hint, locked)
+        def transcribe_detailed(self, audio, filename="speech.webm", content_type="audio/webm", hint=None):
+            seen.append(hint)
+            return super().transcribe_detailed(audio, filename, content_type, hint)
 
     routes.configure_services(llm=FakeLLM(), stt=Recording(HI_RETURN_EARBUDS, "hi"), tts=FakeSpeaker())
     sid = client.post("/voice/sessions", json={"customer_id": CUSTOMER}).json()["session_id"]
-    stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "hi"}))
+    hindi_turn(sid)  # english call: hint en; speech is Hindi, so the call becomes Hindi
     hindi_turn(sid)
-    assert seen == {"hint": "hi", "locked": True}
+    assert seen == ["en", "hi"]
 
 
-# --- Diagnostics are off by default and never print secrets ---------------------------------------------------------------------
+# --- The languages endpoint and diagnostics --------------------------------------------------------------------------------------
+
+def test_the_languages_endpoint_lists_what_the_running_system_supports_without_loading_anything():
+    routes.reset_services()
+    body = client.get("/voice/languages").json()
+    assert body["multilingual"] is True and [item["code"] for item in body["languages"]] == list(cfg.LANGUAGES)
+    hindi = next(item for item in body["languages"] if item["code"] == "hi")
+    assert hindi == {"code": "hi", "label": "Hindi — हिन्दी", "locale": "hi-IN", "voice": None}  # voices not loaded yet
+    assert routes._services == {}  # asking never builds Piper, Groq or Bedrock
+
+    routes.configure_services(llm=FakeLLM(), stt=FakeSTT("", None), tts=FakeSpeaker(voices=("en", "es")))
+    loaded = {item["code"]: item["voice"] for item in client.get("/voice/languages").json()["languages"]}
+    assert loaded == {"en": True, "es": True, "pt": False, "hi": False}
+
+
+def test_the_languages_endpoint_lists_only_english_when_multilingual_is_off(monkeypatch):
+    monkeypatch.delenv(cfg.ENV_MULTILINGUAL)
+    body = client.get("/voice/languages").json()
+    assert body["multilingual"] is False and [item["code"] for item in body["languages"]] == ["en"]
+
 
 def test_debug_output_is_off_by_default_and_when_on_shows_the_flow_without_the_key(capsys, monkeypatch):
-    http = UrlHttp(WHISPER_ENGLISH_GUESS, {"text": HI_RETURN_EARBUDS})
+    http = UrlHttp(whisper(INVENTED_ENGLISH, "English", -1.2), whisper(HI_RETURN_EARBUDS, "Hindi", -0.15))
     stt = GroqTranscriber(api_key="SECRET-KEY-123", model="whisper-large-v3-turbo", client=http)
     routes.configure_services(llm=FakeLLM(), stt=stt, tts=FakeSpeaker())
     sid = client.post("/voice/sessions", json={"customer_id": CUSTOMER, "language": "hi"}).json()["session_id"]
@@ -773,16 +800,100 @@ def test_debug_output_is_off_by_default_and_when_on_shows_the_flow_without_the_k
     hindi_turn(sid)
     assert capsys.readouterr().err == ""
 
-    http.bodies.extend([WHISPER_ENGLISH_GUESS, {"text": HI_RETURN_EARBUDS}])
+    http.bodies.extend([whisper(INVENTED_ENGLISH, "English", -1.2), whisper(HI_RETURN_EARBUDS, "Hindi", -0.15)])
     monkeypatch.setenv("VOICE_DEBUG", "true")
     hindi_turn(sid)
     err = capsys.readouterr().err
     assert "SECRET-KEY-123" not in err and "Bearer" not in err
     events = [json.loads(line.split("[voice-debug] ", 1)[1]) for line in err.splitlines() if line.startswith("[voice-debug] ")]
-    names = [e["event"] for e in events]
-    assert names == ["turn_start", "groq_request", "groq_response", "groq_request", "groq_response", "transcript", "turn_end"]
-    assert events[0]["language"] == "hi" and events[0]["locked"] is True  # the session language before the request
+    assert [e["event"] for e in events] == ["turn_start", "groq_request", "groq_response", "groq_request", "groq_response", "transcript", "turn_end"]
+    assert events[0]["language"] == "hi"  # the session language before the request
     assert events[3]["fields"]["language"] == "hi"  # the hint sent to Groq
-    assert events[2]["language"] == "English" and "I have to return" in events[2]["text"]  # what Groq reported
+    assert events[2]["language"] == "English" and events[2]["confidence"] == -1.2 and "I have to return" in events[2]["text"]
     assert events[5]["text"] == HI_RETURN_EARBUDS  # the final transcript sent to the page
     assert events[6]["language"] == "hi"  # the session language afterwards
+
+
+# --- The three success scenarios, through the HTTP routes -------------------------------------------------------------------------
+
+def speak_as(stt, sid, text, language):
+    """One spoken turn: what the recogniser hears and the language it reports."""
+    stt.result = Transcription(text, language)
+    return hindi_turn(sid)
+
+
+def language_events(events):
+    return [(e["language"], e["source"]) for e in events if e["type"] == "language"]
+
+
+def test_scenario_a_the_language_follows_the_customers_speech_with_no_selector_and_no_preselection():
+    stt, speaker = FakeSTT("", None), FakeSpeaker()
+    sid = new_call(speaker, stt)["session_id"]  # an English call, nothing chosen
+    session = store.get_session(sid)
+
+    hindi = speak_as(stt, sid, HI_OPENER, "hi")
+    assert language_events(hindi) == [("hi", "speech")] and session.language == "hi"
+    assert lines(hindi) == [t("ORDER_PICKED", title=PLUG)]
+
+    again = speak_as(stt, sid, HI_LATE, "hi")  # still Hindi: nothing changes, nothing is announced
+    assert language_events(again) == [] and session.language == "hi"
+
+    spanish = speak_as(stt, sid, ES_SENTENCE, "es")  # a clear Spanish sentence
+    assert language_events(spanish) == [("es", "speech")] and session.language == "es"
+    assert lines(spanish) == [cfg.text("ASK_YES_NO", "es")]  # the answer is in Spanish
+    assert session.order_id and session.case_type == "LATE_DELIVERY" and not cases_created()  # and nothing was lost or created
+    assert [language for _, language in speaker.calls][-1] == "es"
+
+
+def test_scenario_b_a_manual_choice_is_followed_by_automatic_switching_when_the_customer_speaks_another_language():
+    stt, speaker = FakeSTT("", None), FakeSpeaker()
+    sid = new_call(speaker, stt)["session_id"]
+    session = store.get_session(sid)
+
+    chosen = stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "hi"}))
+    assert language_events(chosen) == [("hi", "manual")] and session.language == "hi"
+
+    ambiguous = speak_as(stt, sid, "yes", "en")  # a short answer must not override the choice
+    assert language_events(ambiguous) == [] and session.language == "hi"
+    names = speak_as(stt, sid, "Wireless Earbuds Air", "en")  # a product name must not either
+    assert language_events(names) == [] and session.language == "hi"
+
+    english = speak_as(stt, sid, "I want to return my wireless earbuds because they are too big for me", "en")
+    assert language_events(english) == [("en", "speech")] and session.language == "en"  # a clear English sentence does
+    assert all(e["lang"] == "en" for e in english if e["type"] == "agent_sentence")  # and the answer is in English
+    assert lines(english)[-1].startswith("To confirm") and session.selected_order()["title"] == "Wireless Earbuds Air"
+
+    back = stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "en"}))  # choosing the current language
+    assert language_events(back) == [] and session.language == "en"  # is not a change, so nothing is announced again
+
+
+def test_scenario_c_the_order_the_complaint_and_the_case_survive_several_changes_and_the_human_decision_is_untouched():
+    stt, speaker = FakeSTT("", None), FakeSpeaker()
+    sid = new_call(speaker, stt)["session_id"]
+    session = store.get_session(sid)
+
+    speak_as(stt, sid, "Hello, I need help with my smart plug", "en")
+    order_id = session.order_id
+    assert session.selected_order()["title"] == PLUG
+
+    stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "hi"}))
+    speak_as(stt, sid, HI_LATE, "hi")
+    speak_as(stt, sid, "Quiero ayuda con este pedido, por favor ayúdenme ahora", "es")
+    stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "pt"}))
+    assert session.order_id == order_id and session.state == store.STATE_CONFIRM and session.case_type == "LATE_DELIVERY"
+    assert session.complaint_parts[0] == HI_LATE and not cases_created()
+    assert [line["role"] for line in session.transcript][:2] == ["customer", "agent"]  # the transcript was kept, in order
+
+    speak_as(stt, sid, "Sim, está correto, pode enviar para um especialista", "pt")  # confirm in yet another language
+    assert session.state == store.STATE_SUBMITTED and len(cases_created()) == 1  # exactly one case
+    case_id = session.case_id
+
+    stream(client.post(f"/voice/sessions/{sid}/language", json={"language": "hi"}))  # a change while on hold
+    assert len(cases_created()) == 1 and session.case_id == case_id and session.state == store.STATE_SUBMITTED
+    assert not [e for e in read_trace_events() if e.event_type in ("mock_action", "human_decision")]  # no decision was made
+
+    decide(session, "REPLACE", "Your replacement ships today.")  # the human approves, in the backend
+    spoken = stream(client.post(f"/voice/sessions/{sid}/speak", json={"kind": "outcome"}))
+    expected = cfg.outcome_lead("REPLACE", "hi").format(title=PLUG, amount="") + " " + t("SEE_SCREEN")
+    assert lines(spoken) == [expected]  # the outcome is built from the verified decision, in the call's language
+    assert next(e for e in spoken if e["type"] == "agent_text")["text"] == "Your replacement ships today."  # the approved message, unaltered

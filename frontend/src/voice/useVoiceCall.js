@@ -29,7 +29,9 @@ const messageOf = (error) =>
   error instanceof VoiceApiError || error instanceof Error ? error.message : "Something went wrong. Please try again.";
 
 // Phases: idle, connecting, speaking, listening, recording, thinking, waiting (for the specialist), resolved, ended.
-export function useVoiceCall({ onCaseCreated } = {}) {
+// onLanguageChange(language, source) is told about every `language` event the backend sends (source is "speech", "text",
+// "request" or "manual"), so a host page can keep its own language in step with the call. It is optional.
+export function useVoiceCall({ onCaseCreated, onLanguageChange } = {}) {
   const [phase, setPhase] = useState("idle");
   const [session, setSession] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -46,6 +48,8 @@ export function useVoiceCall({ onCaseCreated } = {}) {
   const finishRecordingRef = useRef(() => {});
   const caseCallback = useRef(onCaseCreated);
   caseCallback.current = onCaseCreated;
+  const languageCallback = useRef(onLanguageChange);
+  languageCallback.current = onLanguageChange;
 
   const recorder = useRecorder({ onAutoStop: () => finishRecordingRef.current() });
 
@@ -120,6 +124,7 @@ export function useVoiceCall({ onCaseCreated } = {}) {
         case "language":
           keepSession({ ...sessionRef.current, language: event.language });
           setMissingVoice(null);
+          languageCallback.current?.(event.language, event.source);
           break;
         case "voice_unavailable":
           // Text still works. Say so, and read the line with the browser's voice for that locale if there is one.

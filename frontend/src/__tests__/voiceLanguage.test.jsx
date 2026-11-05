@@ -304,3 +304,61 @@ describe("Hindi", () => {
     expect(screen.queryByRole("option", { name: HINDI })).not.toBeInTheDocument();
   });
 });
+
+describe("a host page following and driving the call's language", () => {
+  const PT_LINE = "Claro, vamos continuar em português.";
+  const switchedToPortuguese = () =>
+    stream([
+      { type: "language", language: "pt", previous: "en", source: "manual" },
+      { type: "agent_sentence", text: PT_LINE, lang: "pt" },
+      { type: "state", session: snapshot({ language: "pt", transcript: said(GREETING, PT_LINE) }) },
+      { type: "done" },
+    ]);
+  const languagePosts = () => calls.filter((call) => call.key === "POST /api/voice/sessions/s1/language");
+
+  it("reports every language event, with its source, to the host", async () => {
+    const user = userEvent.setup();
+    const onLanguageChange = vi.fn();
+    installFetch(MULTILINGUAL, {
+      "POST /api/voice/sessions/s1/turn": () =>
+        stream([
+          { type: "customer_text", text: "Hola, quiero ayuda con mi enchufe inteligente" },
+          { type: "language", language: "es", previous: "en", source: "speech" },
+          { type: "agent_sentence", text: "Entendido.", lang: "es" },
+          { type: "state", session: snapshot({ language: "es", transcript: said(GREETING, "Entendido.") }) },
+          { type: "done" },
+        ]),
+    });
+    render(<CallPanel onLanguageChange={onLanguageChange} />);
+    await startCall(user);
+    await user.type(screen.getByLabelText("Type a reply to the agent"), "Hola, quiero ayuda con mi enchufe inteligente");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(onLanguageChange).toHaveBeenCalledWith("es", "speech"));
+    expect(onLanguageChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("switches the call once when the host's language changes, and not again when the backend confirms it", async () => {
+    const user = userEvent.setup();
+    installFetch(MULTILINGUAL, { "POST /api/voice/sessions/s1/language": switchedToPortuguese });
+    const { rerender } = render(<CallPanel language="en" />);
+    await startCall(user);
+    expect(languagePosts()).toHaveLength(0); // a host language equal to the call's changes nothing
+
+    rerender(<CallPanel language="pt" />);
+    await screen.findByText(PT_LINE, { selector: "li" });
+    await waitFor(() => expect(indicator()).toHaveTextContent("Português (Brasil)"));
+    rerender(<CallPanel language="pt" />);
+    expect(languagePosts()).toHaveLength(1);
+    expect(JSON.parse(languagePosts()[0].init.body)).toEqual({ language: "pt" });
+    expect(calls.some((call) => call.key.endsWith("/turn"))).toBe(false); // no turn, so no case and no flow change
+  });
+
+  it("works without any host props, exactly as before", async () => {
+    const user = userEvent.setup();
+    installFetch(MULTILINGUAL);
+    render(<CallPanel />);
+    await startCall(user);
+    expect(languagePosts()).toHaveLength(0);
+    expect(indicator()).toHaveTextContent("English");
+  });
+});

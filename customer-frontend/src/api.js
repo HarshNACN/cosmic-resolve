@@ -8,10 +8,13 @@ const GENERIC_FAILURE = "We couldn't reach support just now. Please try again.";
 const UNEXPECTED = "We couldn't read the response. Please try again.";
 
 export class SupportApiError extends Error {
-  constructor(message, status = null) {
+  // code is a stable identifier ("NETWORK", "UNEXPECTED", "VALIDATION") the page translates; it is null for the one
+  // server-written message that is shown as received (a plain 404 detail), which cannot be safely translated.
+  constructor(message, status = null, code = null) {
     super(message);
     this.name = "SupportApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -38,7 +41,7 @@ async function request(path, { method = "GET", body, signal } = {}) {
     response = await fetch(`${BASE}${path}`, init);
   } catch (error) {
     if (error && error.name === "AbortError") throw error;
-    throw new SupportApiError(GENERIC_FAILURE);
+    throw new SupportApiError(GENERIC_FAILURE, null, "NETWORK");
   }
 
   let parsed = null;
@@ -49,12 +52,14 @@ async function request(path, { method = "GET", body, signal } = {}) {
   }
 
   if (!response.ok) {
+    const plain = plainDetail(parsed, response.status);
     throw new SupportApiError(
-      plainDetail(parsed, response.status) || (response.status === 422 ? "Check your details and try again." : GENERIC_FAILURE),
+      plain || (response.status === 422 ? "Check your details and try again." : GENERIC_FAILURE),
       response.status,
+      plain ? null : response.status === 422 ? "VALIDATION" : "NETWORK",
     );
   }
-  if (parsed === null) throw new SupportApiError(UNEXPECTED, response.status);
+  if (parsed === null) throw new SupportApiError(UNEXPECTED, response.status, "UNEXPECTED");
   return parsed;
 }
 
@@ -71,7 +76,7 @@ export async function fetchDemoOrders(signal) {
         typeof order.price === "number",
     )
   ) {
-    throw new SupportApiError(UNEXPECTED);
+    throw new SupportApiError(UNEXPECTED, null, "UNEXPECTED");
   }
   return body.map((order) => ({
     order_reference: order.order_reference,
@@ -101,7 +106,7 @@ export async function submitSupportRequest(payload, signal) {
     !isText(body.customer_message) ||
     !isText(body.next_step)
   ) {
-    throw new SupportApiError(UNEXPECTED);
+    throw new SupportApiError(UNEXPECTED, null, "UNEXPECTED");
   }
   return {
     reference: body.reference,

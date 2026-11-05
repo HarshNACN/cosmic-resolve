@@ -197,8 +197,6 @@ def _repeat_prompt(session: VoiceSession) -> Iterator[Event]:
 
 def change_language(session: VoiceSession, language: str, source: str = "manual", acknowledge: bool = True) -> Iterator[Event]:
     """An explicit language change (a spoken request or the selector). It never creates a case or changes the flow."""
-    if cfg.multilingual_enabled() and language in cfg.LANGUAGES:
-        session.language_locked = True  # the customer chose this: detection no longer decides the language
     event = switch_language(session, language, source)
     if event:
         yield event
@@ -253,7 +251,7 @@ def run_turn(
         # "Habla español, por favor": switch and re-ask the current step. Never advances the conversation.
         yield from change_language(session, requested, source="request")
         return
-    if multilingual and not session.language_locked:
+    if multilingual:
         event = switch_language(
             session, resolve_language(text, detected_language, session.language), "speech" if detected_language else "text"
         )

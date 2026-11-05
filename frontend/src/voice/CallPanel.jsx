@@ -8,6 +8,7 @@ import "./voice.css";
 
 const STEPS = ["Gather details", "Confirm", "Specialist review", "Resolved"];
 const TALKING_PHASES = new Set(["listening", "speaking", "waiting", "recording"]);
+const LANGUAGE_PHASES = new Set(["listening", "speaking", "waiting"]); // the phases in which the call can take a language change
 const LIVE_PHASES = new Set(["connecting", "listening", "recording", "thinking", "speaking", "waiting"]);
 
 function currentStep(session) {
@@ -82,8 +83,11 @@ function micLabel(phase) {
 
 // The customer side of the demo, shown above the case being worked: pick who is calling, tap the microphone, and
 // talk with the intake agent. When the customer confirms, the call becomes an ordinary case in the queue.
-export default function CallPanel({ onCaseCreated }) {
-  const call = useVoiceCall({ onCaseCreated });
+// A host page can follow and drive the call's language (both optional): onLanguageChange(language, source) reports every
+// language the call changes to, and `language` asks the call to switch to that language. Without them the panel works
+// exactly as before.
+export default function CallPanel({ onCaseCreated, language, onLanguageChange }) {
+  const call = useVoiceCall({ onCaseCreated, onLanguageChange });
   const { phase, session } = call;
   const [callers, setCallers] = useState({ status: "loading", items: [], error: null });
   const [callerId, setCallerId] = useState("");
@@ -101,6 +105,22 @@ export default function CallPanel({ onCaseCreated }) {
       .catch((error) => setCallers({ status: "error", items: [], error: error.message }));
   }, []);
   useEffect(loadCallers, [loadCallers]);
+
+  // The host's language, pushed to the call once. It is not pushed again while the call is catching up, so the call's
+  // own `language` event (which the host also hears) cannot start a second request.
+  const requestedLanguage = useRef(null);
+  const sessionLanguage = session?.language;
+  const changeLanguage = call.changeLanguage;
+  useEffect(() => {
+    if (!language || !sessionLanguage) return;
+    if (sessionLanguage === language) {
+      requestedLanguage.current = null;
+      return;
+    }
+    if (requestedLanguage.current === language || !LANGUAGE_PHASES.has(phase)) return;
+    requestedLanguage.current = language;
+    changeLanguage(language);
+  }, [language, sessionLanguage, phase, changeLanguage]);
 
   const lineCount = session?.transcript?.length ?? 0;
   useEffect(() => {
